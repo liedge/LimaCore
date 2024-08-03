@@ -1,10 +1,17 @@
 package liedge.limacore.recipe;
 
+import liedge.limacore.lib.ModResources;
+import liedge.limacore.lib.Translatable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 
-public record LimaRecipeType<R extends LimaCustomRecipe<?>>(ResourceLocation id) implements RecipeType<R>
+public record LimaRecipeType<R extends LimaCustomRecipe<?>>(ResourceLocation id, String descriptionId) implements RecipeType<R>, Translatable
 {
+    public LimaRecipeType(ResourceLocation id)
+    {
+        this(id, ModResources.prefixIdTranslationKey("recipe_type", id));
+    }
+
     @Override
     public boolean equals(Object obj)
     {

@@ -64,11 +64,6 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
         return unlockedBy(name, InventoryChangeTrigger.TriggerInstance.hasItems(item));
     }
 
-    public B unlockedBy(Supplier<? extends ItemLike> supplier)
-    {
-        return unlockedBy(supplier.get());
-    }
-
     public B unlockedBy(TagKey<Item> tag)
     {
         String name = "has_any_" + tag.location().getPath().replace("/", "_");

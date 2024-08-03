@@ -92,7 +92,7 @@ public final class LimaCoreUtil
         return (RecipeHolder<T>) optional.orElse(null);
     }
 
-    public static <T extends Recipe<?>> @Nullable RecipeHolder<T> getRecipeByKey(Level level, ResourceLocation recipeId, Supplier<RecipeType<T>> typeSupplier)
+    public static <T extends Recipe<?>> @Nullable RecipeHolder<T> getRecipeByKey(Level level, ResourceLocation recipeId, Supplier<? extends RecipeType<T>> typeSupplier)
     {
         return getRecipeByKey(level, recipeId, typeSupplier.get());
     }

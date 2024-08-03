@@ -39,7 +39,7 @@ public final class LimaRecipeReference<T extends Recipe<?>> implements INBTSeria
         this.recipeType = recipeType;
     }
 
-    public LimaRecipeReference(Supplier<RecipeType<T>> typeSupplier)
+    public LimaRecipeReference(Supplier<? extends RecipeType<T>> typeSupplier)
     {
         this(typeSupplier.get());
     }
