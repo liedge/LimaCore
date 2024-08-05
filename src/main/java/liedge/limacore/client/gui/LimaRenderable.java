@@ -26,11 +26,18 @@ public interface LimaRenderable extends Renderable
 
     default boolean isMouseOver(double mouseX, double mouseY)
     {
-        return checkMouseOver(mouseX, mouseY, getX(), getY(), getWidth(), getHeight());
+        return LimaGuiUtil.isMouseWithinArea(mouseX, mouseY, getX(), getY(), getWidth(), getHeight());
+    }
+
+    /*
+    static boolean checkMouseOver(double mouseX, double mouseY, int minX, int minY, int maxX, int maxY)
+    {
+
     }
 
     static boolean checkMouseOver(double mouseX, double mouseY, int x1, int y1, int width, int height)
     {
         return mouseX >= x1 && mouseY >= y1 && mouseX < (x1 + width) && mouseY < (y1 + height);
     }
+    */
 }

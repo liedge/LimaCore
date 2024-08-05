@@ -1,11 +1,21 @@
 package liedge.limacore.client.gui;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int width, int height, float u0, float v0, float u1, float v1)
 {
+    public static final Codec<UnmanagedSprite> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceLocation.CODEC.fieldOf("sheet").forGetter(UnmanagedSprite::textureSheet),
+            Codec.intRange(0, 255).fieldOf("u").forGetter(UnmanagedSprite::u),
+            Codec.intRange(0, 255).fieldOf("v").forGetter(UnmanagedSprite::v),
+            Codec.intRange(1, 256).fieldOf("width").forGetter(UnmanagedSprite::width),
+            Codec.intRange(1, 256).fieldOf("height").forGetter(UnmanagedSprite::height))
+            .apply(instance, UnmanagedSprite::new));
+
     public UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int width, int height)
     {
         this(textureSheet, u, v, width, height,  u / 256f, v / 256f, (u + width) / 256f, (v + height) / 256f);
@@ -41,12 +51,12 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
 
     public void directBlit(GuiGraphics graphics, float x, float y)
     {
-        LimaBlitUtil.directBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1);
+        LimaGuiUtil.directBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1);
     }
 
     public void directColorBlit(GuiGraphics graphics, float x, float y, float red, float green, float blue, float alpha)
     {
-        LimaBlitUtil.directColorBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1, red, green, blue, alpha);
+        LimaGuiUtil.directColorBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1, red, green, blue, alpha);
     }
 
     public void directColorBlit(GuiGraphics graphics, float x, float y, LimaColor color)
@@ -57,7 +67,7 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
     public void partialHorizontalBlit(GuiGraphics graphics, float x, float y, float percentage)
     {
         float dx = width * percentage;
-        LimaBlitUtil.directBlit(graphics, textureSheet, x, y, x + dx, y + height, u0, u0 + (dx / 256f), v0, v1);
+        LimaGuiUtil.directBlit(graphics, textureSheet, x, y, x + dx, y + height, u0, u0 + (dx / 256f), v0, v1);
     }
 
     public void partialVerticalBlit(GuiGraphics graphics, float x, float y, float percentage)
@@ -66,7 +76,7 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
         float dy = height - partialHeight;
         y += dy;
 
-        LimaBlitUtil.directBlit(graphics, textureSheet, x, y, x + width, y + partialHeight, u0, u1, (v + dy) / 256f, v1);
+        LimaGuiUtil.directBlit(graphics, textureSheet, x, y, x + width, y + partialHeight, u0, u1, (v + dy) / 256f, v1);
     }
 
     @Deprecated

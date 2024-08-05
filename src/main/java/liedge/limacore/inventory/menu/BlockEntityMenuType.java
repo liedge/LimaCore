@@ -12,9 +12,14 @@ import java.util.Objects;
 
 public class BlockEntityMenuType<BE extends LimaBlockEntity, M extends LimaMenu<BE>> extends LimaMenuType<BE, M>
 {
-    public BlockEntityMenuType(ResourceLocation registryId, Class<BE> contextClass, Constructor<BE, M> constructor)
+    public static <BE extends LimaBlockEntity, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> of(ResourceLocation registryId, Class<BE> blockEntityClass, MenuFactory<BE, M> factory)
     {
-        super(registryId, contextClass, constructor);
+        return new BlockEntityMenuType<>(registryId, blockEntityClass, factory);
+    }
+
+    private BlockEntityMenuType(ResourceLocation registryId, Class<BE> blockEntityClass, MenuFactory<BE, M> factory)
+    {
+        super(registryId, blockEntityClass, factory);
     }
 
     @Override

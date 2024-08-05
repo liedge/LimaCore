@@ -1,11 +1,12 @@
 package liedge.limacore.lib;
 
 import liedge.limacore.network.packet.LimaPlayPacket;
-import liedge.limacore.registry.LimaBlockDeferredRegister;
+import liedge.limacore.registry.LimaDeferredBlocks;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +18,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -91,9 +94,19 @@ public record ModResources(String modid)
         return DeferredRegister.Items.createItems(modid);
     }
 
-    public LimaBlockDeferredRegister deferredBlocks()
+    public LimaDeferredBlocks deferredBlocks()
     {
-        return new LimaBlockDeferredRegister(modid);
+        return new LimaDeferredBlocks(modid);
+    }
+
+    public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)
+    {
+        return new RegistryBuilder<>(registryKey);
+    }
+
+    public <T> RegistryBuilder<T> registryBuilder(String registryName)
+    {
+        return registryBuilder(registryResourceKey(registryName));
     }
     //#endregion
 
@@ -156,12 +169,12 @@ public record ModResources(String modid)
     //#region Translation objects
     public Translatable translationHolder(String key)
     {
-        return new Translatable.TranslationHolder(translationKey(key));
+        return Translatable.standalone(translationKey(key));
     }
 
     public Translatable translationHolder(String... keyComponents)
     {
-        return new Translatable.TranslationHolder(translationKey(keyComponents));
+        return Translatable.standalone(translationKey(keyComponents));
     }
 
     public String translationKey(String key)
@@ -182,10 +195,10 @@ public record ModResources(String modid)
     //#endregion
 
     //#region Misc resources
-    public <T extends LimaPlayPacket> LimaPlayPacket.PacketSpec<T> packetSpec(String name, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    public <T extends LimaPlayPacket> LimaPlayPacket.PacketSpec<T> packetSpec(@Nullable PacketFlow packetFlow, String name, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
     {
         CustomPacketPayload.Type<T> type = new CustomPacketPayload.Type<>(location(name));
-        return new LimaPlayPacket.PacketSpec<>(type, streamCodec);
+        return new LimaPlayPacket.PacketSpec<>(packetFlow, type, streamCodec);
     }
     //#endregion
 

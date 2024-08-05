@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,7 +26,6 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -129,6 +129,12 @@ public final class LimaCoreUtil
         }
     }
 
+
+    public static boolean isEntityUsingItem(LivingEntity entity, InteractionHand hand)
+    {
+        return entity.isUsingItem() &&  entity.getUsedItemHand() == hand;
+    }
+
     public static <T, L extends T, R extends T> Either<L, R> eitherFromSubclasses(T object, Class<L> leftClass, Class<R> rightClass)
     {
         if (leftClass.isInstance(object))
@@ -152,7 +158,20 @@ public final class LimaCoreUtil
 
     public static <T> T castOrThrow(Class<T> type, @Nullable Object o)
     {
-        return Objects.requireNonNull(castOrNull(type, o), "Object is not an instance of " + type.getSimpleName());
+        return castOrThrow(type, o, "Object is not an instance of " + type.getSimpleName());
+    }
+
+    public static <T> T castOrThrow(Class<T> type, @Nullable Object o, String errorMessage)
+    {
+        T val = castOrNull(type, o);
+        if (val != null)
+        {
+            return val;
+        }
+        else
+        {
+            throw new ClassCastException(errorMessage);
+        }
     }
 
     public static <T, X extends Throwable> T castOrThrow(Class<T> type, @Nullable Object o, Supplier<X> exceptionSupplier) throws X

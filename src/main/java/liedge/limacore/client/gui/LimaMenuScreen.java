@@ -2,7 +2,8 @@ package liedge.limacore.client.gui;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.inventory.menu.LimaMenu;
-import liedge.limacore.network.packet.ServerboundLimaMenuButtonPacket;
+import liedge.limacore.network.NetworkSerializer;
+import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractContainerScreen<M>
 {
@@ -29,7 +31,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         this.imageHeight = height;
 
         this.titleLabelY = 7;
-        this.inventoryLabelY = imageHeight - 94;
+        this.inventoryLabelY = 72;
 
         this.labelColor = labelColor;
     }
@@ -81,6 +83,25 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     }
 
     @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
+    {
+        if (getFocused() != null && isDragging() && button == 0)
+        {
+            return getFocused().mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
+        else
+        {
+            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
+    {
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
         graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
@@ -91,12 +112,41 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         titleLabelX = (imageWidth - font.width(title)) / 2;
     }
 
+    protected <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
+    {
+        PacketDistributor.sendToServer(new ServerboundCustomMenuButtonPacket<>(menu.containerId, buttonId, serializer, value));
+    }
+
+    protected <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
+    {
+        sendCustomButtonData(buttonId, value, supplier.get());
+    }
+
+    protected boolean scrollFocusedElementInXYBounds(int x1, int y1, int x2, int y2, double mouseX, double mouseY, double scrollX, double scrollY)
+    {
+        if (LimaGuiUtil.isMouseWithinXYBounds(mouseX, mouseY, x1, y1, x2, y2) && getFocused() != null)
+        {
+            return getFocused().mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    protected boolean scrollFocusedElementInArea(int x, int y, int width, int height, double mouseX, double mouseY, double scrollX, double scrollY)
+    {
+        if (LimaGuiUtil.isMouseWithinArea(mouseX, mouseY, x, y, width, height) && getFocused() != null)
+        {
+            return getFocused().mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     protected abstract void addWidgets();
 
     public abstract ResourceLocation getBgTexture();
-
-    protected void sendCustomButtonClick(int buttonId, int value)
-    {
-        PacketDistributor.sendToServer(new ServerboundLimaMenuButtonPacket(menu.containerId, buttonId, value));
-    }
 }

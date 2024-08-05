@@ -1,5 +1,6 @@
 package liedge.limacore.inventory.menu;
 
+import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.network.FriendlyByteBuf;
@@ -13,18 +14,18 @@ import net.minecraft.world.inventory.MenuType;
 public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuType<M> implements Translatable
 {
     private final Class<CTX> contextClass;
-    private final Constructor<CTX, M> constructor;
+    private final MenuFactory<CTX, M> factory;
     private final String descriptionId;
 
-    public LimaMenuType(ResourceLocation registryId, Class<CTX> contextClass, Constructor<CTX, M> constructor)
+    public LimaMenuType(ResourceLocation registryId, Class<CTX> contextClass, MenuFactory<CTX, M> factory)
     {
         super((containerId, inv) -> {
             throw new UnsupportedOperationException("Parameterless menu creation not supported. Use createMenu or tryCreateMenu");
         }, FeatureFlags.DEFAULT_FLAGS);
 
         this.contextClass = contextClass;
-        this.constructor = constructor;
-        this.descriptionId = String.format("container.%s.%s", registryId.getNamespace(), registryId.getPath());
+        this.factory = factory;
+        this.descriptionId = ModResources.prefixIdTranslationKey("container", registryId);
     }
 
     public Class<CTX> getContextClass()
@@ -46,7 +47,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
 
     public M createMenu(int containerId, Inventory inventory, CTX menuContext)
     {
-        return constructor.newInstance(containerId, inventory, menuContext);
+        return factory.createMenu(this, containerId, inventory, menuContext);
     }
 
     public M tryCreateMenu(int containerId, Inventory inventory, Object uncheckedContext)
@@ -55,7 +56,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
     }
 
     @Override
-    public final M  create(int containerId, Inventory inventory)
+    public final M create(int containerId, Inventory inventory)
     {
         throw new UnsupportedOperationException("Parameterless menu creation not supported. Use createMenu or tryCreateMenu");
     }
@@ -64,7 +65,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
     public final M create(int containerId, Inventory inventory, RegistryFriendlyByteBuf net)
     {
         CTX menuContext = decodeContext(net, inventory);
-        return constructor.newInstance(containerId, inventory, menuContext);
+        return factory.createMenu(this, containerId, inventory, menuContext);
     }
 
     @Override
@@ -74,8 +75,8 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
     }
 
     @FunctionalInterface
-    public interface Constructor<CTX, M extends LimaMenu<CTX>>
+    public interface MenuFactory<CTX, M extends LimaMenu<CTX>>
     {
-        M newInstance(int containerId, Inventory inventory, CTX context);
+        M createMenu(LimaMenuType<CTX, ?> type, int containerId, Inventory inventory, CTX menuContext);
     }
 }

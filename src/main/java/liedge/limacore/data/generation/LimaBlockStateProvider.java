@@ -4,19 +4,17 @@ import com.google.common.base.Preconditions;
 import liedge.limacore.block.LimaFluidType;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.generators.*;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static liedge.limacore.util.LimaRegistryUtil.getBlockName;
 import static liedge.limacore.util.LimaRegistryUtil.getItemName;
-import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
 public abstract class LimaBlockStateProvider extends BlockStateProvider implements ModelProviderHelper
 {
@@ -47,34 +45,34 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         return helper;
     }
 
-    public VariantBlockStateBuilder getVariantBuilder(Supplier<? extends Block> supplier)
+    public VariantBlockStateBuilder getVariantBuilder(Holder<Block> holder)
     {
-        return getVariantBuilder(supplier.get());
+        return getVariantBuilder(holder.value());
     }
 
-    protected void simpleBlock(Supplier<? extends Block> supplier, ModelFile model)
+    protected void simpleBlock(Holder<Block> holder, ModelFile model)
     {
-        this.simpleBlock(supplier.get(), model);
+        this.simpleBlock(holder.value(), model);
     }
 
-    protected void simpleBlockItem(Supplier<? extends Block> supplier, ModelFile model)
+    protected void simpleBlockItem(Holder<Block> holder, ModelFile model)
     {
-        simpleBlockItem(supplier.get(), model);
+        simpleBlockItem(holder.value(), model);
     }
 
-    protected void simpleBlockWithItem(Supplier<? extends Block> supplier, ModelFile model)
+    protected void simpleBlockWithItem(Holder<Block> holder, ModelFile model)
     {
-        simpleBlockWithItem(supplier.get(), model);
+        simpleBlockWithItem(holder.value(), model);
     }
 
-    protected void cubeAll(Supplier<? extends Block> supplier, String texture)
+    protected void cubeAll(Holder<Block> holder, String texture)
     {
-        simpleBlockWithItem(supplier, models().cubeAll(getBlockName(supplier.get()), blockFolderLocation(texture)));
+        simpleBlockWithItem(holder, models().cubeAll(getBlockName(holder), blockFolderLocation(texture)));
     }
 
-    protected void cubeAll(Supplier<? extends Block> supplier)
+    protected void cubeAll(Holder<Block> holder)
     {
-        cubeAll(supplier, getBlockName(supplier.get()));
+        cubeAll(holder, getBlockName(holder));
     }
 
     protected void liquidBlock(Supplier<? extends LiquidBlock> block, Supplier<? extends LimaFluidType> fluid)
@@ -82,21 +80,6 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         String name = getBlockName(block.get());
         ModelFile model = models().getBuilder(name).texture("particle", fluid.get().getStillTexture()).renderType("translucent");
         simpleBlock(block.get(), model);
-    }
-
-    protected void conditionalHorizontalState(Supplier<? extends Block> supplier, int angleOffset, ModelFile staticModel, ModelFile rotatedModel, Predicate<BlockState> statePredicate)
-    {
-        getVariantBuilder(supplier.get()).forAllStates(state ->
-        {
-            if (statePredicate.test(state))
-            {
-                return ConfiguredModel.builder().modelFile(rotatedModel).rotationY(getRotationY(state.getValue(HORIZONTAL_FACING), angleOffset)).build();
-            }
-            else
-            {
-                return ConfiguredModel.builder().modelFile(staticModel).build();
-            }
-        });
     }
 
     protected int getRotationX(Direction side)
@@ -116,9 +99,9 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         return itemModels().getBuilder(getItemName(block.asItem()));
     }
 
-    protected ItemModelBuilder getItemBuilder(Supplier<? extends Block> supplier)
+    protected ItemModelBuilder getItemBuilder(Holder<Block> holder)
     {
-        return getItemBuilder(supplier.get());
+        return getItemBuilder(holder.value());
     }
 
     protected BlockModelBuilder getBlockBuilder(Block block)
@@ -126,8 +109,8 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         return models().getBuilder(getBlockName(block));
     }
 
-    protected BlockModelBuilder getBlockBuilder(Supplier<? extends Block> supplier)
+    protected BlockModelBuilder getBlockBuilder(Holder<Block> holder)
     {
-        return getBlockBuilder(supplier.get());
+        return models().getBuilder(getBlockName(holder));
     }
 }

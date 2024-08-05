@@ -1,7 +1,9 @@
 package liedge.limacore.util;
 
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +33,12 @@ public final class LimaRegistryUtil
         return registry.getResourceKey(object).orElseThrow(() -> new NullPointerException("Object is not present in registry."));
     }
 
-    public static <T> ResourceLocation getNonNullRegistryKey(T object, Registry<T> registry)
+    public static <T> ResourceKey<T> getNonNullResourceKey(Holder<T> holder)
+    {
+        return holder.unwrapKey().orElseThrow(() -> new RuntimeException("Holder is missing resource key."));
+    }
+
+    public static <T> ResourceLocation getNonNullRegistryId(T object, Registry<T> registry)
     {
         ResourceLocation id = registry.getKey(object);
         if (id == null || (registry instanceof DefaultedRegistry<T> defaultedRegistry && defaultedRegistry.getDefaultKey().equals(id)))
@@ -44,24 +51,44 @@ public final class LimaRegistryUtil
         }
     }
 
-    public static <T> T getNonNullRegistryValue(ResourceLocation key, Registry<T> registry)
+    public static <T> ResourceLocation getNonNullRegistryId(Holder<T> holder)
     {
-        return Objects.requireNonNull(registry.get(key), "No value matching key '" + key + "' found in registry [" + registry.key().location() + "'");
+        return getNonNullResourceKey(holder).location();
+    }
+
+    public static <T> T getNonNullRegistryValue(ResourceLocation id, Registry<T> registry)
+    {
+        return Objects.requireNonNull(registry.get(id), () -> String.format("No value matching id '%s' found in registry [%s]", id, registry.key().location()));
     }
 
     public static <T> T getNonNullRegistryValue(ResourceKey<T> resourceKey, Registry<T> registry)
     {
-        return Objects.requireNonNull(registry.get(resourceKey), "No value matching resource key '" + resourceKey.location() + "' found in registry [" + registry.key().location() + "'");
+        return Objects.requireNonNull(registry.get(resourceKey), () -> String.format("No value matching resource key '%s' found in registry [%s]", resourceKey.location(), registry.key().location()));
+    }
+
+    public static <T> Holder<T> getNonNullHolder(ResourceLocation id, Registry<T> registry)
+    {
+        return registry.getHolder(id).orElseThrow(() -> new NullPointerException(String.format("Missing holder for id '%s' in registry [%s]", id, registry.key().location())));
+    }
+
+    public static <T> Holder<T> getNonNullHolder(ResourceKey<T> resourceKey, Registry<T> registry)
+    {
+        return registry.getHolder(resourceKey).orElseThrow(() -> new NullPointerException(String.format("Missing holder for resource key '%s' in registry [%s]", resourceKey.location(), registry.key().location())));
+    }
+
+    public static <T> Holder<T> getNonNullReferenceHolder(RegistryAccess registryAccess, ResourceKey<? extends Registry<T>> registryKey, ResourceLocation id)
+    {
+        return registryAccess.registryOrThrow(registryKey).getHolder(id).orElseThrow(() -> new NullPointerException(String.format("Missing holder id '%s' in registry access for '%s'", id, registryKey.location())));
     }
 
     public static ResourceLocation getItemId(Item item)
     {
-        return getNonNullRegistryKey(item, BuiltInRegistries.ITEM);
+        return getNonNullRegistryId(item, BuiltInRegistries.ITEM);
     }
 
     public static ResourceLocation getBlockId(Block block)
     {
-        return getNonNullRegistryKey(block, BuiltInRegistries.BLOCK);
+        return getNonNullRegistryId(block, BuiltInRegistries.BLOCK);
     }
 
     public static String getItemName(Item item)
@@ -69,8 +96,18 @@ public final class LimaRegistryUtil
         return getItemId(item).getPath();
     }
 
+    public static String getItemName(Holder<Item> holder)
+    {
+        return getNonNullRegistryId(holder).getPath();
+    }
+
     public static String getBlockName(Block block)
     {
         return getBlockId(block).getPath();
+    }
+
+    public static String getBlockName(Holder<Block> holder)
+    {
+        return getNonNullRegistryId(holder).getPath();
     }
 }

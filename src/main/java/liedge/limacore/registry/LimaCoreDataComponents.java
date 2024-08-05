@@ -1,11 +1,11 @@
 package liedge.limacore.registry;
 
+import com.mojang.serialization.Codec;
 import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.LimaCore;
 import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -26,5 +26,5 @@ public final class LimaCoreDataComponents
             .persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).build());
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = TYPES.register(LimaCommonConstants.KEY_ENERGY_CONTAINER, () -> DataComponentType.<Integer>builder()
-            .persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.NON_NEGATIVE_VAR_INT).build());
+            .persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(LimaStreamCodecs.varIntRange(0, Integer.MAX_VALUE)).build());
 }

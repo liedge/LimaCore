@@ -1,6 +1,7 @@
 package liedge.limacore.world.loot;
 
 import com.mojang.serialization.MapCodec;
+import liedge.limacore.registry.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;
@@ -11,14 +12,14 @@ import org.jetbrains.annotations.Nullable;
 public final class HostileEntitySubPredicate implements EntitySubPredicate
 {
     public static final HostileEntitySubPredicate INSTANCE = new HostileEntitySubPredicate();
-    public static final MapCodec<HostileEntitySubPredicate> PREDICATE_CODEC = MapCodec.unit(INSTANCE);
+    public static final MapCodec<HostileEntitySubPredicate> CODEC = MapCodec.unit(INSTANCE);
 
     private HostileEntitySubPredicate() {}
 
     @Override
     public MapCodec<? extends EntitySubPredicate> codec()
     {
-        return PREDICATE_CODEC;
+        return LimaCoreLootRegistries.HOSTILE_ENTITY_SUB_PREDICATE.get();
     }
 
     @Override

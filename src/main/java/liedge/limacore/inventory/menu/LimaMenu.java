@@ -1,11 +1,19 @@
 package liedge.limacore.inventory.menu;
 
-import liedge.limacore.inventory.slot.RecipeResultSlot;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
+import liedge.limacore.LimaCore;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,11 +23,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements DataWatcherHolder
@@ -31,27 +40,35 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     // Commonly used menu properties
     private final LimaMenuType<CTX, ?> type;
     private final List<LimaDataWatcher<?>> dataWatchers;
+    private final Int2ObjectMap<EventHandler<?>> buttonEventHandlers;
     protected final Inventory playerInventory;
-    private final CTX menuContext;
+    protected final CTX menuContext;
     private final Level level;
     private final ServerPlayer user;
     private boolean firstTick = true;
 
-    private int inventoryStart;
-    private int inventoryEnd;
-    private int hotbarStart;
-    private int hotbarEnd;
+    protected int inventoryStart;
+    protected int inventoryEnd;
+    protected int hotbarStart;
+    protected int hotbarEnd;
 
     protected LimaMenu(LimaMenuType<CTX, ?> type, int containerId, Inventory inventory, CTX menuContext)
     {
         super(type, containerId);
 
         this.type = type;
-        this.dataWatchers = defineDataWatchers(menuContext);
-        this.playerInventory = inventory;
         this.menuContext = menuContext;
+        this.playerInventory = inventory;
         this.level = playerInventory.player.level();
         this.user = LimaCoreUtil.castOrNull(ServerPlayer.class, playerInventory.player);
+
+        ObjectList<LimaDataWatcher<?>> watchersBuilder = new ObjectArrayList<>();
+        Int2ObjectMap<EventHandler<?>> eventHandlerBuilder = new Int2ObjectOpenHashMap<>();
+        defineDataWatchers(watchersBuilder::add);
+        defineButtonEventHandlers((id, handler) -> LimaCollectionsUtil.putNoDuplicates(eventHandlerBuilder, id, handler));
+
+        this.dataWatchers = ObjectLists.unmodifiable(watchersBuilder);
+        this.buttonEventHandlers = Int2ObjectMaps.unmodifiable(eventHandlerBuilder);
     }
 
     @Override
@@ -106,13 +123,18 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         if (firstTick) firstTick = false;
     }
 
-    /**
-     * Defines the data watchers used for this menu, called during construction.
-     * @param menuContext Subclasses should use this parameter if the context is needed. Do not use the instance's getter method, it will return null at this stage of menu initialization.
-     */
-    protected List<LimaDataWatcher<?>> defineDataWatchers(CTX menuContext)
+    protected abstract void defineDataWatchers(Consumer<LimaDataWatcher<?>> builder);
+
+    protected abstract void defineButtonEventHandlers(BiConsumer<Integer, EventHandler<?>> builder);
+
+    protected <T> EventHandler<T> handle(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
     {
-        return List.of();
+        return new EventHandler<>(serializer, action);
+    }
+
+    protected <T> EventHandler<T> handle(Supplier<? extends NetworkSerializer<T>> supplier, BiConsumer<ServerPlayer, T> action)
+    {
+        return handle(supplier.get(), action);
     }
 
     protected void broadcastChanges(boolean isFirstTick)
@@ -135,7 +157,27 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         return Objects.requireNonNull(user, "Attempted to access server menu user on client.");
     }
 
-    public void handleCustomButton(ServerPlayer sender, int buttonId, int value) {}
+    @SuppressWarnings("unchecked")
+    public final <T> void handleCustomButtonData(ServerPlayer sender, int buttonId, NetworkSerializer<T> serializer, T data)
+    {
+        if (buttonEventHandlers.containsKey(buttonId))
+        {
+            EventHandler<?> rawHandler = buttonEventHandlers.get(buttonId);
+            if (rawHandler.serializer == serializer)
+            {
+                EventHandler<T> handler = (EventHandler<T>) rawHandler;
+                handler.action().accept(sender, data);
+            }
+            else
+            {
+                LimaCore.LOGGER.warn("Received custom button data with mismatching data types: expected {} but received {}", rawHandler.serializer().id(), serializer.id());
+            }
+        }
+        else
+        {
+            LimaCore.LOGGER.warn("Received custom button data with invalid ID {}", buttonId);
+        }
+    }
 
     //#region Quick move functions
     protected abstract boolean quickMoveInternal(int index, ItemStack stack);
@@ -168,25 +210,25 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
     //#endregion
 
-    protected <T extends IItemHandler> void addItemHandlerSlotGrid(T itemHandler, int startIndex, int xPos, int yPos, int width, int height, MenuSlotFactory<? super T> factory)
+    protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
     {
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < rows; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < columns; x++)
             {
-                addSlot(factory.createSlot(itemHandler, startIndex + (width * y + x), xPos + x * 18, yPos + y * 18));
+                addSlot(factory.createSlot(container, startIndex + (columns * y + x), xPos + x * 18, yPos + y * 18));
             }
         }
     }
 
-    protected void addRecipeResultSlot(IItemHandlerModifiable handler, int index, int x, int y, RecipeType<?> recipeType)
+    protected void addRecipeResultSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, RecipeType<?> recipeType)
     {
-        addSlot(new RecipeResultSlot(playerInventory.player, recipeType, handler, index, x, y));
+        addSlot(new RecipeResultMenuSlot(itemHandler, slotIndex, xPos, yPos, playerInventory.player, recipeType));
     }
 
-    protected void addRecipeResultSlot(IItemHandlerModifiable handler, int index, int x, int y, Supplier<? extends RecipeType<?>> recipeTypeSupplier)
+    protected void addRecipeResultSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, Holder<RecipeType<?>> holder)
     {
-        addRecipeResultSlot(handler, index, x, y, recipeTypeSupplier.get());
+        addRecipeResultSlot(itemHandler, slotIndex, xPos, yPos, holder.value());
     }
 
     protected void addPlayerInventory(int xPos, int yPos, MenuSlotFactory<Container> factory)
@@ -255,4 +297,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     {
         Slot createSlot(T container, int index, int x, int y);
     }
+
+    protected record EventHandler<T>(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
+    { }
 }

@@ -11,9 +11,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
+import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -28,8 +31,8 @@ public final class LimaStreamCodecs
     public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_DIRECT = ByteBufCodecs.registry(Registries.ITEM);
 
     // Extra codecs
-    public static final StreamCodec<ByteBuf, Integer> NON_NEGATIVE_VAR_INT = minimumInt(0);
-    public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = minimumInt(1);
+    public static final StreamCodec<ByteBuf, Integer> NON_NEGATIVE_VAR_INT = varIntRange(0, Integer.MAX_VALUE);
+    public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
 
     public static final StreamCodec<ByteBuf, Optional<Entity>> REMOTE_ENTITY = new StreamCodec<>()
     {
@@ -48,25 +51,9 @@ public final class LimaStreamCodecs
         }
     };
 
-    public static StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> ingredientsStreamCodec(int minInclusive, int maxInclusive)
-    {
-        return Ingredient.CONTENTS_STREAM_CODEC.apply(clampedCollection(NonNullList::createWithCapacity, minInclusive, maxInclusive));
-    }
+    public static StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
 
     //#region Value encode/decode helpers
-    public static int readMinVarInt(ByteBuf net, int min)
-    {
-        int value = VarInt.read(net);
-        if (value < min) throw new DecoderException("Tried decoding value below minimum: " + min);
-        return value;
-    }
-
-    public static void writeMinVarInt(ByteBuf net, int value, int min)
-    {
-        if (value < min) throw new EncoderException("Tried encoding value below minimum: " + min);
-        VarInt.write(net, value);
-    }
-
     public static int readClampedVarInt(ByteBuf net, int min, int max)
     {
         int value = VarInt.read(net);
@@ -78,6 +65,63 @@ public final class LimaStreamCodecs
     {
         if (value < min || value > max) throw new EncoderException("Tried encoding value out of range [" + min + "," + max + "]");
         VarInt.write(net, value);
+    }
+
+    public static float readClampedFloat(ByteBuf net, float min, float max)
+    {
+        float value = net.readFloat();
+        if (value < min || value > max) throw new DecoderException("Tried decoding value out of range [" + min + "," + max + "]");
+        return value;
+    }
+
+    public static void writeClampedFloat(ByteBuf net, float value, float min, float max)
+    {
+        if (value < min || value > max) throw new EncoderException("Tried encoding value out of range [" + min + "," + max + "]");
+        net.writeFloat(value);
+    }
+
+    public static double readClampedDouble(ByteBuf net, double min, double max)
+    {
+        double value = net.readDouble();
+        if (value < min || value > max) throw new DecoderException("Tried decoding value out of range [" + min + "," + max + "]");
+        return value;
+    }
+
+    public static void writeClampedDouble(ByteBuf net, double value, double min, double max)
+    {
+        if (value < min || value > max) throw new EncoderException("Tried encoding value out of range [" + min + "," + max + "]");
+        net.writeDouble(value);
+    }
+
+    public static <B extends ByteBuf, T> Optional<T> readOptional(StreamDecoder<? super B, T> decoder, B buffer)
+    {
+        return buffer.readBoolean() ? Optional.of(decoder.decode(buffer)) : Optional.empty();
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public static <B extends ByteBuf, T> void writeOptional(StreamEncoder<? super B, T> encoder, B buffer, Optional<T> value)
+    {
+        boolean present = value.isPresent();
+        buffer.writeBoolean(present);
+        if (present) encoder.encode(buffer, value.get());
+    }
+
+    public static <B extends ByteBuf, E, C extends Collection<E>> C readClampedCollection(StreamDecoder<? super B, E> decoder, B buffer, IntFunction<C> collectionFactory, int min, int max)
+    {
+        int size = readClampedVarInt(buffer, min, max);
+        C collection = collectionFactory.apply(size);
+        for (int i = 0; i < size; i++)
+        {
+            collection.add(decoder.decode(buffer));
+        }
+        return collection;
+    }
+
+    public static <B extends ByteBuf, E, C extends Collection<E>> void writeClampedCollection(StreamEncoder<? super B, E> encoder, B buffer, C collection, int min, int max)
+    {
+        int size = collection.size();
+        writeClampedVarInt(buffer, size, min, max);
+        collection.forEach(o -> encoder.encode(buffer, o));
     }
     //#endregion
 
@@ -92,77 +136,61 @@ public final class LimaStreamCodecs
         return baseCodec -> baseCodec.map(t -> LimaCoreUtil.castOrThrow(iClass, t), Function.identity());
     }
 
-    public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec.CodecOperation<B, E, C> clampedCollection(IntFunction<C> factory, int minInclusive, int maxInclusive)
+    public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec.CodecOperation<B, E, C> asClampedCollection(IntFunction<? extends C> factory, int minInclusive, int maxInclusive)
     {
         return elementCodec -> clampedCollection(elementCodec, factory, minInclusive, maxInclusive);
     }
     //#endregion
 
     //#region Stream codec factories
-    public static StreamCodec<ByteBuf, Integer> minimumInt(int min)
+    public static StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> ingredientsStreamCodec(int minInclusive, int maxInclusive)
+    {
+        return Ingredient.CONTENTS_STREAM_CODEC.apply(asClampedCollection(NonNullList::createWithCapacity, minInclusive, maxInclusive));
+    }
+
+    public static <T extends Entity> StreamCodec<ByteBuf, Optional<T>> remoteEntity(Class<T> entityClass)
     {
         return new StreamCodec<>()
         {
             @Override
-            public Integer decode(ByteBuf net)
+            public Optional<T> decode(ByteBuf buffer)
             {
-                return readMinVarInt(net, min);
+                int eid = VarInt.read(buffer);
+                return Optional.ofNullable(LimaCoreClientUtil.getClientEntity(eid, entityClass));
             }
 
             @Override
-            public void encode(ByteBuf net, Integer value)
+            public void encode(ByteBuf buffer, Optional<T> value)
             {
-                writeMinVarInt(net, value, min);
+                int eid = value.filter(e -> !e.isRemoved()).map(Entity::getId).orElse(-1);
+                VarInt.write(buffer, eid);
             }
         };
+    }
+
+    public static StreamCodec<ByteBuf, Integer> varIntRange(int min, int max)
+    {
+        return StreamCodec.of((net, n) -> writeClampedVarInt(net, n, min, max), net -> readClampedVarInt(net, min, max));
+    }
+
+    public static StreamCodec<ByteBuf, Float> floatRange(float min, float max)
+    {
+        return StreamCodec.of((net, n) -> writeClampedFloat(net, n, min, max), net -> readClampedFloat(net, min, max));
+    }
+
+    public static StreamCodec<ByteBuf, Double> doubleRange(double min, double max)
+    {
+        return StreamCodec.of((net, n) -> writeClampedDouble(net, n, min, max), net -> readClampedDouble(net, min, max));
+    }
+
+    public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec<B, C> clampedCollection(StreamCodec<? super B, E> elementCodec, IntFunction<? extends C> factory, int min, int max)
+    {
+        return StreamCodec.of((net, col) -> writeClampedCollection(elementCodec, net, col, min, max), net -> readClampedCollection(elementCodec, net, factory, min, max));
     }
 
     public static <B extends ByteBuf, T> StreamCodec<B, Optional<T>> optionalValue(StreamCodec<? super B, T> baseCodec)
     {
-        return new StreamCodec<>()
-        {
-            @Override
-            public Optional<T> decode(B net)
-            {
-                return net.readBoolean() ? Optional.of(baseCodec.decode(net)) : Optional.empty();
-            }
-
-            @Override
-            public void encode(B net, Optional<T> value)
-            {
-                boolean present = value.isPresent();
-                net.writeBoolean(present);
-                if (present) baseCodec.encode(net, value.get());
-            }
-        };
-    }
-
-    public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec<B, C> clampedCollection(StreamCodec<? super B, E> elementCodec, IntFunction<C> factory, int minInclusive, int maxInclusive)
-    {
-        return new StreamCodec<>()
-        {
-            @Override
-            public C decode(B net)
-            {
-                int size = readClampedVarInt(net, minInclusive, maxInclusive);
-                C collection = factory.apply(size);
-
-                for (int i = 0; i < size; i++)
-                {
-                    collection.add(elementCodec.decode(net));
-                }
-
-                return collection;
-            }
-
-            @Override
-            public void encode(B net, C value)
-            {
-                int size = value.size();
-                writeClampedVarInt(net, size, minInclusive, maxInclusive);
-                value.forEach(e -> elementCodec.encode(net, e));
-            }
-        };
+        return StreamCodec.of((net, o) -> writeOptional(baseCodec, net, o), net -> readOptional(baseCodec, net));
     }
     //#endregion
 }

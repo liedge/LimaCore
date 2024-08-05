@@ -1,5 +1,8 @@
 package liedge.limacore.blockentity;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundBlockEntityDataPacket;
 import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
@@ -19,6 +22,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public abstract class LimaBlockEntity extends BlockEntity implements DataWatcherHolder
 {
@@ -29,7 +33,10 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     {
         super(type, pos, state);
         this.type = type;
-        this.dataWatchers = defineDataWatchers();
+
+        ObjectList<LimaDataWatcher<?>> builder = new ObjectArrayList<>();
+        defineDataWatchers(builder::add);
+        this.dataWatchers = ObjectLists.unmodifiable(builder);
     }
 
     public boolean canPlayerUse(Player player)
@@ -99,10 +106,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         return level != null && level.isClientSide();
     }
 
-    protected List<LimaDataWatcher<?>> defineDataWatchers()
-    {
-        return List.of();
-    }
+    protected abstract void defineDataWatchers(Consumer<LimaDataWatcher<?>> builder);
 
     protected void tickServer(Level level, BlockPos pos, BlockState state)
     { }

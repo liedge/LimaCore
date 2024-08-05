@@ -1,14 +1,13 @@
 package liedge.limacore.data.generation;
 
 import liedge.limacore.lib.ModResources;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.client.model.generators.ModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-
-import java.util.function.Supplier;
 
 import static liedge.limacore.util.LimaRegistryUtil.getBlockId;
 import static liedge.limacore.util.LimaRegistryUtil.getItemId;
@@ -53,9 +52,9 @@ public interface ModelProviderHelper
         return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), blockFolderPath(id.getPath()));
     }
 
-    default ResourceLocation blockFolderLocation(Supplier<? extends Block> supplier)
+    default ResourceLocation blockFolderLocation(Holder<Block> holder)
     {
-        return blockFolderLocation(supplier.get());
+        return blockFolderLocation(holder.value());
     }
 
     default String blockFolderPath(String path)
@@ -77,11 +76,6 @@ public interface ModelProviderHelper
     {
         ResourceLocation id = getItemId(item.asItem());
         return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), itemFolderPath(id.getPath()));
-    }
-
-    default ResourceLocation itemFolderLocation(Supplier<? extends ItemLike> supplier)
-    {
-        return itemFolderLocation(supplier.get());
     }
 
     default String itemFolderPath(String path)

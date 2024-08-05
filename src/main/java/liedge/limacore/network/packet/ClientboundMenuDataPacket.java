@@ -6,12 +6,12 @@ import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.PacketFlow;
 import org.jetbrains.annotations.Nullable;
 
 public final class ClientboundMenuDataPacket<T> extends DataWatcherPacketBase<T>
 {
-    static final PacketSpec<ClientboundMenuDataPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec("menu_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataPacket::new));
+    static final PacketSpec<ClientboundMenuDataPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "menu_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataPacket::new));
 
     private final int containerId;
 
@@ -40,8 +40,8 @@ public final class ClientboundMenuDataPacket<T> extends DataWatcherPacketBase<T>
     }
 
     @Override
-    public Type<? extends CustomPacketPayload> type()
+    public PacketSpec<?> getPacketSpec()
     {
-        return PACKET_SPEC.type();
+        return PACKET_SPEC;
     }
 }

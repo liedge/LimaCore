@@ -9,9 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -115,9 +113,24 @@ public final class LimaCollectionsUtil
         return list;
     }
 
-    public static <E extends Enum<E>, U> Map<E, U> immutableEnumMapFor(Class<E> enumClass, Function<E, U> mapper)
+    public static <E extends Enum<E>> E[] checkedEnumConstants(Class<E> enumClass)
     {
-        return Stream.of(enumClass.getEnumConstants()).collect(toUnmodifiableEnumMap(enumClass, mapper));
+        return Objects.requireNonNull(enumClass.getEnumConstants(), "Enum constants not found");
+    }
+
+    public static <E extends Enum<E>> Stream<E> enumStream(Class<E> enumClass)
+    {
+        return Arrays.stream(checkedEnumConstants(enumClass));
+    }
+
+    public static <E extends Enum<E>, U> Map<E, U> fillAndCreateEnumMap(Class<E> enumClass, Function<E, ? extends U> mapper)
+    {
+        return enumStream(enumClass).collect(toEnumMap(enumClass, mapper));
+    }
+
+    public static <E extends Enum<E>, U> Map<E, U> fillAndCreateImmutableEnumMap(Class<E> enumClass, Function<E, ? extends U> mapper)
+    {
+        return enumStream(enumClass).collect(toUnmodifiableEnumMap(enumClass, mapper));
     }
 
     public static <K, V> void putNoDuplicates(Map<K, V> map, K key, V value)

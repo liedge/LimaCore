@@ -13,6 +13,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.PotionItem;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -53,6 +54,11 @@ public abstract class LimaLanguageProvider extends LanguageProvider
     {
         add(LimaAdvancementUtil.defaultAdvancementTitle(id), titleTranslation);
         add(LimaAdvancementUtil.defaultAdvancementDescription(id), descriptionTranslation);
+    }
+
+    protected void enchantment(ResourceKey<Enchantment> enchantmentKey, String translation)
+    {
+        add("enchantment", enchantmentKey.location().getPath(), translation);
     }
 
     protected void creativeTab(Supplier<? extends CreativeModeTab> tabSupplier, String value)

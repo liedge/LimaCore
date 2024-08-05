@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Objects;
 
-public class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implements Codec<A>
+public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implements Codec<A>
 {
     public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> createStrict(Class<E> enumClass)
     {
@@ -47,7 +47,7 @@ public class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implements C
     {
         this.name = "LimaEnumCodec[" + enumClass.getSimpleName() + "]";
         this.defaultValue = defaultValue;
-        this.values = Objects.requireNonNull(enumClass.getEnumConstants());
+        this.values = Objects.requireNonNull(enumClass.getEnumConstants(), "Enum constants not found");
 
         Object2ObjectMap<String, A> map = new Object2ObjectOpenHashMap<>();
         for (A value : values)

@@ -1,10 +1,13 @@
 package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -38,6 +41,18 @@ public final class LimaBlockUtil
         }
 
         return context.getClickedFace();
+    }
+
+    /**
+     * Generates a stream from a bounding box pre-filtered to only contain block positions in generated/loaded chunks.
+     * @param level Level object
+     * @param boundingBox The bounding box, usually from an entity
+     * @return Stream containing the block positions in the bounding box
+     */
+    @SuppressWarnings("deprecation")
+    public static Stream<BlockPos> betweenClosedStreamSafe(Level level, AABB boundingBox)
+    {
+        return BlockPos.betweenClosedStream(boundingBox).filter(level::hasChunkAt);
     }
 
     //#region Voxel shape functions

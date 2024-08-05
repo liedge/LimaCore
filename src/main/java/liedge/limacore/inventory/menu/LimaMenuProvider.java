@@ -22,7 +22,7 @@ public interface LimaMenuProvider extends MenuProvider
         }
         else
         {
-            LimaCore.LOGGER.warn("Tried to open menu screen of type '{}' on the client", LimaRegistryUtil.getNonNullRegistryKey(getMenuType(), BuiltInRegistries.MENU));
+            LimaCore.LOGGER.warn("Tried to open menu screen of type '{}' on the client", LimaRegistryUtil.getNonNullRegistryId(getMenuType(), BuiltInRegistries.MENU));
         }
     }
 

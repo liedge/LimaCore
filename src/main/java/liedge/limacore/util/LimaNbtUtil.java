@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -37,19 +38,34 @@ public final class LimaNbtUtil
     private LimaNbtUtil() {}
 
     // Codec functions
-    public static <T> Tag codecEncode(Codec<T> codec, T object)
+    public static <T> Tag codecEncode(Codec<T> codec, DynamicOps<Tag> ops, T object)
     {
-        return codec.encodeStart(NbtOps.INSTANCE, object).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to encode to NBT tag: %s", codec, msg)));
+        return codec.encodeStart(ops, object).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to encode to NBT tag: %s", codec, msg)));
     }
 
-    public static <T> T codecDecode(Codec<T> codec, Tag tag)
+    public static <T> Tag codecEncode(Codec<T> codec, T object)
+    {
+        return codecEncode(codec, NbtOps.INSTANCE, object);
+    }
+
+    public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, Tag tag)
     {
         return codec.decode(NbtOps.INSTANCE, tag).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to decode NBT tag: %s", codec, msg))).getFirst();
     }
 
+    public static <T> T codecDecode(Codec<T> codec, Tag tag)
+    {
+        return codecDecode(codec, NbtOps.INSTANCE, tag);
+    }
+
+    public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
+    {
+        return codecDecode(codec, ops, Objects.requireNonNull(compoundTag.get(key), "Compound tag does not contain sub-tag '" + key + "'"));
+    }
+
     public static <T> T codecDecode(Codec<T> codec, CompoundTag compoundTag, String key)
     {
-        return codecDecode(codec, Objects.requireNonNull(compoundTag.get(key), "Compound tag does not contain tag '" + key + "'"));
+        return codecDecode(codec, NbtOps.INSTANCE, compoundTag, key);
     }
 
     //#region Fallback getters
@@ -157,7 +173,7 @@ public final class LimaNbtUtil
 
     // For use in data generation
     @SuppressWarnings("UnstableApiUsage,deprecation")
-    public static CompletableFuture<Void> saveCompressedNbt(CachedOutput cache, CompoundTag tag, Path path)
+    public static CompletableFuture<?> saveCompressedNbt(CachedOutput cache, CompoundTag tag, Path path)
     {
         return CompletableFuture.runAsync(() -> {
             try

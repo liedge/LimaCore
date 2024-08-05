@@ -1,5 +1,7 @@
 package liedge.limacore.lib;
 
+import net.minecraft.world.entity.LivingEntity;
+
 public interface DamageSourceExtensions
 {
     /**
@@ -12,23 +14,34 @@ public interface DamageSourceExtensions
     }
 
     /**
-     * Allows the damage source to ignore a percentage of or all armor.
-     * Values greater than or equal to 1 bypass armor completely and does not damage armor durability.
-     * @return From 0 to 1, the percentage of armor bypassed.
+     * Functionally equivalent to the Vanilla 'bypasses_armor' tag, but able to be determined dynamically.
+     * @return True if armor is bypassed completely.
      */
-    default float getArmorBypassAmount()
+    default boolean bypassesArmor()
     {
-        return 0f;
+        return false;
     }
 
     /**
-     * Allows the damage source to ignore a percentage of or all armor toughness.
-     * Values greater than or equal to 1 bypass all armor toughness.
-     * @return From 0 to 1, the percentage of armor toughness bypassed.
+     * Modifies the armor value before damage from this source is calculated
+     * @param armorWearer The living entity wearing the armor
+     * @param armor The current armor value
+     * @return The new armor value to be used in calculating damage reduction
      */
-    default float getArmorToughnessBypassAmount()
+    default float modifyAppliedArmor(LivingEntity armorWearer, float armor)
     {
-        return 0f;
+        return armor;
+    }
+
+    /**
+     * Modifies the armor toughness value before damage from this source is calculated
+     * @param armorWearer The living entity wearing the armor
+     * @param armorToughness The current armor toughness
+     * @return The new armor toughness value to be used in calculating damage reduction
+     */
+    default float modifyAppliedArmorToughness(LivingEntity armorWearer, float armorToughness)
+    {
+        return armorToughness;
     }
 
     /**

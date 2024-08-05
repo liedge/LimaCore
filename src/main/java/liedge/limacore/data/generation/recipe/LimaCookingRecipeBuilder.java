@@ -1,18 +1,15 @@
 package liedge.limacore.data.generation.recipe;
 
+import com.google.common.base.Preconditions;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
-import java.util.Objects;
-
-public class LimaCookingRecipeBuilder extends SingleResultRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
+public class LimaCookingRecipeBuilder extends LimaCustomRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
 {
-    private Ingredient ingredient;
     private float experience;
     private final int cookingTime;
     private final AbstractCookingRecipe.Factory<?> factory;
@@ -24,12 +21,6 @@ public class LimaCookingRecipeBuilder extends SingleResultRecipeBuilder<Abstract
         this.factory = factory;
     }
 
-    public LimaCookingRecipeBuilder input(Ingredient ingredient)
-    {
-        this.ingredient = ingredient;
-        return this;
-    }
-
     public LimaCookingRecipeBuilder xp(float experience)
     {
         this.experience = experience;
@@ -39,12 +30,12 @@ public class LimaCookingRecipeBuilder extends SingleResultRecipeBuilder<Abstract
     @Override
     protected void validate(ResourceLocation id)
     {
-        Objects.requireNonNull(ingredient, "Missing ingredient for recipe " + id);
+        Preconditions.checkState(ingredients.size() == 1, "Cooking recipe '" + id + "' must have exactly 1 ingredient.");
     }
 
     @Override
     protected AbstractCookingRecipe buildRecipe()
     {
-        return factory.create("", CookingBookCategory.MISC, ingredient, result, experience, cookingTime);
+        return factory.create("", CookingBookCategory.MISC, ingredients.getFirst(), result, experience, cookingTime);
     }
 }

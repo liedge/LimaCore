@@ -17,6 +17,14 @@ public interface LimaPlayPacket extends CustomPacketPayload
 
     void onReceivedByServer(IPayloadContext context, ServerPlayer sender);
 
+    PacketSpec<?> getPacketSpec();
+
+    @Override
+    default CustomPacketPayload.Type<? extends CustomPacketPayload> type()
+    {
+        return getPacketSpec().type();
+    }
+
     interface ClientboundOnly extends LimaPlayPacket
     {
         @Override
@@ -35,9 +43,9 @@ public interface LimaPlayPacket extends CustomPacketPayload
         }
     }
 
-    record PacketSpec<T extends LimaPlayPacket>(CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec)
+    record PacketSpec<T extends LimaPlayPacket>(@Nullable PacketFlow packetFlow, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec)
     {
-        public void registerPacket(PayloadRegistrar registrar, @Nullable PacketFlow packetFlow)
+        public void register(PayloadRegistrar registrar)
         {
             switch (packetFlow)
             {

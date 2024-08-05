@@ -125,7 +125,7 @@ public final class LimaJsonUtil
 
     public static <T> JsonElement serializeRegistryValue(T value, Registry<T> registry)
     {
-        ResourceLocation key = LimaRegistryUtil.getNonNullRegistryKey(value, registry);
+        ResourceLocation key = LimaRegistryUtil.getNonNullRegistryId(value, registry);
         return new JsonPrimitive(key.toString());
     }
 

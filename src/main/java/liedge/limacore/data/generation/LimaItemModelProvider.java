@@ -1,17 +1,17 @@
 package liedge.limacore.data.generation;
 
+import com.google.common.base.Preconditions;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 import static liedge.limacore.util.LimaRegistryUtil.getItemName;
 
@@ -40,45 +40,73 @@ public abstract class LimaItemModelProvider extends ItemModelProvider implements
         return this.existingFileHelper;
     }
 
-    protected void generated(Supplier<? extends Item> supplier, ResourceLocation texture)
+    protected ItemModelBuilder layersBuilder(ItemModelBuilder builder, ResourceLocation... textures)
     {
-        getBuilder(supplier).parent(generatedModel).texture("layer0", texture);
+        Preconditions.checkArgument(textures.length > 1, "Layers model must contain at least 2 layers");
+        for (int i = 0; i < textures.length; i++)
+        {
+            builder.texture("layer" + i, textures[i]);
+        }
+        return builder;
     }
 
-    protected void generated(Supplier<? extends Item> supplier)
+    protected void generated(ItemLike itemLike, ResourceLocation texture)
     {
-        generated(supplier, itemFolderLocation(supplier));
+        getBuilder(itemLike).parent(generatedModel).texture("layer0", texture);
     }
 
-    @SafeVarargs
-    protected final void generated(Supplier<? extends Item>... suppliers)
+    protected void generated(ItemLike itemLike)
     {
-        Arrays.stream(suppliers).forEach(this::generated);
+        generated(itemLike, itemFolderLocation(itemLike));
     }
 
-    protected void handheld(Supplier<? extends Item> supplier, ResourceLocation texture)
+    protected void generated(ItemLike... items)
     {
-        getBuilder(supplier).parent(handheldModel).texture("layer0", texture);
+        Arrays.stream(items).forEach(this::generated);
     }
 
-    protected void handheld(Supplier<? extends Item> supplier)
+    protected ItemModelBuilder generatedLayers(String path, ResourceLocation... textures)
     {
-        handheld(supplier, itemFolderLocation(supplier));
+        return layersBuilder(getBuilder(path).parent(generatedModel), textures);
     }
 
-    @SafeVarargs
-    protected final void handheld(Supplier<? extends Item>... supplier)
+    protected ItemModelBuilder generatedLayers(ItemLike itemLike, ResourceLocation... textures)
     {
-        Arrays.stream(supplier).forEach(this::handheld);
+        return layersBuilder(getBuilder(itemLike).parent(generatedModel), textures);
     }
 
-    protected void builtInEntity(Supplier<? extends Item> supplier, BlockModel.GuiLight light)
+    protected void handheld(ItemLike itemLike, ResourceLocation texture)
     {
-        getBuilder(supplier).parent(builtInEntityModel).guiLight(light);
+        getBuilder(itemLike).parent(handheldModel).texture("layer0", texture);
     }
 
-    protected ItemModelBuilder getBuilder(Supplier<? extends Item> supplier)
+    protected void handheld(ItemLike itemLike)
     {
-        return getBuilder(getItemName(supplier.get()));
+        handheld(itemLike, itemFolderLocation(itemLike));
+    }
+
+    protected void handheld(ItemLike... items)
+    {
+        Arrays.stream(items).forEach(this::handheld);
+    }
+
+    protected ItemModelBuilder handheldLayers(String path, ResourceLocation... textures)
+    {
+        return layersBuilder(getBuilder(path).parent(handheldModel), textures);
+    }
+
+    protected ItemModelBuilder handheldLayers(ItemLike itemLike, ResourceLocation... textures)
+    {
+        return layersBuilder(getBuilder(itemLike).parent(handheldModel), textures);
+    }
+
+    protected void builtInEntity(ItemLike itemLike, BlockModel.GuiLight light)
+    {
+        getBuilder(itemLike).parent(builtInEntityModel).guiLight(light);
+    }
+
+    protected ItemModelBuilder getBuilder(ItemLike itemLike)
+    {
+        return getBuilder(getItemName(itemLike.asItem()));
     }
 }

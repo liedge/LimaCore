@@ -5,12 +5,12 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 
 public final class LimaItemUtil
 {
@@ -19,13 +19,10 @@ public final class LimaItemUtil
     public static final Set<EquipmentSlot> HAND_EQUIPMENT_SLOTS = EnumSet.of(EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND);
     public static final Set<EquipmentSlot> ARMOR_EQUIPMENT_SLOTS = EnumSet.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.BODY);
 
-    public static final Predicate<ItemStack> ALL_ITEMS = o -> true;
-    public static final Predicate<ItemStack> ENERGY_ITEMS = o -> o.getCapability(Capabilities.EnergyStorage.ITEM) != null;
-
     public static boolean canCombineStacks(ItemStack existing, ItemStack other)
     {
         boolean a = existing.isEmpty() || ItemStack.isSameItemSameComponents(other, existing);
-        boolean b = existing.getCount() + other.getCount() <= existing.getMaxStackSize();
+        boolean b = existing.isEmpty() ? other.getCount() <= other.getMaxStackSize() : existing.getCount() + other.getCount() <= existing.getMaxStackSize();
         return a && b;
     }
 
@@ -33,6 +30,28 @@ public final class LimaItemUtil
     {
         return isClientSide ? InteractionResultHolder.fail(stack) : InteractionResultHolder.consume(stack);
     }
+
+    //#region Capability check helpers
+    public static boolean hasValidCapability(ItemCapability<?, Void> capability, ItemStack stack)
+    {
+        return stack.getCapability(capability) != null;
+    }
+
+    public static boolean hasEnergyCapability(ItemStack stack)
+    {
+        return hasValidCapability(Capabilities.EnergyStorage.ITEM, stack);
+    }
+
+    public static boolean hasItemHandlerCapability(ItemStack stack)
+    {
+        return hasValidCapability(Capabilities.ItemHandler.ITEM, stack);
+    }
+
+    public static boolean hasFluidHandlerCapability(ItemStack stack)
+    {
+        return hasValidCapability(Capabilities.FluidHandler.ITEM, stack);
+    }
+    //#endregion
 
     //#region Tool item helpers
     public static <T extends TieredItem> T createTieredTool(BiFunction<Tier, Item.Properties, T> constructor, @Nullable Item.Properties properties, Tier tier, float attackDamage, float attackSpeed)

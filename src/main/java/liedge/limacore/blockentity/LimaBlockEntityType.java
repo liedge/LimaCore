@@ -7,9 +7,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 public final class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntityType<BE>
@@ -49,6 +51,16 @@ public final class LimaBlockEntityType<BE extends LimaBlockEntity> extends Block
     public BE create(BlockPos pos, BlockState state)
     {
         return constructor.newInstance(this, pos, state);
+    }
+
+    public @Nullable <T> T getDataMap(DataMapType<BlockEntityType<?>, T> dataMapType)
+    {
+        return Objects.requireNonNull(builtInRegistryHolder()).getData(dataMapType);
+    }
+
+    public <T> T getDataMapOrDefault(DataMapType<BlockEntityType<?>, T> dataMapType, T fallback)
+    {
+        return Objects.requireNonNullElse(getDataMap(dataMapType), fallback);
     }
 
     @SuppressWarnings("unchecked")

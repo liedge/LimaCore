@@ -7,6 +7,11 @@ import java.util.Objects;
 
 public interface Translatable
 {
+    static Translatable standalone(String descriptionId)
+    {
+        return new TranslationHolder(descriptionId);
+    }
+
     String descriptionId();
 
     default MutableComponent translate()

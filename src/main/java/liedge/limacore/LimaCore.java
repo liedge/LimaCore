@@ -4,20 +4,18 @@ import com.mojang.logging.LogUtils;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.network.packet.LimaCorePackets;
 import liedge.limacore.registry.*;
-import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.slf4j.Logger;
 
 @Mod(LimaCore.MODID)
 public class LimaCore
 {
     public static final String MODID = "limacore";
-    public static final ModResources RESOURCES = new ModResources("limacore");
+    public static final ModResources RESOURCES = new ModResources(MODID);
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public LimaCore(IEventBus modBus, ModContainer modContainer)
@@ -30,8 +28,7 @@ public class LimaCore
         LimaCoreWorldGen.initRegister(modBus);
 
         modBus.addListener(this::registerPayloadHandlers);
-
-        NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
+        modBus.addListener(this::registerCustomRegistries);
     }
 
     // Mod events
@@ -40,12 +37,8 @@ public class LimaCore
         LimaCorePackets.registerPacketHandlers(event.registrar(MODID).versioned("1.0.0"));
     }
 
-    // Game events
-    private void onPlayerLogin(final PlayerEvent.PlayerLoggedInEvent event)
+    private void registerCustomRegistries(final NewRegistryEvent event)
     {
-        if (event.getEntity() instanceof ServerPlayer serverPlayer)
-        {
-            LimaCoreTriggerTypes.PLAYER_LOGGED_IN.get().trigger(serverPlayer);
-        }
+        event.register(LimaCoreRegistries.NETWORK_SERIALIZERS);
     }
 }

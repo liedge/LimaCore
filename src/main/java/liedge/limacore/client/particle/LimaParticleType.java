@@ -10,14 +10,20 @@ import java.util.function.Function;
 
 public class LimaParticleType<T extends ParticleOptions> extends ParticleType<T>
 {
-    public static <T extends ParticleOptions> LimaParticleType<T> referenceCodecs(boolean overrideLimiter, Function<ParticleType<T>, MapCodec<T>> mapCodecFunction, Function<ParticleType<T>, StreamCodec<? super RegistryFriendlyByteBuf, T>> streamCodecFunction)
-    {
-        return new LimaParticleType<>(overrideLimiter, mapCodecFunction, streamCodecFunction);
-    }
-
-    public static <T extends ParticleOptions> LimaParticleType<T> standaloneCodecs(boolean overrideLimiter, MapCodec<T> mapCodec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    /**
+     * Creates a particle type with an existing particle option map codec and stream codec. For instances in which particle options use only 1 type.
+     */
+    public static <T extends ParticleOptions> LimaParticleType<T> create(boolean overrideLimiter, MapCodec<T> mapCodec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
     {
         return new LimaParticleType<>(overrideLimiter, ignored -> mapCodec, ignored -> streamCodec);
+    }
+
+    /**
+     * Creates a particle type that supplies itself to the map codec and stream codec constructors. For instances in which particle options use more than 1 type and needs a unit codec reference to the type.
+     */
+    public static <T extends ParticleOptions> LimaParticleType<T> createWithTypedCodecs(boolean overrideLimiter, Function<ParticleType<T>, MapCodec<T>> mapCodecFunction, Function<ParticleType<T>, StreamCodec<? super RegistryFriendlyByteBuf, T>> streamCodecFunction)
+    {
+        return new LimaParticleType<>(overrideLimiter, mapCodecFunction, streamCodecFunction);
     }
 
     private final MapCodec<T> mapCodec;

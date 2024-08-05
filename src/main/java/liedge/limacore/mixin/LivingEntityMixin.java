@@ -8,7 +8,6 @@ import liedge.limacore.LimaCoreTags;
 import liedge.limacore.lib.DamageSourceExtensions;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
@@ -71,7 +70,7 @@ public abstract class LivingEntityMixin
     {
         if (instance instanceof DamageSourceExtensions extensions)
         {
-            return extensions.getArmorBypassAmount() >= 1f;
+            return extensions.bypassesArmor();
         }
         else
         {
@@ -84,17 +83,18 @@ public abstract class LivingEntityMixin
     {
         if (source instanceof DamageSourceExtensions extensions)
         {
-            float armorMod = 1f - Mth.clamp(extensions.getArmorBypassAmount(), 0, 1);
-            float armorToughnessMod = 1f - Mth.clamp(extensions.getArmorToughnessBypassAmount(), 0, 1);
-
+            LivingEntity armorWearer = args.get(0);
             float armor = args.get(3);
-            float toughness = args.get(4);
+            float armorToughness = args.get(4);
 
-            armor *= armorMod;
-            toughness *= armorToughnessMod;
+            float newArmor = Math.max(0, extensions.modifyAppliedArmor(armorWearer, armor));
+            float newArmorToughness = Math.max(0, extensions.modifyAppliedArmorToughness(armorWearer, armorToughness));
 
-            args.set(3, armor);
-            args.set(4, toughness);
+            if (newArmor != armor || newArmorToughness != armorToughness)
+            {
+                args.set(3, armor);
+                args.set(4, armorToughness);
+            }
         }
     }
 }
