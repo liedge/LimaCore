@@ -282,10 +282,10 @@ public class SimpleEmissiveGeometry extends EmissiveBlockBenchGeometry<SimpleEmi
         }
 
         @Override
-        protected GroupData deserializeGroup(JsonObject json, IntList groupElements)
+        protected GroupData deserializeGroup(JsonObject groupJson, String name, IntList elements)
         {
-            boolean emissive = GsonHelper.getAsBoolean(json, "emissive", false);
-            return new GroupData(groupElements, emissive);
+            boolean emissive = GsonHelper.getAsBoolean(groupJson, "emissive", false);
+            return new GroupData(name, elements, emissive);
         }
 
         @Override
@@ -308,7 +308,7 @@ public class SimpleEmissiveGeometry extends EmissiveBlockBenchGeometry<SimpleEmi
         ITEM_ONLY("item_only"),
         BLOCK_AND_ITEM("block_and_item");
 
-        private static final LimaEnumCodec<BakeType> CODEC = LimaEnumCodec.createDefaulted(BakeType.class, BLOCK_AND_ITEM);
+        private static final LimaEnumCodec<BakeType> CODEC = LimaEnumCodec.createLenient(BakeType.class, BLOCK_AND_ITEM);
 
         private final String name;
 
@@ -324,6 +324,6 @@ public class SimpleEmissiveGeometry extends EmissiveBlockBenchGeometry<SimpleEmi
         }
     }
 
-    public record GroupData(IntList elements, boolean emissive) implements EmissiveGroupData
+    public record GroupData(String name, IntList elements, boolean emissive) implements BlockBenchGroupData
     {}
 }

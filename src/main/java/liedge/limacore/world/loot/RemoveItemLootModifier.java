@@ -13,7 +13,7 @@ import net.neoforged.neoforge.common.loot.LootModifier;
 
 public class RemoveItemLootModifier extends LootModifier
 {
-    public static final MapCodec<RemoveItemLootModifier> MODIFIER_CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance)
+    public static final MapCodec<RemoveItemLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance)
             .and(ItemPredicate.CODEC.fieldOf("predicate").forGetter(o -> o.predicate)).apply(instance, RemoveItemLootModifier::new));
 
     public static LootModifierBuilder.SimpleBuilder<RemoveItemLootModifier> removeMatchingDrops(ItemPredicate predicate)

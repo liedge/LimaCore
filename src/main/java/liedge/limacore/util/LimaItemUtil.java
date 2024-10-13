@@ -1,6 +1,9 @@
 package liedge.limacore.util;
 
+import liedge.limacore.lib.ModResources;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
@@ -19,17 +22,51 @@ public final class LimaItemUtil
     public static final Set<EquipmentSlot> HAND_EQUIPMENT_SLOTS = EnumSet.of(EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND);
     public static final Set<EquipmentSlot> ARMOR_EQUIPMENT_SLOTS = EnumSet.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.BODY);
 
-    public static boolean canCombineStacks(ItemStack existing, ItemStack other)
+    public static boolean areItemsMergeCompatible(ItemStack existing, ItemStack other)
     {
-        boolean a = existing.isEmpty() || ItemStack.isSameItemSameComponents(other, existing);
-        boolean b = existing.isEmpty() ? other.getCount() <= other.getMaxStackSize() : existing.getCount() + other.getCount() <= existing.getMaxStackSize();
-        return a && b;
+        return existing.isEmpty() || ItemStack.isSameItemSameComponents(other, existing);
+    }
+
+    public static boolean canMergeItemStacks(ItemStack existing, ItemStack other, boolean allowPartialMerge)
+    {
+        if (areItemsMergeCompatible(existing, other))
+        {
+            int limit;
+            if (existing.isEmpty())
+            {
+                limit = other.getMaxStackSize();
+            }
+            else
+            {
+                limit = existing.getMaxStackSize();
+                limit -= existing.getCount();
+            }
+
+            if (limit <= 0) return false;
+
+            return allowPartialMerge || other.getCount() <= limit;
+        }
+
+        return false;
+    }
+
+    public static boolean canMergeItemStacks(ItemStack existing, ItemStack other)
+    {
+        return canMergeItemStacks(existing, other, false);
     }
 
     public static <T> InteractionResultHolder<T> sidedFail(T stack, boolean isClientSide)
     {
         return isClientSide ? InteractionResultHolder.fail(stack) : InteractionResultHolder.consume(stack);
     }
+
+    //#region Creative tab helpers
+    public static CreativeModeTab.Builder tabBuilderWithTitle(ResourceLocation id)
+    {
+        return CreativeModeTab.builder()
+                .title(Component.translatable(ModResources.prefixIdTranslationKey("creative_tab", id)));
+    }
+    //#endregion
 
     //#region Capability check helpers
     public static boolean hasValidCapability(ItemCapability<?, Void> capability, ItemStack stack)

@@ -1,5 +1,7 @@
 package liedge.limacore.client;
 
+import liedge.limacore.lib.LimaColor;
+import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.client.Minecraft;
@@ -89,22 +91,22 @@ public final class LimaCoreClientUtil
 
     public static @Nullable BlockEntity getClientSafeBlockEntity(BlockPos blockPos)
     {
-        return LimaCoreUtil.getSafeBlockEntity(Minecraft.getInstance().level, blockPos);
+        return LimaBlockUtil.getSafeBlockEntity(Minecraft.getInstance().level, blockPos);
     }
 
     public static <BE> @Nullable BE getClientSafeBlockEntity(BlockPos blockPos, Class<BE> beClass)
     {
-        return LimaCoreUtil.getSafeBlockEntity(Minecraft.getInstance().level, blockPos, beClass);
+        return LimaBlockUtil.getSafeBlockEntity(Minecraft.getInstance().level, blockPos, beClass);
     }
 
     public static @Nullable LevelChunk getClientSafeLevelChunk(int chunkX, int chunkZ)
     {
-        return LimaCoreUtil.getSafeLevelChunk(Minecraft.getInstance().level, chunkX, chunkZ);
+        return LimaBlockUtil.getSafeLevelChunk(Minecraft.getInstance().level, chunkX, chunkZ);
     }
 
     public static @Nullable LevelChunk getClientSafeLevelChunk(ChunkPos chunkPos)
     {
-        return LimaCoreUtil.getSafeLevelChunk(Minecraft.getInstance().level, chunkPos);
+        return LimaBlockUtil.getSafeLevelChunk(Minecraft.getInstance().level, chunkPos);
     }
 
     public static @Nullable Entity getClientEntity(int remoteEntityId)
@@ -159,12 +161,9 @@ public final class LimaCoreClientUtil
         }
     }
 
-    public static void setParticleColor(Particle particle, int rgb)
+    public static void setParticleColor(Particle particle, LimaColor color)
     {
-        float red = ((rgb >> 16) & 0xff) / 255f;
-        float green = ((rgb >> 8) & 0xff) / 255f;
-        float blue = (rgb & 0xff) / 255f;
-        particle.setColor(red, green, blue);
+        particle.setColor(color.red(), color.green(), color.blue());
     }
 
     @SuppressWarnings("ConstantValue")

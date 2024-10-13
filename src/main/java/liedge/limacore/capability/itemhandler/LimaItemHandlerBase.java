@@ -1,6 +1,6 @@
 package liedge.limacore.capability.itemhandler;
 
-import liedge.limacore.capability.IOAccess;
+import liedge.limacore.blockentity.IOAccess;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
@@ -11,4 +11,6 @@ public interface LimaItemHandlerBase extends IItemHandlerModifiable
     ItemContainerContents copyToComponent();
 
     void copyFromComponent(ItemContainerContents contents);
+
+    void onContentsChanged(int index);
 }

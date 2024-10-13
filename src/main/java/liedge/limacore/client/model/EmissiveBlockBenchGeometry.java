@@ -1,6 +1,5 @@
 package liedge.limacore.client.model;
 
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import liedge.limacore.util.LimaCollectionsUtil;
 import net.minecraft.client.renderer.block.model.*;
@@ -18,14 +17,14 @@ import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import java.util.List;
 import java.util.function.Function;
 
-public abstract class EmissiveBlockBenchGeometry<T extends EmissiveBlockBenchGeometry.EmissiveGroupData> extends BlockBenchGroupGeometry<T>
+public abstract class EmissiveBlockBenchGeometry<T extends BlockBenchGroupData> extends BlockBenchGroupGeometry<T>
 {
     private final IntSet emissiveElements;
 
     protected EmissiveBlockBenchGeometry(List<BlockElement> elements, List<T> groups)
     {
         super(elements, groups);
-        this.emissiveElements = LimaCollectionsUtil.toIntSet(groups.stream().filter(EmissiveGroupData::emissive).flatMapToInt(o -> o.elements().intStream()));
+        this.emissiveElements = LimaCollectionsUtil.toIntSet(groups.stream().filter(BlockBenchGroupData::emissive).flatMapToInt(o -> o.elements().intStream()));
     }
 
     @Override
@@ -90,12 +89,5 @@ public abstract class EmissiveBlockBenchGeometry<T extends EmissiveBlockBenchGeo
         {
             return addUnculledFace(quad, false);
         }
-    }
-
-    public interface EmissiveGroupData
-    {
-        IntList elements();
-
-        boolean emissive();
     }
 }

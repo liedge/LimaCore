@@ -4,21 +4,21 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.IntTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
-public class LimaNBTEnergyStorage extends LimaEnergyStorage implements INBTSerializable<IntTag>
+public class LimaBlockEntityEnergyStorage extends LimaEnergyStorage implements INBTSerializable<IntTag>
 {
-    private final EnergyStorageHolder holder;
+    private final EnergyHolderBlockEntity energyHolder;
     private int energy;
 
-    public LimaNBTEnergyStorage(EnergyStorageHolder holder, int maxEnergy, int transferRate)
+    public LimaBlockEntityEnergyStorage(EnergyHolderBlockEntity energyHolder, int maxEnergy, int transferRate)
     {
         super(maxEnergy, transferRate);
-        this.holder = holder;
+        this.energyHolder = energyHolder;
     }
 
     @Override
     protected void onEnergyChanged()
     {
-        holder.onEnergyChanged();
+        energyHolder.onEnergyChanged();
     }
 
     @Override

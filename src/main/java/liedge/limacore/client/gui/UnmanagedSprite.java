@@ -59,6 +59,11 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
         LimaGuiUtil.directColorBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1, red, green, blue, alpha);
     }
 
+    public void directColorBlit(GuiGraphics graphics, float x, float y, int argb32)
+    {
+        LimaGuiUtil.directColorBlit(graphics, textureSheet, x, y, x + width, y + height, u0, u1, v0, v1, argb32);
+    }
+
     public void directColorBlit(GuiGraphics graphics, float x, float y, LimaColor color)
     {
         directColorBlit(graphics, x, y, color.red(), color.green(), color.blue(), 1f);
@@ -77,19 +82,5 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
         y += dy;
 
         LimaGuiUtil.directBlit(graphics, textureSheet, x, y, x + width, y + partialHeight, u0, u1, (v + dy) / 256f, v1);
-    }
-
-    @Deprecated
-    public void oldPartialHorizontalBlit(GuiGraphics graphics, int x, int y, float percentage)
-    {
-        graphics.blit(textureSheet, x, y, u, v, (int) (width * percentage), height);
-    }
-
-    @Deprecated
-    public void oldPartialVerticalBlit(GuiGraphics graphics, int x, int y, float percentage)
-    {
-        int partialHeight = (int) (height * percentage);
-        int offset = height - partialHeight;
-        graphics.blit(textureSheet, x, y + offset, u, v + offset, width, partialHeight);
     }
 }

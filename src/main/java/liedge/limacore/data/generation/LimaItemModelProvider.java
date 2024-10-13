@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 import static liedge.limacore.util.LimaRegistryUtil.getItemName;
 
-public abstract class LimaItemModelProvider extends ItemModelProvider implements ModelProviderHelper
+public abstract class LimaItemModelProvider extends ItemModelProvider implements ModelProviderExtensions
 {
     protected final ModelFile generatedModel = new ModelFile.UncheckedModelFile("item/generated");
     protected final ModelFile handheldModel = new ModelFile.UncheckedModelFile("item/handheld");

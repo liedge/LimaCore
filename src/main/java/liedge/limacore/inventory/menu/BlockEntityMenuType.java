@@ -1,9 +1,9 @@
 package liedge.limacore.inventory.menu;
 
 import liedge.limacore.blockentity.LimaBlockEntity;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,27 +12,27 @@ import java.util.Objects;
 
 public class BlockEntityMenuType<BE extends LimaBlockEntity, M extends LimaMenu<BE>> extends LimaMenuType<BE, M>
 {
-    public static <BE extends LimaBlockEntity, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> of(ResourceLocation registryId, Class<BE> blockEntityClass, MenuFactory<BE, M> factory)
+    public static <BE extends LimaBlockEntity, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(ResourceLocation registryId, Class<BE> contextClass, MenuFactory<BE, M> factory)
     {
-        return new BlockEntityMenuType<>(registryId, blockEntityClass, factory);
+        return new BlockEntityMenuType<>(registryId, contextClass, factory);
     }
 
-    private BlockEntityMenuType(ResourceLocation registryId, Class<BE> blockEntityClass, MenuFactory<BE, M> factory)
+    private BlockEntityMenuType(ResourceLocation registryId, Class<BE> contextClass, MenuFactory<BE, M> factory)
     {
-        super(registryId, blockEntityClass, factory);
+        super(registryId, contextClass, factory);
     }
 
     @Override
-    protected void encodeContext(BE menuContext, FriendlyByteBuf net)
+    public void encodeContext(BE menuContext, RegistryFriendlyByteBuf net)
     {
         net.writeBlockPos(menuContext.getBlockPos());
     }
 
     @Override
-    protected BE decodeContext(FriendlyByteBuf net, Inventory inventory)
+    protected BE decodeContext(RegistryFriendlyByteBuf net, Inventory inventory)
     {
         BlockPos pos = net.readBlockPos();
-        return Objects.requireNonNull(LimaCoreUtil.getSafeBlockEntity(inventory.player.level(), pos, getContextClass()));
+        return Objects.requireNonNull(LimaBlockUtil.getSafeBlockEntity(inventory.player.level(), pos, getContextClass()));
     }
 
     @Override

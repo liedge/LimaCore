@@ -10,10 +10,19 @@ public final class InfiniteEnergyStorage extends LimaEnergyStorage
     }
 
     @Override
-    public void setTransferRate(int transferRate) { }
+    public void setTransferRate(int transferRate)
+    {
+        super.setTransferRate(Integer.MAX_VALUE);
+    }
 
     @Override
-    public void setEnergyStored(int energy) {}
+    public int getTransferRate()
+    {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void setEnergyStored(int energy) { }
 
     @Override
     public int getEnergyStored()
@@ -22,7 +31,16 @@ public final class InfiniteEnergyStorage extends LimaEnergyStorage
     }
 
     @Override
-    public void setMaxEnergyStored(int maxEnergy) { }
+    public void setMaxEnergyStored(int maxEnergy)
+    {
+        super.setMaxEnergyStored(Integer.MAX_VALUE);
+    }
+
+    @Override
+    public int getMaxEnergyStored()
+    {
+        return Integer.MAX_VALUE;
+    }
 
     @Override
     public int receiveEnergy(int toReceive, boolean simulate, boolean ignoreLimit)

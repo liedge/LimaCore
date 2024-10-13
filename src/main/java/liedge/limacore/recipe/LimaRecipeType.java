@@ -5,11 +5,14 @@ import liedge.limacore.lib.Translatable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 
+/**
+ * Simple implementation of {@link RecipeType} with registry id property. Also implements {@link Translatable} for use where recipe type name is needed (i.e. JEI plugins)
+ */
 public record LimaRecipeType<R extends LimaCustomRecipe<?>>(ResourceLocation id, String descriptionId) implements RecipeType<R>, Translatable
 {
-    public LimaRecipeType(ResourceLocation id)
+    public static <T extends LimaCustomRecipe<?>> LimaRecipeType<T> create(ResourceLocation id)
     {
-        this(id, ModResources.prefixIdTranslationKey("recipe_type", id));
+        return new LimaRecipeType<>(id, ModResources.prefixIdTranslationKey("recipe_type", id));
     }
 
     @Override

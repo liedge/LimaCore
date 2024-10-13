@@ -23,7 +23,7 @@ public abstract class LimaBlockEntityRenderer<BE extends LimaBlockEntity> implem
     protected double[] lerpEntityCenter(BlockPos pos, Entity entity, float partialTick)
     {
         double x = Mth.lerp(partialTick, entity.xo - pos.getX(), entity.getX() - pos.getX());
-        double y = Mth.lerp(partialTick, entity.yo - pos.getY(), entity.getY() - pos.getY()) - (entity.getBoundingBox().getYsize() / 2d);
+        double y = Mth.lerp(partialTick, entity.yo - pos.getY(), entity.getY() - pos.getY()) + (entity.getBoundingBox().getYsize() / 2d);
         double z = Mth.lerp(partialTick, entity.zo - pos.getZ(), entity.getZ() - pos.getZ());
 
         return new double[] {x, y, z};

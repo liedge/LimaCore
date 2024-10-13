@@ -1,29 +1,29 @@
 package liedge.limacore.capability.itemhandler;
 
-import liedge.limacore.capability.IOAccess;
+import liedge.limacore.blockentity.IOAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class LimaNBTItemHandler extends ItemStackHandler implements LimaItemHandlerBase
+public class LimaBlockEntityItemHandler extends ItemStackHandler implements LimaItemHandlerBase
 {
-    private final ItemHandlerHolder holder;
+    private final ItemHolderBlockEntity itemHolder;
 
-    public LimaNBTItemHandler(ItemHandlerHolder holder, int size)
+    public LimaBlockEntityItemHandler(ItemHolderBlockEntity itemHolder, int size)
     {
         super(size);
-        this.holder = holder;
+        this.itemHolder = itemHolder;
     }
 
-    public ItemHandlerHolder getParentObject()
+    public ItemHolderBlockEntity getParentObject()
     {
-        return holder;
+        return itemHolder;
     }
 
     @Override
     public IOAccess getSlotIOAccess(int slot)
     {
-        return holder.getSlotIOAccess(slot);
+        return itemHolder.getExternalItemSlotIO(slot);
     }
 
     @Override
@@ -51,18 +51,18 @@ public class LimaNBTItemHandler extends ItemStackHandler implements LimaItemHand
     @Override
     public boolean isItemValid(int slot, ItemStack stack)
     {
-        return holder.isItemValid(slot, stack);
+        return itemHolder.isItemValid(slot, stack);
     }
 
     @Override
     public void onContentsChanged(int slot)
     {
-        holder.onItemSlotChanged(slot);
+        itemHolder.onItemSlotChanged(slot);
     }
 
     @Override
     protected void onLoad()
     {
-        holder.itemHandlerLoaded();
+        itemHolder.onItemHandlerLoaded();
     }
 }

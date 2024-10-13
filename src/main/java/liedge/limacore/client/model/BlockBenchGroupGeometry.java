@@ -13,8 +13,10 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
-public abstract class BlockBenchGroupGeometry<T> implements IUnbakedGeometry<BlockBenchGroupGeometry<T>>
+public abstract class BlockBenchGroupGeometry<T extends BlockBenchGroupData> implements IUnbakedGeometry<BlockBenchGroupGeometry<T>>
 {
+    public static final String DEFAULT_GROUP_NAME = "group";
+
     protected final List<BlockElement> elements;
     protected final List<T> groups;
 
@@ -24,7 +26,7 @@ public abstract class BlockBenchGroupGeometry<T> implements IUnbakedGeometry<Blo
         this.groups = groups;
     }
 
-    protected static abstract class GeometryLoader<T> implements LimaGeometryLoader<BlockBenchGroupGeometry<T>>
+    protected static abstract class GeometryLoader<T extends BlockBenchGroupData> implements LimaGeometryLoader<BlockBenchGroupGeometry<T>>
     {
         @Override
         public BlockBenchGroupGeometry<T> read(JsonObject json, JsonDeserializationContext ctx) throws JsonParseException
@@ -52,7 +54,11 @@ public abstract class BlockBenchGroupGeometry<T> implements IUnbakedGeometry<Blo
                     }
                 }
 
-                if (!groupElements.isEmpty()) groups.add(deserializeGroup(current, groupElements));
+                if (!groupElements.isEmpty())
+                {
+                    String groupName = GsonHelper.getAsString(current, "name", DEFAULT_GROUP_NAME);
+                    groups.add(deserializeGroup(current, groupName, groupElements));
+                }
             }
 
             List<BlockElement> elements = deserializeElements(groups, elementsArray, json, ctx);
@@ -65,7 +71,7 @@ public abstract class BlockBenchGroupGeometry<T> implements IUnbakedGeometry<Blo
             return LimaJsonUtil.mapArray(elementsArray, ctx, BlockElement.class).toList();
         }
 
-        protected abstract T deserializeGroup(JsonObject json, IntList groupElements);
+        protected abstract T deserializeGroup(JsonObject groupJson, String name, IntList elements);
 
         protected abstract BlockBenchGroupGeometry<T> createGeometry(JsonObject modelJson, List<BlockElement> elements, List<T> groups);
     }

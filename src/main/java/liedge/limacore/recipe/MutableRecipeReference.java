@@ -1,6 +1,9 @@
 package liedge.limacore.recipe;
 
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.network.sync.AutomaticDataWatcher;
+import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.util.LimaRecipesUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
@@ -8,38 +11,24 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 
-public final class LimaRecipeReference<T extends Recipe<?>> implements INBTSerializable<StringTag>
+public final class MutableRecipeReference<T extends Recipe<?>> implements INBTSerializable<StringTag>
 {
-    public static <R extends Recipe<?>> AttachmentType.Builder<LimaRecipeReference<R>> attachmentBuilder(RecipeType<R> recipeType)
-    {
-        return AttachmentType.serializable(() -> new LimaRecipeReference<>(recipeType));
-    }
-
-    public static <R extends Recipe<?>> AttachmentType.Builder<LimaRecipeReference<R>> attachmentBuilder(Supplier<RecipeType<R>> typeSupplier)
-    {
-        return AttachmentType.serializable(() -> new LimaRecipeReference<>(typeSupplier));
-    }
-
     private final RecipeType<T> recipeType;
 
     private @Nullable ResourceLocation id;
     private @Nullable RecipeHolder<T> holder;
 
-    public LimaRecipeReference(RecipeType<T> recipeType)
+    public MutableRecipeReference(RecipeType<T> recipeType)
     {
         this.recipeType = recipeType;
     }
 
-    public LimaRecipeReference(Supplier<? extends RecipeType<T>> typeSupplier)
+    public MutableRecipeReference(Supplier<? extends RecipeType<T>> typeSupplier)
     {
         this(typeSupplier.get());
     }
@@ -63,7 +52,7 @@ public final class LimaRecipeReference<T extends Recipe<?>> implements INBTSeria
         }
         else if (id != null && level != null)
         {
-            this.holder = LimaCoreUtil.getRecipeByKey(level, id, recipeType);
+            this.holder = LimaRecipesUtil.recipeHolderByKey(level, id, recipeType);
             return this.holder;
         }
         else
@@ -84,6 +73,12 @@ public final class LimaRecipeReference<T extends Recipe<?>> implements INBTSeria
         return val != null ? mapper.apply(val) : absentValue;
     }
 
+    public boolean testValue(@Nullable Level level, Predicate<? super T> predicate)
+    {
+        T val = getRecipeValue(level);
+        return val != null && predicate.test(val);
+    }
+
     public int toIntOrElse(@Nullable Level level, ToIntFunction<? super T> mapper, int absentValue)
     {
         T val = getRecipeValue(level);
@@ -96,23 +91,30 @@ public final class LimaRecipeReference<T extends Recipe<?>> implements INBTSeria
         return val != null ? mapper.applyAsDouble(val) : absentValue;
     }
 
+    public LimaDataWatcher<String> createDataWatcher()
+    {
+        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.STRING_UTF8, this::serialize, this::deserialize);
+    }
+
+    private String serialize()
+    {
+        return holder != null ? holder.id().toString() : "null";
+    }
+
+    private void deserialize(String value)
+    {
+        id = !value.equals("null") ? ResourceLocation.parse(value) : null;
+    }
+
     @Override
     public StringTag serializeNBT(HolderLookup.Provider provider)
     {
-        return holder != null ? StringTag.valueOf(holder.id().toString()) : StringTag.valueOf("null");
+        return StringTag.valueOf(serialize());
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, StringTag nbt)
     {
-        String val = nbt.getAsString();
-        if (val.equals("null"))
-        {
-            id = null;
-        }
-        else
-        {
-            id = ResourceLocation.parse(val);
-        }
+        deserialize(nbt.getAsString());
     }
 }

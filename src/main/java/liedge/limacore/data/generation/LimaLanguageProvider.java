@@ -4,24 +4,27 @@ import liedge.limacore.advancement.LimaAdvancementUtil;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaRegistryUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static liedge.limacore.lib.ModResources.prefixIdTranslationKey;
 
@@ -40,20 +43,31 @@ public abstract class LimaLanguageProvider extends LanguageProvider
         this(output, modResources, "en_us");
     }
 
-    public static String soundSubtitleKey(DeferredHolder<SoundEvent, SoundEvent> soundHolder)
+    /**
+     * Takes an in-code object name, replaces underscores with a space, and capitalizes each word.
+     * For use in english localization when localized name is just the formatted version of the in-code name.
+     * @param path The name/path component of a resource location, resource key, or any other nameable game object.
+     * @return The formatted name.
+     */
+    public static String localizeSimpleName(String path)
     {
-        return prefixIdTranslationKey("subtitle", soundHolder.getId());
+        return Arrays.stream(path.split("_")).map(StringUtils::capitalize).collect(Collectors.joining(" "));
     }
 
-    protected void soundEvent(DeferredHolder<SoundEvent, SoundEvent> soundHolder, String value)
+    public static String localizeSimpleName(StringRepresentable representable)
     {
-        add(soundSubtitleKey(soundHolder), value);
+        return localizeSimpleName(representable.getSerializedName());
+    }
+
+    protected void soundEvent(Holder<SoundEvent> soundEvent, String translation)
+    {
+        add(LimaSoundDefinitionsProvider.defaultSubtitleKey(soundEvent), translation);
     }
 
     protected void advancement(ResourceLocation id, String titleTranslation, String descriptionTranslation)
     {
-        add(LimaAdvancementUtil.defaultAdvancementTitle(id), titleTranslation);
-        add(LimaAdvancementUtil.defaultAdvancementDescription(id), descriptionTranslation);
+        add(LimaAdvancementUtil.defaultAdvancementTitleKey(id), titleTranslation);
+        add(LimaAdvancementUtil.defaultAdvancementDescriptionKey(id), descriptionTranslation);
     }
 
     protected void enchantment(ResourceKey<Enchantment> enchantmentKey, String translation)

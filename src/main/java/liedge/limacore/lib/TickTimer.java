@@ -9,6 +9,11 @@ import static liedge.limacore.util.LimaMathUtil.divideFloatLerp;
 
 public class TickTimer
 {
+    public static TickTimer create()
+    {
+        return new TickTimer();
+    }
+
     private int duration = 1;
     private int currentTick;
     private int previousTick;
@@ -20,14 +25,22 @@ public class TickTimer
 
     public TickTimer() {}
 
-    public void setStartCallback(@Nullable Runnable onStart)
+    public TickTimer withStartCallback(@Nullable Runnable onStart)
     {
         this.onStart = onStart;
+        return this;
     }
 
-    public void setOnStoppedCallback(@Nullable BooleanConsumer onStopped)
+    /**
+     * Sets a callback that runs when the timer state changed to {@link State#STOPPED}. The boolean consumer
+     * is supplied with a boolean value that indicates whether the timer stopped naturally or manually.
+     * @param onStopped Consumer of the timer stop condition boolean. Supplied with true if timer ran out or false if timer was stopped by {@link TickTimer#stopTimer()}
+     * @return Returns self instance.
+     */
+    public TickTimer withStopCallback(@Nullable BooleanConsumer onStopped)
     {
         this.onStopped = onStopped;
+        return this;
     }
 
     public void startTimer(int duration)

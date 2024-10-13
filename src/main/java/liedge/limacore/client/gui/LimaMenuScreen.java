@@ -4,11 +4,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.inventory.menu.LimaMenu;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
+import liedge.limacore.registry.LimaCoreNetworkSerializers;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -24,11 +26,16 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     protected final int labelColor;
     private final List<LimaRenderable> tooltipWidgets = new ObjectArrayList<>();
 
+    protected int bgWidth;
+    protected int bgHeight;
+
     protected LimaMenuScreen(M menu, Inventory inventory, Component title, int width, int height, int labelColor)
     {
         super(menu, inventory, title);
         this.imageWidth = width;
         this.imageHeight = height;
+        this.bgWidth = width;
+        this.bgHeight = height;
 
         this.titleLabelY = 7;
         this.inventoryLabelY = 72;
@@ -104,25 +111,30 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
-        graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, bgWidth, bgHeight);
     }
 
     protected void positionLabels()
     {
-        titleLabelX = (imageWidth - font.width(title)) / 2;
+        titleLabelX = (bgWidth - font.width(title)) / 2;
     }
 
-    protected <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
+    public  <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
     {
         PacketDistributor.sendToServer(new ServerboundCustomMenuButtonPacket<>(menu.containerId, buttonId, serializer, value));
     }
 
-    protected <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
+    public  <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
     {
         sendCustomButtonData(buttonId, value, supplier.get());
     }
 
-    protected boolean scrollFocusedElementInXYBounds(int x1, int y1, int x2, int y2, double mouseX, double mouseY, double scrollX, double scrollY)
+    public void sendUnitButtonData(int buttonId)
+    {
+        sendCustomButtonData(buttonId, Unit.INSTANCE, LimaCoreNetworkSerializers.UNIT.get());
+    }
+
+    public boolean scrollFocusedElementInXYBounds(int x1, int y1, int x2, int y2, double mouseX, double mouseY, double scrollX, double scrollY)
     {
         if (LimaGuiUtil.isMouseWithinXYBounds(mouseX, mouseY, x1, y1, x2, y2) && getFocused() != null)
         {
@@ -134,7 +146,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         }
     }
 
-    protected boolean scrollFocusedElementInArea(int x, int y, int width, int height, double mouseX, double mouseY, double scrollX, double scrollY)
+    public boolean scrollFocusedElementInArea(int x, int y, int width, int height, double mouseX, double mouseY, double scrollX, double scrollY)
     {
         if (LimaGuiUtil.isMouseWithinArea(mouseX, mouseY, x, y, width, height) && getFocused() != null)
         {

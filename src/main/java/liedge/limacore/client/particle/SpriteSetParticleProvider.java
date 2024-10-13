@@ -39,6 +39,18 @@ public class SpriteSetParticleProvider<T extends ParticleOptions> implements Par
     }
 
     @FunctionalInterface
+    public interface PositionOnlyParticleProvider<T extends ParticleOptions> extends ParticleProvider<T>
+    {
+        @Nullable Particle createParticle(T type, ClientLevel level, double x, double y, double z);
+
+        @Override
+        default @Nullable Particle createParticle(T type, ClientLevel level, double x, double y, double z, double dx, double dy, double dz)
+        {
+            return createParticle(type, level, x, y, z);
+        }
+    }
+
+    @FunctionalInterface
     public interface PositionVelocityParticleFactory<T extends ParticleOptions>
     {
         @Nullable Particle newParticle(T type, ClientLevel level, SpriteSet spriteSet, double x, double y, double z, double dx, double dy, double dz);

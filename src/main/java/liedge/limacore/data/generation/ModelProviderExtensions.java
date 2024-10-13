@@ -12,7 +12,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import static liedge.limacore.util.LimaRegistryUtil.getBlockId;
 import static liedge.limacore.util.LimaRegistryUtil.getItemId;
 
-public interface ModelProviderHelper
+public interface ModelProviderExtensions
 {
     ModResources modResources();
 

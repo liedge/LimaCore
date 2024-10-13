@@ -9,19 +9,19 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import org.jetbrains.annotations.Nullable;
 
-public final class ClientboundMenuDataPacket<T> extends DataWatcherPacketBase<T>
+public final class ClientboundMenuDataWatcherPacket<T> extends ClientboundDataWatcherPacket<T>
 {
-    static final PacketSpec<ClientboundMenuDataPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "menu_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataPacket::new));
+    static final PacketSpec<ClientboundMenuDataWatcherPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "menu_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataWatcherPacket::new));
 
     private final int containerId;
 
-    public ClientboundMenuDataPacket(int containerId, int index, NetworkSerializer<T> serializer, T data)
+    public ClientboundMenuDataWatcherPacket(int containerId, int index, NetworkSerializer<T> serializer, T data)
     {
         super(index, serializer, data);
         this.containerId = containerId;
     }
 
-    ClientboundMenuDataPacket(RegistryFriendlyByteBuf net)
+    private ClientboundMenuDataWatcherPacket(RegistryFriendlyByteBuf net)
     {
         super(net);
         this.containerId = net.readVarInt();

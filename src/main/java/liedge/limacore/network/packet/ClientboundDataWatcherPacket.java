@@ -11,9 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import static liedge.limacore.network.NetworkSerializer.REGISTRY_STREAM_CODEC;
 
-public abstract class DataWatcherPacketBase<T> implements LimaPlayPacket.ClientboundOnly
+public abstract class ClientboundDataWatcherPacket<T> implements LimaPlayPacket.ClientboundOnly
 {
-    static <E, T extends DataWatcherPacketBase<E>> StreamCodec<RegistryFriendlyByteBuf, T> createStreamCodec(StreamDecoder<RegistryFriendlyByteBuf, T> decoder)
+    static <E, T extends ClientboundDataWatcherPacket<E>> StreamCodec<RegistryFriendlyByteBuf, T> createStreamCodec(StreamDecoder<RegistryFriendlyByteBuf, T> decoder)
     {
         return StreamCodec.of((buf, pkt) -> pkt.encodePacket(buf), decoder);
     }
@@ -22,7 +22,7 @@ public abstract class DataWatcherPacketBase<T> implements LimaPlayPacket.Clientb
     private final NetworkSerializer<T> serializer;
     private final T data;
 
-    DataWatcherPacketBase(int index, NetworkSerializer<T> serializer, T data)
+    ClientboundDataWatcherPacket(int index, NetworkSerializer<T> serializer, T data)
     {
         this.index = index;
         this.serializer = serializer;
@@ -30,7 +30,7 @@ public abstract class DataWatcherPacketBase<T> implements LimaPlayPacket.Clientb
     }
 
     @SuppressWarnings("unchecked")
-    DataWatcherPacketBase(RegistryFriendlyByteBuf net)
+    ClientboundDataWatcherPacket(RegistryFriendlyByteBuf net)
     {
         this.index = net.readVarInt();
         this.serializer = (NetworkSerializer<T>) REGISTRY_STREAM_CODEC.decode(net);

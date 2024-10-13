@@ -1,0 +1,12 @@
+{
+  "direction.limacore.down": "Down",
+  "direction.limacore.east": "East",
+  "direction.limacore.north": "North",
+  "direction.limacore.south": "South",
+  "direction.limacore.up": "Up",
+  "direction.limacore.west": "West",
+  "io_access.limacore.disabled": "Disabled",
+  "io_access.limacore.input_and_output": "Input/Output",
+  "io_access.limacore.input_only": "Input Only",
+  "io_access.limacore.output_only": "Output Only"
+}

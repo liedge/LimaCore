@@ -40,7 +40,7 @@ public final class LimaJsonUtil
         return arrayStream(array).map(JsonElement::getAsString);
     }
 
-    public static IntStream intsArrayStream(JsonArray array)
+    public static IntStream intArrayStream(JsonArray array)
     {
         return arrayStream(array).mapToInt(JsonElement::getAsInt);
     }

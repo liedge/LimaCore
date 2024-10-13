@@ -29,7 +29,7 @@ public final class LimaMathUtil
     public static final DecimalFormat FORMAT_COMMA_INT = new DecimalFormat("#,###");
     public static final DecimalFormat FORMAT_2_ROUND_FLOOR = Util.make(new DecimalFormat("#.##"), o -> o.setRoundingMode(RoundingMode.FLOOR));
 
-    public static int parseHexadecimal(String value)
+    public static int parseHexadecimal(String value) throws NumberFormatException
     {
         value = value.startsWith("#") ? value.substring(1) : value;
         return Integer.parseInt(value, 16);

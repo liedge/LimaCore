@@ -2,7 +2,7 @@ package liedge.limacore.world.loot;
 
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.registry.LimaCoreLootRegistries;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -25,6 +25,6 @@ public final class HostileEntitySubPredicate implements EntitySubPredicate
     @Override
     public boolean matches(Entity entity, ServerLevel level, @Nullable Vec3 position)
     {
-        return LimaCoreUtil.isEntityHostile(entity);
+        return LimaEntityUtil.isEntityHostile(entity);
     }
 }

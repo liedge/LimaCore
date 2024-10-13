@@ -3,7 +3,6 @@ package liedge.limacore.inventory.menu;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaCoreUtil;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,15 +32,15 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
         return contextClass;
     }
 
-    public void encodeUncheckedContext(Object uncheckedContext, FriendlyByteBuf net)
+    public void tryEncodeContext(Object uncheckedContext, RegistryFriendlyByteBuf net)
     {
         CTX menuContext = LimaCoreUtil.castOrThrow(contextClass, uncheckedContext);
         encodeContext(menuContext, net);
     }
 
-    protected abstract void encodeContext(CTX menuContext, FriendlyByteBuf net);
+    public abstract void encodeContext(CTX menuContext, RegistryFriendlyByteBuf net);
 
-    protected abstract CTX decodeContext(FriendlyByteBuf net, Inventory inventory);
+    protected abstract CTX decodeContext(RegistryFriendlyByteBuf net, Inventory inventory);
 
     public abstract boolean canPlayerKeepUsing(CTX menuContext, Player player);
 

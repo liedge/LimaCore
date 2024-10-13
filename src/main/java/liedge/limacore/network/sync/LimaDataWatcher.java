@@ -1,28 +1,45 @@
 package liedge.limacore.network.sync;
 
 import liedge.limacore.network.NetworkSerializer;
+import org.jetbrains.annotations.ApiStatus;
 
 public abstract class LimaDataWatcher<T>
 {
-    private final NetworkSerializer<T> networkSerializer;
+    private final NetworkSerializer<T> serializer;
+    private boolean changed;
 
-    protected LimaDataWatcher(NetworkSerializer<T> networkSerializer)
+    protected LimaDataWatcher(NetworkSerializer<T> serializer)
     {
-        this.networkSerializer = networkSerializer;
+        this.serializer = serializer;
     }
 
-    protected abstract boolean hasDataChanged();
+    public boolean isChanged()
+    {
+        return changed;
+    }
+
+    public void setChanged(boolean changed)
+    {
+        this.changed = changed;
+    }
 
     protected abstract T getCurrentData();
 
     protected abstract void setCurrentData(T currentData);
 
-    void tickDataWatcher(int index, DataWatcherHolder holder, boolean forceUpdate)
+    @ApiStatus.Internal
+    protected void sendDataPacket(int index, DataWatcherHolder holder)
     {
-        if (hasDataChanged() || forceUpdate)
+        holder.sendDataWatcherPacket(index, serializer, getCurrentData());
+    }
+
+    @ApiStatus.Internal
+    protected void tickWatcher(int index, DataWatcherHolder holder)
+    {
+        if (isChanged())
         {
-            T data = getCurrentData();
-            holder.sendDataWatcherPacket(index, networkSerializer, data);
+            sendDataPacket(index, holder);
+            setChanged(false);
         }
     }
 }

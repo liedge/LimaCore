@@ -17,7 +17,6 @@ public class LimaComponentEnergyStorage extends LimaEnergyStorage
     @Override
     protected void onEnergyChanged() {}
 
-
     @Override
     public void setEnergyStored(int energy)
     {

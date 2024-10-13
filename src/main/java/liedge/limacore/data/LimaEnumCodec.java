@@ -4,21 +4,17 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.StringTag;
+import liedge.limacore.util.LimaCollectionsUtil;
+import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import net.neoforged.neoforge.attachment.IAttachmentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implements Codec<A>
 {
@@ -27,14 +23,9 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
         return new LimaEnumCodec<>(enumClass, null);
     }
 
-    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> createDefaulted(Class<E> enumClass, @NotNull E defaultValue)
+    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> createLenient(Class<E> enumClass, @NotNull E defaultValue)
     {
-        return new LimaEnumCodec<>(enumClass, defaultValue);
-    }
-
-    public static <E extends Enum<E> & StringRepresentable> AttachmentType.Builder<E> attachmentBuilder(LimaEnumCodec<E> codec)
-    {
-        return AttachmentType.builder(() -> Objects.requireNonNull(codec.defaultValue, codec + " doesn't support default values.")).serialize(new FastAttachmentSerializer<>(codec));
+        return new LimaEnumCodec<>(enumClass, Objects.requireNonNull(defaultValue, "Lenient enum codec must have a non-null default value"));
     }
 
     private final String name;
@@ -47,15 +38,8 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
     {
         this.name = "LimaEnumCodec[" + enumClass.getSimpleName() + "]";
         this.defaultValue = defaultValue;
-        this.values = Objects.requireNonNull(enumClass.getEnumConstants(), "Enum constants not found");
-
-        Object2ObjectMap<String, A> map = new Object2ObjectOpenHashMap<>();
-        for (A value : values)
-        {
-            map.put(value.getSerializedName(), value);
-        }
-        this.nameLookup = Object2ObjectMaps.unmodifiable(map);
-
+        this.values = LimaCollectionsUtil.checkedEnumConstants(enumClass);
+        this.nameLookup = Stream.of(values).collect(LimaStreamsUtil.toUnmodifiableObject2ObjectMap(StringRepresentable::getSerializedName, Function.identity()));
         this.baseCodec = ExtraCodecs.orCompressed(
                 Codec.stringResolver(StringRepresentable::getSerializedName, this::byNameInternal),
                 ExtraCodecs.idResolverCodec(Enum::ordinal, this::byOrdinalInternal, -1));
@@ -114,20 +98,5 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
     public String toString()
     {
         return name;
-    }
-
-    private record FastAttachmentSerializer<E extends Enum<E> & StringRepresentable>(LimaEnumCodec<E> codec) implements IAttachmentSerializer<StringTag, E>
-    {
-        @Override
-        public E read(IAttachmentHolder holder, StringTag tag, HolderLookup.Provider provider)
-        {
-            return codec.byName(tag.getAsString());
-        }
-
-        @Override
-        public StringTag write(E attachment, HolderLookup.Provider provider)
-        {
-            return StringTag.valueOf(attachment.getSerializedName());
-        }
     }
 }

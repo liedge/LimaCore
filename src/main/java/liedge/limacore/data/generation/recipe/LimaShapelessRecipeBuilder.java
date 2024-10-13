@@ -2,18 +2,25 @@ package liedge.limacore.data.generation.recipe;
 
 import com.google.common.base.Preconditions;
 import liedge.limacore.lib.ModResources;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 
 public class LimaShapelessRecipeBuilder extends LimaCustomRecipeBuilder<ShapelessRecipe, LimaShapelessRecipeBuilder>
 {
-    public LimaShapelessRecipeBuilder(ModResources modResources, ItemStack result)
+    private final ItemStack resultItem;
+
+    public LimaShapelessRecipeBuilder(ModResources modResources, ItemStack resultItem)
     {
-        super(RecipeSerializer.SHAPELESS_RECIPE, modResources, result);
+        super(modResources);
+        this.resultItem = resultItem;
+    }
+
+    @Override
+    protected String defaultFolderPrefix(ShapelessRecipe recipe, ResourceLocation recipeId)
+    {
+        return "shapeless_recipes/";
     }
 
     @Override
@@ -25,6 +32,12 @@ public class LimaShapelessRecipeBuilder extends LimaCustomRecipeBuilder<Shapeles
     @Override
     protected ShapelessRecipe buildRecipe()
     {
-        return new ShapelessRecipe("", CraftingBookCategory.MISC, result, NonNullList.copyOf(ingredients));
+        return new ShapelessRecipe("", CraftingBookCategory.MISC, resultItem, buildIngredients());
+    }
+
+    @Override
+    protected String getDefaultRecipeName()
+    {
+        return getDefaultStackName(resultItem);
     }
 }

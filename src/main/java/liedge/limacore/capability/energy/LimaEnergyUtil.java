@@ -55,16 +55,89 @@ public final class LimaEnergyUtil
         return formatEnergyWithSuffix(storage.getEnergyStored()) + "/" + formatEnergyWithSuffix(storage.getMaxEnergyStored());
     }
 
-    public static boolean tryConsumeEnergy(IEnergyStorage storage, int toExtract)
+    public static int receiveWithoutLimit(IEnergyStorage storage, final int toReceive, boolean simulate)
     {
-        if (storage.extractEnergy(toExtract, true) == toExtract)
+        int totalReceived = 0;
+
+        while (totalReceived < toReceive)
+        {
+            int limit = (toReceive - totalReceived);
+            int received = storage.receiveEnergy(limit, simulate);
+
+            if (received > 0)
+            {
+                totalReceived += received;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return totalReceived;
+    }
+
+    public static int extractWithoutLimit(IEnergyStorage storage, final int toExtract, boolean simulate)
+    {
+        int totalExtracted = 0;
+
+        while (totalExtracted < toExtract)
+        {
+            int limit = (toExtract - totalExtracted);
+            int extracted = storage.extractEnergy(limit, simulate);
+
+            if (extracted > 0)
+            {
+                totalExtracted += extracted;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return totalExtracted;
+    }
+
+    public static boolean consumeEnergy(IEnergyStorage storage, int toExtract, boolean ignoreLimit)
+    {
+        if (storage instanceof LimaEnergyStorage)
+        {
+            return consumeFromLimaSource((LimaEnergyStorage) storage, toExtract, ignoreLimit);
+        }
+        else
+        {
+            return consumeFromGeneralSource(storage, toExtract, ignoreLimit);
+        }
+    }
+
+    private static boolean consumeFromLimaSource(LimaEnergyStorage storage, int toExtract, boolean ignoreLimit)
+    {
+        if (storage.extractEnergy(toExtract, true, ignoreLimit) == toExtract)
+        {
+            storage.extractEnergy(toExtract, false, ignoreLimit);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean consumeFromGeneralSource(IEnergyStorage storage, int toExtract, boolean ignoreLimit)
+    {
+        if (!ignoreLimit && storage.extractEnergy(toExtract, true) == toExtract)
         {
             storage.extractEnergy(toExtract, false);
             return true;
         }
-        else
+        else if (ignoreLimit)
         {
-            return false;
+            if (extractWithoutLimit(storage, toExtract, true) == toExtract)
+            {
+                extractWithoutLimit(storage, toExtract, false);
+                return true;
+            }
         }
+
+        return false;
     }
 }

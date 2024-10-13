@@ -5,8 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import liedge.limacore.LimaCoreTags;
-import liedge.limacore.lib.DamageSourceExtensions;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.lib.LimaExtendedDamageSource;
+import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -22,9 +22,9 @@ public abstract class LivingEntityMixin
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 5))
     private boolean checkNoAnger(DamageSource instance, TagKey<DamageType> damageTypeTagKey, Operation<Boolean> original)
     {
-        if (instance instanceof DamageSourceExtensions extensions)
+        if (instance instanceof LimaExtendedDamageSource source)
         {
-            return extensions.avoidsAngering();
+            return source.isNoAnger();
         }
         else
         {
@@ -35,9 +35,9 @@ public abstract class LivingEntityMixin
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 7))
     private boolean checkNoKnockback(DamageSource instance, TagKey<DamageType> damageTypeKey, Operation<Boolean> original)
     {
-        if (instance instanceof DamageSourceExtensions extensions)
+        if (instance instanceof LimaExtendedDamageSource source)
         {
-            return extensions.getKnockbackModifier() == 0;
+            return source.getKnockbackMultiplier() == 0f;
         }
         else
         {
@@ -48,17 +48,17 @@ public abstract class LivingEntityMixin
     @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
     private boolean doCustomKnockback(LivingEntity instance, double strength, double ratioX, double ratioZ, @Local(ordinal = 0, argsOnly = true) DamageSource source)
     {
-        if (source instanceof DamageSourceExtensions extensions)
+        if (source instanceof LimaExtendedDamageSource extendedDamageSource)
         {
-            if (extensions.ignoreKnockbackResistance() || extensions.getKnockbackModifier() != 1)
+            if (extendedDamageSource.isBypassKnockbackResistance() || extendedDamageSource.getKnockbackMultiplier() != 1d)
             {
-                LimaCoreUtil.customKnockbackEntity(instance, extensions.ignoreKnockbackResistance(), strength * extensions.getKnockbackModifier(), ratioX, ratioZ);
+                LimaEntityUtil.customKnockbackEntity(instance, extendedDamageSource.isBypassKnockbackResistance(), strength * extendedDamageSource.getKnockbackMultiplier(), ratioX, ratioZ);
                 return false;
             }
         }
         else if (source.is(LimaCoreTags.DamageTypes.IGNORES_KNOCKBACK_RESISTANCE))
         {
-            LimaCoreUtil.customKnockbackEntity(instance, true, strength, ratioX, ratioZ);
+            LimaEntityUtil.customKnockbackEntity(instance, true, strength, ratioX, ratioZ);
             return false;
         }
 
@@ -68,9 +68,9 @@ public abstract class LivingEntityMixin
     @WrapOperation(method = "getDamageAfterArmorAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z"))
     private boolean checkArmorBypass(DamageSource instance, TagKey<DamageType> damageTypeKey, Operation<Boolean> original)
     {
-        if (instance instanceof DamageSourceExtensions extensions)
+        if (instance instanceof LimaExtendedDamageSource source)
         {
-            return extensions.bypassesArmor();
+            return source.isBypassArmor();
         }
         else
         {
@@ -81,20 +81,17 @@ public abstract class LivingEntityMixin
     @ModifyArgs(method = "getDamageAfterArmorAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterAbsorb(Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/damagesource/DamageSource;FF)F"))
     private void modifyArmorValuesFromDamageSource(Args args, @Local(argsOnly = true) DamageSource source)
     {
-        if (source instanceof DamageSourceExtensions extensions)
+        if (source instanceof LimaExtendedDamageSource extendedDamageSource)
         {
-            LivingEntity armorWearer = args.get(0);
+            LivingEntity target = args.get(0);
             float armor = args.get(3);
             float armorToughness = args.get(4);
 
-            float newArmor = Math.max(0, extensions.modifyAppliedArmor(armorWearer, armor));
-            float newArmorToughness = Math.max(0, extensions.modifyAppliedArmorToughness(armorWearer, armorToughness));
+            float newArmor = Math.max(0, extendedDamageSource.modifyAppliedArmor(target, armor));
+            float newArmorToughness = Math.max(0, extendedDamageSource.modifyAppliedArmorToughness(target, armorToughness));
 
-            if (newArmor != armor || newArmorToughness != armorToughness)
-            {
-                args.set(3, armor);
-                args.set(4, armorToughness);
-            }
+            args.set(3, newArmor);
+            args.set(4, newArmorToughness);
         }
     }
 }

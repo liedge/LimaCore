@@ -6,12 +6,20 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.stream.Stream;
+
+import static liedge.limacore.util.LimaCoreUtil.castOrNull;
 
 public final class LimaBlockUtil
 {
@@ -44,7 +52,8 @@ public final class LimaBlockUtil
     }
 
     /**
-     * Generates a stream from a bounding box pre-filtered to only contain block positions in generated/loaded chunks.
+     * Generates a stream from a bounding box (using floor for the minimums and maximums) pre-filtered to contain only block positions
+     * in generated/loaded chunks.
      * @param level Level object
      * @param boundingBox The bounding box, usually from an entity
      * @return Stream containing the block positions in the bounding box
@@ -53,6 +62,55 @@ public final class LimaBlockUtil
     public static Stream<BlockPos> betweenClosedStreamSafe(Level level, AABB boundingBox)
     {
         return BlockPos.betweenClosedStream(boundingBox).filter(level::hasChunkAt);
+    }
+
+    /**
+     * Generates a stream from a bounding box (using floor for the minimums and ceil for the maximums) pre-filtered to contain only block positions
+     * in generated/loaded chunks.
+     * @param level Level object
+     * @param boundingBox The bounding box, usually from an entity
+     * @return Stream containing the block positions in the bounding box
+     */
+    @SuppressWarnings("deprecation")
+    public static Stream<BlockPos> betweenClosedStreamSafeCeil(Level level, AABB boundingBox)
+    {
+        return BlockPos.betweenClosedStream(Mth.floor(boundingBox.minX), Mth.floor(boundingBox.minY), Mth.floor(boundingBox.minZ), Mth.ceil(boundingBox.maxX), Mth.ceil(boundingBox.maxY), Mth.ceil(boundingBox.maxZ)).filter(level::hasChunkAt);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static @Nullable BlockEntity getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos)
+    {
+        if (level != null && level.hasChunkAt(blockPos))
+        {
+            return level.getBlockEntity(blockPos);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static <BE> @Nullable BE getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos, Class<BE> beClass)
+    {
+        return castOrNull(beClass, getSafeBlockEntity(level, blockPos));
+    }
+
+    @SuppressWarnings("deprecation")
+    public static @Nullable LevelChunk getSafeLevelChunk(@Nullable LevelReader level, int chunkX, int chunkZ)
+    {
+        if (level != null && level.hasChunk(chunkX, chunkZ))
+        {
+            return castOrNull(LevelChunk.class, level.getChunk(chunkX, chunkZ));
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static @Nullable LevelChunk getSafeLevelChunk(@Nullable LevelReader level, ChunkPos chunkPos)
+    {
+        return getSafeLevelChunk(level, chunkPos.x, chunkPos.z);
     }
 
     //#region Voxel shape functions
@@ -77,6 +135,11 @@ public final class LimaBlockUtil
     public static VoxelShape moveShape(VoxelShape original, double dx, double dy, double dz)
     {
         return modifyAndMergeAllBoxes(original, (x1, y1, z1, x2, y2, z2) -> Shapes.box(x1 + dx, y1 + dy, z1 + dz, x2 + dx, y2 + dy, z2 + dz));
+    }
+
+    public static Map<Direction, VoxelShape> createHorizontalShapeMap(VoxelShape identity)
+    {
+        return Direction.Plane.HORIZONTAL.stream().collect(LimaStreamsUtil.toUnmodifiableEnumMap(Direction.class, side -> rotateYClockwise(identity, rotationYFromDirection(side))));
     }
 
     /**

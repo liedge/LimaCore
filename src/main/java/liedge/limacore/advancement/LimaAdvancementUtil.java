@@ -3,7 +3,6 @@ package liedge.limacore.advancement;
 import com.mojang.datafixers.Products;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.registry.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.registries.Registries;
@@ -23,11 +22,6 @@ import java.util.stream.Stream;
 public final class LimaAdvancementUtil
 {
     private LimaAdvancementUtil() {}
-
-    public static Criterion<PlayerTrigger.TriggerInstance> playerLoggedIn()
-    {
-        return LimaCoreTriggerTypes.PLAYER_LOGGED_IN.get().createCriterion(new PlayerTrigger.TriggerInstance(Optional.empty()));
-    }
 
     public static <T extends SimpleCriterionTrigger.SimpleInstance> Products.P1<RecordCodecBuilder.Mu<T>, Optional<ContextAwarePredicate>> playerCodecStart(RecordCodecBuilder.Instance<T> instance)
     {
@@ -63,12 +57,12 @@ public final class LimaAdvancementUtil
         return InventoryChangeTrigger.TriggerInstance.hasItems(predicate);
     }
 
-    public static String defaultAdvancementTitle(ResourceLocation id)
+    public static String defaultAdvancementTitleKey(ResourceLocation id)
     {
         return ModResources.prefixSuffixIdTranslationKey("advancement", "title", id);
     }
 
-    public static String defaultAdvancementDescription(ResourceLocation id)
+    public static String defaultAdvancementDescriptionKey(ResourceLocation id)
     {
         return ModResources.prefixSuffixIdTranslationKey("advancement", "description", id);
     }

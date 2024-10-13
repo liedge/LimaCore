@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -19,14 +20,19 @@ public class CustomRecipeTypeTrigger extends SimpleCriterionTrigger<CustomRecipe
             .and(BuiltInRegistries.RECIPE_TYPE.byNameCodec().fieldOf("recipe_type").forGetter(TriggerInstance::recipeType))
             .and(ItemPredicate.CODEC.optionalFieldOf("item_crafted").forGetter(TriggerInstance::itemCrafted)).apply(instance, TriggerInstance::new));
 
-    public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, ItemLike item)
+    public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, @Nullable ContextAwarePredicate player, @Nullable ItemPredicate itemPredicate)
     {
-        return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(new TriggerInstance(Optional.empty(), recipeType, Optional.of(ItemPredicate.Builder.item().of(item).build())));
+        return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(new TriggerInstance(Optional.ofNullable(player), recipeType, Optional.ofNullable(itemPredicate)));
     }
 
-    public static Criterion<TriggerInstance> anyItemCrafted(RecipeType<?> recipeType)
+    public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, @Nullable ContextAwarePredicate player, ItemPredicate.Builder builder)
     {
-        return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(new TriggerInstance(Optional.empty(), recipeType, Optional.empty()));
+        return itemCrafted(recipeType, player, builder.build());
+    }
+
+    public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, ItemLike item)
+    {
+        return itemCrafted(recipeType, null, ItemPredicate.Builder.item().of(item));
     }
 
     public CustomRecipeTypeTrigger() { }

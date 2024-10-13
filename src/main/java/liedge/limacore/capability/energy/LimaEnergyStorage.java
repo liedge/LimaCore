@@ -1,7 +1,7 @@
 package liedge.limacore.capability.energy;
 
+import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.LimaDataWatcher;
-import liedge.limacore.network.sync.SimpleDataWatcher;
 import liedge.limacore.registry.LimaCoreNetworkSerializers;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
@@ -20,7 +20,7 @@ public abstract class LimaEnergyStorage implements IEnergyStorage
 
     public LimaDataWatcher<Integer> createDataWatcher()
     {
-        return SimpleDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getEnergyStored, this::setEnergyStored);
+        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getEnergyStored, this::setEnergyStored);
     }
 
     public int getTransferRate()

@@ -10,19 +10,19 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import org.jetbrains.annotations.Nullable;
 
-public final class ClientboundBlockEntityDataPacket<T> extends DataWatcherPacketBase<T>
+public final class ClientboundBlockEntityDataWatcherPacket<T> extends ClientboundDataWatcherPacket<T>
 {
-    static final PacketSpec<ClientboundBlockEntityDataPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "block_entity_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundBlockEntityDataPacket::new));
+    static final PacketSpec<ClientboundBlockEntityDataWatcherPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "block_entity_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundBlockEntityDataWatcherPacket::new));
 
     private final BlockPos pos;
 
-    public ClientboundBlockEntityDataPacket(BlockPos pos, int index, NetworkSerializer<T> serializer, T data)
+    public ClientboundBlockEntityDataWatcherPacket(BlockPos pos, int index, NetworkSerializer<T> serializer, T data)
     {
         super(index, serializer, data);
         this.pos = pos;
     }
 
-    ClientboundBlockEntityDataPacket(RegistryFriendlyByteBuf net)
+    ClientboundBlockEntityDataWatcherPacket(RegistryFriendlyByteBuf net)
     {
         super(net);
         this.pos = net.readBlockPos();

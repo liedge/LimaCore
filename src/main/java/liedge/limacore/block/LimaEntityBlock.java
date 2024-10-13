@@ -1,10 +1,9 @@
 package liedge.limacore.block;
 
-import liedge.limacore.blockentity.BlockEntityWithOwner;
 import liedge.limacore.blockentity.LimaBlockEntity;
 import liedge.limacore.blockentity.LimaBlockEntityType;
 import liedge.limacore.inventory.menu.LimaMenuProvider;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,7 +58,7 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     @Override
     public @Nullable LimaMenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos)
     {
-        return LimaCoreUtil.getSafeBlockEntity(level, pos, LimaMenuProvider.class);
+        return LimaBlockUtil.getSafeBlockEntity(level, pos, LimaMenuProvider.class);
     }
 
     @Override
@@ -91,8 +90,18 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     {
         if (placer instanceof Player player)
         {
-            BlockEntityWithOwner be = LimaCoreUtil.getSafeBlockEntity(level, pos, BlockEntityWithOwner.class);
-            if (be != null) be.setOwner(player);
+            LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
+            if (blockEntity != null) blockEntity.onPlacedByPlayer(level, player, stack);
+        }
+    }
+
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState)
+    {
+        if (oldState.getBlock() == newState.getBlock() && newState.getBlock() == this)
+        {
+            LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
+            if (blockEntity != null) blockEntity.onBlockStateUpdated(pos, oldState, newState);
         }
     }
 

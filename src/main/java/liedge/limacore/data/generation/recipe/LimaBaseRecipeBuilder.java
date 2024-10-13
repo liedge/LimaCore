@@ -14,35 +14,28 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.conditions.ICondition;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public abstract class LimaBaseRecipeBuilder<R extends Recipe<?>, B extends LimaBaseRecipeBuilder<R, B>> implements RecipeBuilder
 {
     private final List<ICondition> conditions = new ObjectArrayList<>();
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
-    private final RecipeSerializer<? extends R> serializer;
     protected final ModResources modResources;
 
     private String group;
 
-    protected LimaBaseRecipeBuilder(RecipeSerializer<? extends R> serializer, ModResources modResources)
+    protected LimaBaseRecipeBuilder(ModResources modResources)
     {
-        this.serializer = serializer;
         this.modResources = modResources;
-    }
-
-    protected LimaBaseRecipeBuilder(Supplier<? extends RecipeSerializer<R>> supplier, ModResources modResources)
-    {
-        this(supplier.get(), modResources);
     }
 
     public B condition(ICondition condition)
@@ -106,8 +99,27 @@ public abstract class LimaBaseRecipeBuilder<R extends Recipe<?>, B extends LimaB
         return Objects.requireNonNullElse(getGroup(), "");
     }
 
-    @Override
-    public final void save(RecipeOutput recipeOutput, ResourceLocation id)
+    protected String makeTypePrefix(Recipe<?> recipe)
+    {
+        return LimaRegistryUtil.getNonNullRegistryId(recipe.getType(), BuiltInRegistries.RECIPE_TYPE).getPath() + '/';
+    }
+
+    protected String makeSerializerPrefix(Recipe<?> recipe)
+    {
+        return LimaRegistryUtil.getNonNullRegistryId(recipe.getSerializer(), BuiltInRegistries.RECIPE_SERIALIZER).getPath() + '/';
+    }
+
+    protected String defaultFolderPrefix(R recipe, ResourceLocation recipeId)
+    {
+        return makeSerializerPrefix(recipe);
+    }
+
+    protected String getDefaultStackName(ItemStack stack)
+    {
+        return LimaRegistryUtil.getItemName(stack.getItem());
+    }
+
+    private void save(RecipeOutput recipeOutput, ResourceLocation id, boolean appendFolderPrefix)
     {
         validate(id);
 
@@ -129,14 +141,24 @@ public abstract class LimaBaseRecipeBuilder<R extends Recipe<?>, B extends LimaB
 
         // Build and save recipe
         R recipe = buildRecipe();
+        if (appendFolderPrefix)
+        {
+            String prefix = defaultFolderPrefix(recipe, id);
+            if (StringUtils.isNotBlank(prefix)) id = id.withPrefix(prefix);
+        }
         recipeOutput.accept(id, recipe, holder, conditions.toArray(ICondition[]::new));
+    }
+
+    @Override
+    public final void save(RecipeOutput recipeOutput, ResourceLocation id)
+    {
+        save(recipeOutput, id, false);
     }
 
     @Override
     public final void save(RecipeOutput recipeOutput, String name)
     {
-        ResourceLocation id = modResources.formatLocation(LimaRegistryUtil.getNonNullRegistryId(serializer, BuiltInRegistries.RECIPE_SERIALIZER).getPath(), name);
-        save(recipeOutput, id);
+        save(recipeOutput, modResources.location(name), true);
     }
 
     @Override

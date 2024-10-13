@@ -3,8 +3,11 @@ package liedge.limacore.world.loot;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.LimaCoreLootRegistries;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
@@ -15,9 +18,13 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Runs {@link BlockEntity#saveToItem(ItemStack, HolderLookup.Provider)} on the loot item stack. Only
+ * copies data if the loot item is a block item and that block is contained within {@link BlockEntityType#getValidBlocks()}.
+ */
 public class SaveBlockEntityFunction extends LootItemConditionalFunction
 {
-    public static final MapCodec<SaveBlockEntityFunction> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, SaveBlockEntityFunction::new));
+    public static final MapCodec<SaveBlockEntityFunction> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, SaveBlockEntityFunction::new));
 
     public static Builder<?> saveBlockEntityData()
     {
@@ -39,7 +46,10 @@ public class SaveBlockEntityFunction extends LootItemConditionalFunction
     protected ItemStack run(ItemStack stack, LootContext context)
     {
         BlockEntity blockEntity = context.getParamOrNull(LootContextParams.BLOCK_ENTITY);
-        if (blockEntity != null)
+
+        if (stack.getItem() instanceof BlockItem blockItem
+                && blockEntity != null
+                && blockEntity.getType().getValidBlocks().contains(blockItem.getBlock()))
         {
             blockEntity.saveToItem(stack, context.getLevel().registryAccess());
         }

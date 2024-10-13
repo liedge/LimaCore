@@ -1,6 +1,6 @@
 package liedge.limacore.inventory.menu;
 
-import net.minecraft.world.entity.player.Player;
+import liedge.limacore.capability.itemhandler.LimaItemHandlerBase;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -38,26 +38,25 @@ public class LimaItemHandlerMenuSlot extends SlotItemHandler
     }
 
     @Override
-    public boolean mayPickup(Player playerIn)
-    {
-        return !itemHandler.extractItem(slotIndex, 1, true).isEmpty();
-    }
-
-    @Override
     public boolean mayPlace(ItemStack stack)
     {
         return allowInsert && itemHandler.isItemValid(slotIndex, stack);
     }
 
     @Override
-    public ItemStack remove(int amount)
-    {
-        return itemHandler.extractItem(slotIndex, amount, false);
-    }
-
-    @Override
     public IItemHandlerModifiable getItemHandler()
     {
         return itemHandler;
+    }
+
+    @Override
+    public void setByPlayer(ItemStack stack)
+    {
+        super.setByPlayer(stack);
+    }
+
+    public void setBaseContainerChanged()
+    {
+        if (itemHandler instanceof LimaItemHandlerBase limaHandler) limaHandler.onContentsChanged(index);
     }
 }

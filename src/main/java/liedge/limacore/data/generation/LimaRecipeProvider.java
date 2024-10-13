@@ -5,23 +5,18 @@ import liedge.limacore.data.generation.recipe.LimaShapedRecipeBuilder;
 import liedge.limacore.data.generation.recipe.LimaShapelessRecipeBuilder;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.ItemLike;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class LimaRecipeProvider extends RecipeProvider
 {
     protected final ModResources modResources;
-
-    private @Nullable HolderLookup.Provider registryAccess;
 
     public LimaRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, ModResources modResources)
     {
@@ -29,17 +24,12 @@ public abstract class LimaRecipeProvider extends RecipeProvider
         this.modResources = modResources;
     }
 
-    protected HolderLookup.Provider registryAccess()
-    {
-        return Objects.requireNonNull(registryAccess, "Attempted to access holder lookup before it is accessible.");
-    }
-
     @Override
-    protected CompletableFuture<?> run(CachedOutput output, HolderLookup.Provider registries)
-    {
-        this.registryAccess = registries;
-        return super.run(output, registries);
-    }
+    protected abstract void buildRecipes(RecipeOutput output, HolderLookup.Provider registries);
+
+    @Deprecated
+    @Override
+    protected final void buildRecipes(RecipeOutput output) {}
 
     //#region Standard/Vanilla recipe builders
     protected LimaShapedRecipeBuilder shaped(ItemStack result)
@@ -74,7 +64,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smelting(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(RecipeSerializer.SMELTING_RECIPE, modResources, result, 200, SmeltingRecipe::new);
+        return new LimaCookingRecipeBuilder(modResources, result, 200, SmeltingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder smelting(ItemLike item)
@@ -84,7 +74,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder blasting(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(RecipeSerializer.BLASTING_RECIPE, modResources, result, 100, BlastingRecipe::new);
+        return new LimaCookingRecipeBuilder(modResources, result, 100, BlastingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder blasting(ItemLike item)
@@ -94,7 +84,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smoking(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(RecipeSerializer.SMOKING_RECIPE, modResources, result, 100, SmokingRecipe::new);
+        return new LimaCookingRecipeBuilder(modResources, result, 100, SmokingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder smoking(ItemLike item)

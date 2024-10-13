@@ -78,7 +78,7 @@ public abstract class LimaAdvancementGenerator implements AdvancementProvider.Ad
         {
             if (title == null)
             {
-                String key = LimaAdvancementUtil.defaultAdvancementTitle(id);
+                String key = LimaAdvancementUtil.defaultAdvancementTitleKey(id);
                 title = Component.translatable(key, args);
             }
 
@@ -89,7 +89,7 @@ public abstract class LimaAdvancementGenerator implements AdvancementProvider.Ad
         {
             if (description == null)
             {
-                String key = LimaAdvancementUtil.defaultAdvancementDescription(id);
+                String key = LimaAdvancementUtil.defaultAdvancementDescriptionKey(id);
                 description = Component.translatable(key, args);
             }
 

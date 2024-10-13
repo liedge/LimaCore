@@ -18,7 +18,7 @@ public class LimaFluidClientExtensions implements IClientFluidTypeExtensions
     {
         LimaColor fluidColor = type.getFluidColor();
         Vector3f fogColor = new Vector3f(fluidColor.red(), fluidColor.green(), fluidColor.blue());
-        int tintColor = useTint ? fluidColor.rgb() : 0xffffffff;
+        int tintColor = useTint ? fluidColor.packedRGB() : LimaColor.WHITE.packedRGB();
 
         return new LimaFluidClientExtensions(type.getStillTexture(), type.getFlowingTexture(), type.getOverlayTexture(), tintColor, fogColor, fogDistance);
     }

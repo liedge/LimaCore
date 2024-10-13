@@ -200,6 +200,11 @@ public record ModResources(String modid)
         CustomPacketPayload.Type<T> type = new CustomPacketPayload.Type<>(location(name));
         return new LimaPlayPacket.PacketSpec<>(packetFlow, type, streamCodec);
     }
+
+    public <T extends LimaPlayPacket> CustomPacketPayload.Type<T> packetType(String name)
+    {
+        return new CustomPacketPayload.Type<>(location(name));
+    }
     //#endregion
 
     @Override

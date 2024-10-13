@@ -15,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -28,6 +29,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
@@ -36,23 +39,25 @@ public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
                     BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(o -> o.item),
                     Codec.INT.fieldOf("base_weight").forGetter(o -> o.baseWeight),
                     Enchantment.CODEC.fieldOf("enchantment").forGetter(o -> o.enchantment),
-                    Codec.INT.fieldOf("weight_per_level").forGetter(o -> o.weightPerLevel))
+                    LevelBasedValue.CODEC.fieldOf("weight_per_level").forGetter(o -> o.weightPerLevel))
             .and(commonFields(instance).t1())
             .and(LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(o -> o.functions))
             .apply(instance, EnchantmentBasedWeightLootItem::new));
 
-    public static Builder enchantedWeightLootItem(ItemLike item, int baseWeight, Holder<Enchantment> enchantment, int weightPerLevel)
+    public static Builder enchantedWeightLootItem(ItemLike itemLike, Holder<Enchantment> enchantment)
     {
-        return new Builder(item, baseWeight, enchantment, weightPerLevel);
+        return new Builder(itemLike, enchantment);
     }
 
     private final Holder<Item> item;
     private final int baseWeight;
     private final Holder<Enchantment> enchantment;
-    private final int weightPerLevel;
+    private final LevelBasedValue weightPerLevel;
     private final List<LootItemFunction> functions;
 
-    private EnchantmentBasedWeightLootItem(Holder<Item> item, int baseWeight, Holder<Enchantment> enchantment, int weightPerLevel, List<LootItemCondition> conditions, List<LootItemFunction> functions)
+    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
+
+    private EnchantmentBasedWeightLootItem(Holder<Item> item, int baseWeight, Holder<Enchantment> enchantment, LevelBasedValue weightPerLevel, List<LootItemCondition> conditions, List<LootItemFunction> functions)
     {
         super(conditions);
         this.item = item;
@@ -60,6 +65,8 @@ public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
         this.enchantment = enchantment;
         this.weightPerLevel = weightPerLevel;
         this.functions = functions;
+
+        this.compositeFunction = LootItemFunctions.compose(functions);
     }
 
     @Override
@@ -73,35 +80,25 @@ public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
     {
         if (canRun(ctx))
         {
-            LivingEntity attacker = LimaCoreUtil.castOrNull(LivingEntity.class, ctx.getParamOrNull(LootContextParams.ATTACKING_ENTITY));
+            int enchantmentLevel = LimaCoreUtil.toIntOrElse(LivingEntity.class, ctx.getParamOrNull(LootContextParams.ATTACKING_ENTITY), o -> EnchantmentHelper.getEnchantmentLevel(enchantment, o), 0);
 
-            if (attacker != null)
+            entryConsumer.accept(new LootPoolEntry()
             {
-                int enchantmentLevel = EnchantmentHelper.getEnchantmentLevel(enchantment, attacker);
-
-                entryConsumer.accept(new LootPoolEntry()
+                @Override
+                public int getWeight(float luck)
                 {
-                    @Override
-                    public int getWeight(float ignoredLuck)
-                    {
-                        return baseWeight + (weightPerLevel * enchantmentLevel);
-                    }
+                    int bonusWeight = enchantmentLevel > 0 ? Math.round(weightPerLevel.calculate(enchantmentLevel)) : 0;
+                    return baseWeight + bonusWeight;
+                }
 
-                    @Override
-                    public void createItemStack(Consumer<ItemStack> stackConsumer, LootContext lootContext)
-                    {
-                        ItemStack stack = new ItemStack(item);
-                        for (LootItemFunction function : functions)
-                        {
-                            stack = function.apply(stack, lootContext);
-                        }
+                @Override
+                public void createItemStack(Consumer<ItemStack> stackConsumer, LootContext lootContext)
+                {
+                    LootItemFunction.decorate(compositeFunction, stackConsumer, lootContext).accept(new ItemStack(item));
+                }
+            });
 
-                        stackConsumer.accept(stack);
-                    }
-                });
-
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -122,17 +119,33 @@ public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
     {
         private final ObjectList<LootItemFunction> functions = new ObjectArrayList<>();
         private final Holder<Item> item;
-        private final int baseWeight;
         private final Holder<Enchantment> enchantment;
-        private final int weightPerLevel;
+
+        private int baseWeight = 1;
+        private LevelBasedValue weightPerLevel;
 
         @SuppressWarnings("deprecation")
-        private Builder(ItemLike itemLike, int baseWeight, Holder<Enchantment> enchantment, int weightPerLevel)
+        private Builder(ItemLike itemLike, Holder<Enchantment> enchantment)
         {
             this.item = itemLike.asItem().builtInRegistryHolder();
-            this.baseWeight = baseWeight;
             this.enchantment = enchantment;
+        }
+
+        public Builder setBaseWeight(int baseWeight)
+        {
+            this.baseWeight = baseWeight;
+            return this;
+        }
+
+        public Builder setWeightPerLevel(LevelBasedValue weightPerLevel)
+        {
             this.weightPerLevel = weightPerLevel;
+            return this;
+        }
+
+        public Builder setWeightPerLevel(float perLevel)
+        {
+            return setWeightPerLevel(LevelBasedValue.constant(perLevel));
         }
 
         @Override
@@ -144,6 +157,7 @@ public class EnchantmentBasedWeightLootItem extends LootPoolEntryContainer
         @Override
         public LootPoolEntryContainer build()
         {
+            Objects.requireNonNull(weightPerLevel, "Weight per level not set for EnchantmentBasedWeightLootItem builder.");
             return new EnchantmentBasedWeightLootItem(item, baseWeight, enchantment, weightPerLevel, getConditions(), ObjectLists.unmodifiable(functions));
         }
 

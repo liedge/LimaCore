@@ -3,14 +3,12 @@ package liedge.limacore.inventory.menu;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import liedge.limacore.LimaCore;
 import liedge.limacore.network.NetworkSerializer;
-import liedge.limacore.network.packet.ClientboundMenuDataPacket;
+import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.registry.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.Holder;
@@ -24,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.Objects;
@@ -61,14 +60,11 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         this.playerInventory = inventory;
         this.level = playerInventory.player.level();
         this.user = LimaCoreUtil.castOrNull(ServerPlayer.class, playerInventory.player);
+        this.dataWatchers = createDataWatchers();
 
-        ObjectList<LimaDataWatcher<?>> watchersBuilder = new ObjectArrayList<>();
-        Int2ObjectMap<EventHandler<?>> eventHandlerBuilder = new Int2ObjectOpenHashMap<>();
-        defineDataWatchers(watchersBuilder::add);
-        defineButtonEventHandlers((id, handler) -> LimaCollectionsUtil.putNoDuplicates(eventHandlerBuilder, id, handler));
-
-        this.dataWatchers = ObjectLists.unmodifiable(watchersBuilder);
-        this.buttonEventHandlers = Int2ObjectMaps.unmodifiable(eventHandlerBuilder);
+        EventHandlerBuilder handlerBuilder = new EventHandlerBuilder();
+        defineButtonEventHandlers(handlerBuilder);
+        this.buttonEventHandlers = handlerBuilder.map != null ? Int2ObjectMaps.unmodifiable(handlerBuilder.map) : Int2ObjectMaps.emptyMap();
     }
 
     @Override
@@ -78,9 +74,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     @Override
-    public <T> void sendDataWatcherPacket(int index, NetworkSerializer<T> streamCodec, T data)
+    public <T> void sendDataWatcherPacket(int index, NetworkSerializer<T> serializer, T data)
     {
-        getUser().connection.send(new ClientboundMenuDataPacket<>(this.containerId, index, streamCodec, data));
+        getUser().connection.send(new ClientboundMenuDataWatcherPacket<>(this.containerId, index, serializer, data));
     }
 
     @Override
@@ -109,6 +105,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             else
             {
                 slot.setChanged();
+                if (slot instanceof LimaItemHandlerMenuSlot limaSlot) limaSlot.setBaseContainerChanged();
             }
         }
 
@@ -119,28 +116,17 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     public final void broadcastChanges()
     {
         super.broadcastChanges();
-        broadcastChanges(firstTick);
-        if (firstTick) firstTick = false;
+
+        if (firstTick)
+        {
+            forceSyncDataWatchers();
+            firstTick = false;
+        }
+
+        tickDataWatchers();
     }
 
-    protected abstract void defineDataWatchers(Consumer<LimaDataWatcher<?>> builder);
-
-    protected abstract void defineButtonEventHandlers(BiConsumer<Integer, EventHandler<?>> builder);
-
-    protected <T> EventHandler<T> handle(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
-    {
-        return new EventHandler<>(serializer, action);
-    }
-
-    protected <T> EventHandler<T> handle(Supplier<? extends NetworkSerializer<T>> supplier, BiConsumer<ServerPlayer, T> action)
-    {
-        return handle(supplier.get(), action);
-    }
-
-    protected void broadcastChanges(boolean isFirstTick)
-    {
-        tickDataWatchers(isFirstTick);
-    }
+    protected void defineButtonEventHandlers(EventHandlerBuilder builder) {}
 
     public CTX menuContext()
     {
@@ -158,6 +144,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     @SuppressWarnings("unchecked")
+    @ApiStatus.Internal
     public final <T> void handleCustomButtonData(ServerPlayer sender, int buttonId, NetworkSerializer<T> serializer, T data)
     {
         if (buttonEventHandlers.containsKey(buttonId))
@@ -182,9 +169,14 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     //#region Quick move functions
     protected abstract boolean quickMoveInternal(int index, ItemStack stack);
 
-    protected boolean quickMoveToSlot(ItemStack stack, int slot, boolean reverse)
+    protected boolean quickMoveToContainerSlot(ItemStack stack, int slot)
     {
-        return moveItemStackTo(stack, slot, slot + 1, reverse);
+        return quickMoveToContainerSlots(stack, slot, slot + 1, false);
+    }
+
+    protected boolean quickMoveToContainerSlots(ItemStack stack, int startInclusive, int endExclusive, boolean reverse)
+    {
+        return moveItemStackTo(stack, startInclusive, endExclusive, reverse);
     }
 
     protected boolean quickMoveToInventory(ItemStack stack, boolean reverse)
@@ -298,6 +290,28 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         Slot createSlot(T container, int index, int x, int y);
     }
 
-    protected record EventHandler<T>(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
+    protected static class EventHandlerBuilder
+    {
+        private Int2ObjectMap<EventHandler<?>> map;
+
+        public <T> void handleAction(int index, NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
+        {
+            if (map == null) map = new Int2ObjectOpenHashMap<>(); // Only initialized if used
+
+            LimaCollectionsUtil.putNoDuplicates(map, index, new EventHandler<>(serializer, action));
+        }
+
+        public <T> void handleAction(int index, Supplier<? extends NetworkSerializer<T>> supplier, BiConsumer<ServerPlayer, T> action)
+        {
+            handleAction(index, supplier.get(), action);
+        }
+
+        public void handleUnitAction(int index, Consumer<ServerPlayer> action)
+        {
+            handleAction(index, LimaCoreNetworkSerializers.UNIT, (sender, $) -> action.accept(sender));
+        }
+    }
+
+    private record EventHandler<T>(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
     { }
 }

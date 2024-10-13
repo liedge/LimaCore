@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 import static liedge.limacore.util.LimaRegistryUtil.getBlockName;
 import static liedge.limacore.util.LimaRegistryUtil.getItemName;
 
-public abstract class LimaBlockStateProvider extends BlockStateProvider implements ModelProviderHelper
+public abstract class LimaBlockStateProvider extends BlockStateProvider implements ModelProviderExtensions
 {
     private final ModResources resources;
     private final ExistingFileHelper helper;

@@ -1,5 +1,6 @@
 package liedge.limacore.util;
 
+import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import com.mojang.logging.LogUtils;
@@ -8,11 +9,12 @@ import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.nbt.*;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -37,10 +39,15 @@ public final class LimaNbtUtil
 
     private LimaNbtUtil() {}
 
-    // Codec functions
+    // Codec encoding helpers
     public static <T> Tag codecEncode(Codec<T> codec, DynamicOps<Tag> ops, T object)
     {
         return codec.encodeStart(ops, object).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to encode to NBT tag: %s", codec, msg)));
+    }
+
+    public static <T> Tag codecEncode(Codec<T> codec, RegistryAccess registries, T object)
+    {
+        return codecEncode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), object);
     }
 
     public static <T> Tag codecEncode(Codec<T> codec, T object)
@@ -48,9 +55,15 @@ public final class LimaNbtUtil
         return codecEncode(codec, NbtOps.INSTANCE, object);
     }
 
+    // Codec decoding helpers
     public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, Tag tag)
     {
-        return codec.decode(NbtOps.INSTANCE, tag).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to decode NBT tag: %s", codec, msg))).getFirst();
+        return codec.decode(ops, tag).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to decode NBT tag: %s", codec, msg))).getFirst();
+    }
+
+    public static <T> T codecDecode(Codec<T> codec, RegistryAccess registries, Tag tag)
+    {
+        return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), tag);
     }
 
     public static <T> T codecDecode(Codec<T> codec, Tag tag)
@@ -61,6 +74,11 @@ public final class LimaNbtUtil
     public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
     {
         return codecDecode(codec, ops, Objects.requireNonNull(compoundTag.get(key), "Compound tag does not contain sub-tag '" + key + "'"));
+    }
+
+    public static <T> T codecDecode(Codec<T> codec, RegistryAccess registries, CompoundTag compoundTag, String key)
+    {
+        return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), compoundTag, key);
     }
 
     public static <T> T codecDecode(Codec<T> codec, CompoundTag compoundTag, String key)
@@ -103,21 +121,19 @@ public final class LimaNbtUtil
 
     public static <E extends Enum<E>> E getAsEnum(CompoundTag tag, String key, Class<E> enumClass)
     {
-        int ordinal = Mth.clamp(getAsInt(tag, key, 0), 0, enumClass.getEnumConstants().length);
-        return enumClass.getEnumConstants()[ordinal];
+        E[] enumValues = LimaCollectionsUtil.checkedEnumConstants(enumClass);
+        int ordinal = getAsInt(tag, key, -1);
+        Preconditions.checkElementIndex(ordinal, enumValues.length, "Enum ordinal");
+
+        return enumValues[ordinal];
     }
 
     public static <E extends Enum<E>> E getAsEnum(CompoundTag tag, String key, Class<E> enumClass, E fallback)
     {
+        E[] enumValues = LimaCollectionsUtil.checkedEnumConstants(enumClass);
         int ordinal = getAsInt(tag, key, -1);
-        if (ordinal >= 0 && ordinal < enumClass.getEnumConstants().length)
-        {
-            return enumClass.getEnumConstants()[ordinal];
-        }
-        else
-        {
-            return fallback;
-        }
+
+        return (ordinal >= 0 && ordinal < enumValues.length) ? enumValues[ordinal] : fallback;
     }
     //#endregion
 

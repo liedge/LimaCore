@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import org.joml.Matrix4f;
 
 public final class LimaGuiUtil
@@ -37,7 +38,7 @@ public final class LimaGuiUtil
         BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha)
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
     {
         RenderSystem.setShaderTexture(0, atlasLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -53,5 +54,23 @@ public final class LimaGuiUtil
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
         RenderSystem.disableBlend();
+    }
+
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha)
+    {
+        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, u0, u1, v0, v1,
+                (int) (red * 255f),
+                (int) (green * 255f),
+                (int) (blue * 255f),
+                (int) (alpha * 255f));
+    }
+
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int argb32)
+    {
+        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, u0, u1, v0, v1,
+                FastColor.ARGB32.red(argb32),
+                FastColor.ARGB32.green(argb32),
+                FastColor.ARGB32.blue(argb32),
+                FastColor.ARGB32.alpha(argb32));
     }
 }

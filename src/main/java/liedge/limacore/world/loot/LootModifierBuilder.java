@@ -18,12 +18,24 @@ public abstract class LootModifierBuilder<M extends IGlobalLootModifier, B exten
         return new SimpleBuilder<>(conditions -> new AddTableLootModifier(conditions, lootTableKey));
     }
 
-    protected final List<LootItemCondition> conditions = new ObjectArrayList<>();
+    private final List<LootItemCondition> conditions = new ObjectArrayList<>();
 
     @SuppressWarnings("unchecked")
     protected final B selfUnchecked()
     {
         return (B) this;
+    }
+
+    protected LootItemCondition[] buildConditions()
+    {
+        return conditions.toArray(LootItemCondition[]::new);
+    }
+
+    protected abstract M createModifier(LootItemCondition[] conditions);
+
+    public final M build()
+    {
+        return createModifier(conditions.toArray(LootItemCondition[]::new));
     }
 
     public B requires(LootItemCondition condition)
@@ -42,8 +54,6 @@ public abstract class LootModifierBuilder<M extends IGlobalLootModifier, B exten
         return requires(LootItemKilledByPlayerCondition.killedByPlayer());
     }
 
-    public abstract M build();
-
     public static class SimpleBuilder<M extends IGlobalLootModifier> extends LootModifierBuilder<M, SimpleBuilder<M>>
     {
         private final Function<LootItemCondition[], M> factory;
@@ -54,9 +64,9 @@ public abstract class LootModifierBuilder<M extends IGlobalLootModifier, B exten
         }
 
         @Override
-        public M build()
+        protected M createModifier(LootItemCondition[] conditions)
         {
-            return factory.apply(conditions.toArray(LootItemCondition[]::new));
+            return factory.apply(conditions);
         }
     }
 }
