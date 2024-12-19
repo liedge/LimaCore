@@ -1,6 +1,5 @@
 package liedge.limacore.data;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -108,12 +107,12 @@ public final class LimaCoreCodecs
 
     public static <E> Codec<ObjectSet<E>> objectSetCodec(Codec<E> elementCodec)
     {
-        return elementCodec.listOf().xmap(ObjectOpenHashSet::new, ObjectArrayList::new);
+        return elementCodec.listOf().xmap(list -> ObjectSets.unmodifiable(new ObjectOpenHashSet<>(list)), List::copyOf);
     }
 
     public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec, Codec<Integer> valueCodec)
     {
-        return Codec.unboundedMap(keyCodec, valueCodec).xmap(Object2IntOpenHashMap::new, Function.identity());
+        return Codec.unboundedMap(keyCodec, valueCodec).xmap(map -> Object2IntMaps.unmodifiable(new Object2IntOpenHashMap<>(map)), Function.identity());
     }
 
     public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec)
@@ -169,21 +168,5 @@ public final class LimaCoreCodecs
     public static <A, S> MapCodec<S> flatComapMapMapCodec(MapCodec<A> baseCodec, Function<? super S, ? extends DataResult<? extends A>> to, Function<? super A, ? extends S> from)
     {
         return MapCodec.of(baseCodec.flatComap(to), baseCodec.map(from));
-    }
-
-    public static <T, L extends T, R extends T> DataResult<Either<L, R>> eitherSubclassDataResult(T object, Class<L> leftClass, Class<R> rightClass)
-    {
-        if (leftClass.isInstance(object))
-        {
-            return DataResult.success(Either.left(leftClass.cast(object)));
-        }
-        else if (rightClass.isInstance(object))
-        {
-            return DataResult.success(Either.right(rightClass.cast(object)));
-        }
-        else
-        {
-            return DataResult.error(() -> "Object is not an instance of either " + leftClass.getSimpleName() + " or " + rightClass.getSimpleName());
-        }
     }
 }

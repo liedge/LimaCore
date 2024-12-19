@@ -1,5 +1,6 @@
 package liedge.limacore.data;
 
+import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -11,8 +12,7 @@ import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -80,6 +80,11 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
     public A byOrdinal(int ordinal, A fallback)
     {
         return Objects.requireNonNullElse(byOrdinalInternal(ordinal), fallback);
+    }
+
+    public Codec<Set<A>> setOf()
+    {
+        return listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
     }
 
     @Override
