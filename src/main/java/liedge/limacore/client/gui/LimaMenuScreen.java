@@ -1,5 +1,6 @@
 package liedge.limacore.client.gui;
 
+import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.inventory.menu.LimaMenu;
 import liedge.limacore.network.NetworkSerializer;
@@ -9,9 +10,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
@@ -78,7 +82,12 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
 
         for (LimaRenderable widget : tooltipWidgets)
         {
-            if (widget.isMouseOver(x, y)) graphics.renderComponentTooltip(font, widget.getTooltipLines(), x, y);
+            if (widget.isMouseOver(x, y) && widget.hasTooltip())
+            {
+                List<Either<FormattedText, TooltipComponent>> list = new ObjectArrayList<>();
+                widget.createWidgetTooltip(list::add);
+                graphics.renderComponentTooltipFromElements(font, list, x, y, ItemStack.EMPTY);
+            }
         }
     }
 

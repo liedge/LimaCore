@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class LimaBaseRecipeBuilder<R extends Recipe<?>, B extends LimaBaseRecipeBuilder<R, B>> implements RecipeBuilder
+public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecipeBuilder<R, B>> implements RecipeBuilder
 {
     private final List<ICondition> conditions = new ObjectArrayList<>();
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
@@ -33,7 +33,7 @@ public abstract class LimaBaseRecipeBuilder<R extends Recipe<?>, B extends LimaB
 
     private String group;
 
-    protected LimaBaseRecipeBuilder(ModResources modResources)
+    protected LimaRecipeBuilder(ModResources modResources)
     {
         this.modResources = modResources;
     }

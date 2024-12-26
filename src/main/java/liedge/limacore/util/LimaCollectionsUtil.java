@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +40,25 @@ public final class LimaCollectionsUtil
     }
     //#endregion
 
+    // Indexed collection helpers
+    public static <T> @Nullable T getFrom(T[] array, int index)
+    {
+        return (index >= 0 && index < array.length) ? array[index] : null;
+    }
+
+    public static <T> @Nullable T getFrom(List<T> list, int index)
+    {
+        return (index >= 0 && index < list.size()) ? list.get(index) : null;
+    }
+
+    public static <T> int addAndGetIndex(List<T> list, T element)
+    {
+        int index = list.size();
+        list.add(element);
+        return index;
+    }
+
+    // Misc helpers
     public static Stream<CompoundTag> streamCompoundList(ListTag tag)
     {
         if (tag.isEmpty()) return Stream.empty();
@@ -93,13 +113,6 @@ public final class LimaCollectionsUtil
     {
         int size = collection.size();
         return size / segmentSize + (size % segmentSize == 0 ? 0 : 1);
-    }
-
-    public static <T> int addAndGetIndex(List<T> list, T element)
-    {
-        int index = list.size();
-        list.add(element);
-        return index;
     }
 
     // Helpers

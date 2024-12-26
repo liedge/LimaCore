@@ -8,12 +8,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
+import liedge.limacore.util.LimaCoreUtil;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -21,6 +24,7 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import static liedge.limacore.util.LimaMathUtil.toDeg;
 import static liedge.limacore.util.LimaMathUtil.toRad;
@@ -122,12 +126,17 @@ public final class LimaCoreCodecs
 
     public static <R, T extends R> Codec<T> classCastRegistryCodec(Registry<R> registry, Class<T> valueClass)
     {
-        return registry.byNameCodec().comapFlatMap(o -> valueClass.isInstance(o) ? DataResult.success(valueClass.cast(o)) : DataResult.error(() -> "Registry object is not an instance of " + valueClass.getSimpleName()), Function.identity());
+        return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
     }
 
     public static MapCodec<NonNullList<Ingredient>> ingredientsMapCodec(int minInclusive, int maxInclusive)
     {
         return Ingredient.CODEC_NONEMPTY.listOf(minInclusive, maxInclusive).xmap(NonNullList::copyOf, Function.identity()).fieldOf("ingredients");
+    }
+
+    public static MapCodec<List<SizedIngredient>> sizedIngredientsMapCodec(int minInclusive, int maxInclusive)
+    {
+        return SizedIngredient.FLAT_CODEC.listOf(minInclusive, maxInclusive).xmap(Function.identity(), Function.identity()).fieldOf("ingredients");
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)
@@ -148,6 +157,11 @@ public final class LimaCoreCodecs
         {
             return DataResult.error(() -> "Input is not a list of " + expectedSize + " elements.");
         }
+    }
+
+    public static <T> DataResult<T> nullableDataResult(@Nullable T value, Supplier<String> errorMessageSupplier)
+    {
+        return value != null ? DataResult.success(value) : DataResult.error(errorMessageSupplier);
     }
 
     public static <E, A> Codec<A> fixedListComapFlatMap(Codec<E> elementCodec, int size, Function<IntFunction<E>, ? extends A> to, Function<? super A, ? extends List<E>> from)

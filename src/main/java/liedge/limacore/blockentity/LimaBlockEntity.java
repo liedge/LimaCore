@@ -8,8 +8,13 @@ import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -62,6 +68,26 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     }
 
     @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket()
+    {
+        CompoundTag updateTag = getUpdateTag(nonNullRegistryAccess());
+        if (!updateTag.isEmpty())
+        {
+            return ClientboundBlockEntityDataPacket.create(this, ($1, $2) -> updateTag);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider)
+    {
+        handleUpdateTag(pkt.getTag(), lookupProvider);
+    }
+
+    @Override
     public LimaBlockEntityType<?> getType()
     {
         return (LimaBlockEntityType<?>) super.getType();
@@ -72,11 +98,23 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     {
         super.onLoad();
 
-        if (checkClientSide())
+        if (level != null)
         {
-            PacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
+            if (level.isClientSide)
+            {
+                PacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
+                onLoadClient(level);
+            }
+            else
+            {
+                onLoadServer(level);
+            }
         }
     }
+
+    protected void onLoadClient(Level level) {}
+
+    protected void onLoadServer(Level level) {}
 
     // Override here to avoid needing warning suppression in subclasses
     @SuppressWarnings("deprecation")

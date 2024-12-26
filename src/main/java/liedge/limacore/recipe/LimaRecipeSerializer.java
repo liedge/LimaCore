@@ -4,12 +4,13 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 /**
  * Simple implementation of {@link RecipeSerializer} for a single codec/stream codec pair.
  */
-public record LimaRecipeSerializer<R extends LimaCustomRecipe<?>>(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec) implements RecipeSerializer<R>
+public record LimaRecipeSerializer<R extends Recipe<?>>(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec) implements RecipeSerializer<R>
 {
     @Override
     public boolean equals(Object obj)

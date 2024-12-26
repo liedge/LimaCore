@@ -1,7 +1,6 @@
 package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
-import liedge.limacore.recipe.ingredient.LimaCustomCountIngredient;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
@@ -65,16 +64,5 @@ public final class LimaRecipesUtil
         List<Ingredient> ingredients = recipe.getIngredients();
         Preconditions.checkElementIndex(index, ingredients.size(), "Recipe ingredient");
         return ingredients.get(index);
-    }
-
-    public static int getIngredientStackSize(Ingredient ingredient)
-    {
-        return LimaCoreUtil.toIntOrElse(LimaCustomCountIngredient.class, ingredient.getCustomIngredient(), LimaCustomCountIngredient::getCount, 1);
-    }
-
-    public static int getIngredientStackSize(Recipe<?> recipe, int index)
-    {
-        Ingredient ingredient = getIngredientByIndex(recipe, index);
-        return getIngredientStackSize(ingredient);
     }
 }

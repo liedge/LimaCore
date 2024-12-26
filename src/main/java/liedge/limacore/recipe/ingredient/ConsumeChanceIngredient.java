@@ -34,7 +34,7 @@ public record ConsumeChanceIngredient(Ingredient child, float consumeChance) imp
     @Override
     public boolean isSimple()
     {
-        return child.isSimple();
+        return child.isSimple(); // TODO Should this be a simple or ingredient or not?
     }
 
     @Override

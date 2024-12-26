@@ -52,14 +52,8 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
 
     private @Nullable A byOrdinalInternal(int ordinal)
     {
-        if (ordinal >= 0 && ordinal < values.length)
-        {
-            return values[ordinal];
-        }
-        else
-        {
-            return defaultValue;
-        }
+        A val = LimaCollectionsUtil.getFrom(values, ordinal);
+        return val != null ? val : defaultValue;
     }
 
     public A byName(String name)

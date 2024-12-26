@@ -9,7 +9,6 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import org.jetbrains.annotations.ApiStatus;
 
 public interface LimaMenuProvider extends MenuProvider
 {
@@ -35,7 +34,6 @@ public interface LimaMenuProvider extends MenuProvider
 
     LimaMenuType<?, ?> getMenuType();
 
-    @ApiStatus.Internal
     default Object getOrCreateMenuContext()
     {
         return this;
@@ -61,6 +59,6 @@ public interface LimaMenuProvider extends MenuProvider
     @Override
     default Component getDisplayName()
     {
-        return getMenuType().translate();
+        return getMenuType().getMenuTitle(getOrCreateMenuContext());
     }
 }

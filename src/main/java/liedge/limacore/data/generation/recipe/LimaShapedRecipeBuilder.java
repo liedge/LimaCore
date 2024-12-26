@@ -17,7 +17,7 @@ import net.minecraft.world.level.ItemLike;
 import java.util.List;
 import java.util.Objects;
 
-public class LimaShapedRecipeBuilder extends LimaBaseRecipeBuilder<ShapedRecipe, LimaShapedRecipeBuilder>
+public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, LimaShapedRecipeBuilder>
 {
     private final List<String> rows = new ObjectArrayList<>();
     private final Char2ObjectMap<Ingredient> ingredients = new Char2ObjectOpenHashMap<>();

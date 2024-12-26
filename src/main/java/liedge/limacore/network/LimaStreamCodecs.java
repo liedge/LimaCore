@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.Collection;
@@ -161,6 +162,11 @@ public final class LimaStreamCodecs
     public static StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> ingredientsStreamCodec(int minInclusive, int maxInclusive)
     {
         return Ingredient.CONTENTS_STREAM_CODEC.apply(asClampedCollection(NonNullList::createWithCapacity, minInclusive, maxInclusive));
+    }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredientsStreamCodec(int minInclusive, int maxInclusive)
+    {
+        return SizedIngredient.STREAM_CODEC.apply(asClampedCollection(ObjectArrayList::new, minInclusive, maxInclusive));
     }
 
     public static <T, U extends T> StreamCodec<RegistryFriendlyByteBuf, U> classCastRegistryStreamCodec(ResourceKey<? extends Registry<T>> registryKey, Class<U> valueClass)

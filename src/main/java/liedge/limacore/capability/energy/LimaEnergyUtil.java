@@ -40,7 +40,7 @@ public final class LimaEnergyUtil
         {
             return FORMAT_2_ROUND_FLOOR.format(energy / (double) MILLION) + " MCE";
         }
-        else if (energy >= THOUSAND)
+        else if (energy >= 10_000) // Only abbreviate to kilo after 10k for greater precision/readability
         {
             return FORMAT_2_ROUND_FLOOR.format(energy / (double) THOUSAND) + " kCE";
         }

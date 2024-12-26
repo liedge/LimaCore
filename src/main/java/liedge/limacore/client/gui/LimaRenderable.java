@@ -2,9 +2,6 @@ package liedge.limacore.client.gui;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.network.chat.Component;
-
-import java.util.List;
 
 public interface LimaRenderable extends Renderable
 {
@@ -19,10 +16,12 @@ public interface LimaRenderable extends Renderable
     @Override
     void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks);
 
-    default List<Component> getTooltipLines()
+    default boolean hasTooltip()
     {
-        return List.of();
+        return false;
     }
+
+    default void createWidgetTooltip(TooltipLineConsumer consumer) {}
 
     default boolean isMouseOver(double mouseX, double mouseY)
     {

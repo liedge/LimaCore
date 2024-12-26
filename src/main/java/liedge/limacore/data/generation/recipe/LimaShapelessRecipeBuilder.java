@@ -7,14 +7,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 
-public class LimaShapelessRecipeBuilder extends LimaCustomRecipeBuilder<ShapelessRecipe, LimaShapelessRecipeBuilder>
+public class LimaShapelessRecipeBuilder extends LimaIngredientListRecipeBuilder.SimpleBuilder<ShapelessRecipe, LimaShapelessRecipeBuilder>
 {
-    private final ItemStack resultItem;
-
     public LimaShapelessRecipeBuilder(ModResources modResources, ItemStack resultItem)
     {
-        super(modResources);
-        this.resultItem = resultItem;
+        super(modResources, resultItem);
     }
 
     @Override
@@ -33,11 +30,5 @@ public class LimaShapelessRecipeBuilder extends LimaCustomRecipeBuilder<Shapeles
     protected ShapelessRecipe buildRecipe()
     {
         return new ShapelessRecipe("", CraftingBookCategory.MISC, resultItem, buildIngredients());
-    }
-
-    @Override
-    protected String getDefaultRecipeName()
-    {
-        return getDefaultStackName(resultItem);
     }
 }

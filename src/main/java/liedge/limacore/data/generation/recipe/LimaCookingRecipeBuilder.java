@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 
-public class LimaCookingRecipeBuilder extends LimaSimpleRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
+public class LimaCookingRecipeBuilder extends LimaIngredientListRecipeBuilder.SimpleBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
 {
     private float experience;
     private final int cookingTime;
