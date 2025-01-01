@@ -17,6 +17,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -124,6 +125,11 @@ public record ModResources(String modid)
     public TagKey<Item> itemTag(String name)
     {
         return ItemTags.create(location(name));
+    }
+
+    public TagKey<BlockEntityType<?>> blockEntityTag(String name)
+    {
+        return tagKey(Registries.BLOCK_ENTITY_TYPE, name);
     }
 
     public TagKey<EntityType<?>> entityTypeTag(String name)

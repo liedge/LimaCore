@@ -20,7 +20,7 @@ public interface ItemHolderBlockEntity
     {
         if (side != null)
         {
-            return ItemHandlerIOWrapper.create(getItemHandler(), getItemIOForSide(side));
+            return new ItemHandlerIOWrapper(getItemHandler(), getItemIOForSide(side));
         }
 
         return null;
