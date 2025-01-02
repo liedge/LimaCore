@@ -7,14 +7,23 @@ public final class LimaItemHandlerUtil
 {
     private LimaItemHandlerUtil() {}
 
-    public static int getNextEmptySlot(IItemHandler handler)
+    public static int getNextEmptySlot(IItemHandler handler, boolean reverse)
     {
-        for (int i = 0; i < handler.getSlots(); i++)
+        int i = reverse ? handler.getSlots() - 1 : 0;
+        final int step = reverse ? -1 : 1;
+
+        while (reverse ? i >= 0 : i < handler.getSlots())
         {
             if (handler.getStackInSlot(i).isEmpty()) return i;
+            i += step;
         }
 
         return -1;
+    }
+
+    public static int getNextEmptySlot(IItemHandler handler)
+    {
+        return getNextEmptySlot(handler, false);
     }
 
     public static ItemStack extractFromAnySlot(IItemHandler source, int amount, boolean simulate)
