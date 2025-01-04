@@ -25,16 +25,17 @@ import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@SuppressWarnings("SameParameterValue")
 public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements DataWatcherHolder
 {
     public static final int DEFAULT_INV_X = 8;
     public static final int DEFAULT_INV_Y = 84;
     public static final int DEFAULT_HOTBAR_Y = 142;
+    public static final int DEFAULT_INV_HOTBAR_OFFSET = 58;
 
     // Commonly used menu properties
     private final LimaMenuType<CTX, ?> type;
@@ -43,7 +44,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     protected final Inventory playerInventory;
     protected final CTX menuContext;
     private final Level level;
-    private final ServerPlayer user;
     private boolean firstTick = true;
 
     protected int inventoryStart;
@@ -59,7 +59,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         this.menuContext = menuContext;
         this.playerInventory = inventory;
         this.level = playerInventory.player.level();
-        this.user = LimaCoreUtil.castOrNull(ServerPlayer.class, playerInventory.player);
         this.dataWatchers = createDataWatchers();
 
         EventHandlerBuilder handlerBuilder = new EventHandlerBuilder();
@@ -76,7 +75,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     @Override
     public <T> void sendDataWatcherPacket(int index, NetworkSerializer<T> serializer, T data)
     {
-        getUser().connection.send(new ClientboundMenuDataWatcherPacket<>(this.containerId, index, serializer, data));
+        getServerUser().connection.send(new ClientboundMenuDataWatcherPacket<>(this.containerId, index, serializer, data));
     }
 
     @Override
@@ -138,9 +137,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         return level;
     }
 
-    public ServerPlayer getUser()
+    public ServerPlayer getServerUser()
     {
-        return Objects.requireNonNull(user, "Attempted to access server menu user on client.");
+        return LimaCoreUtil.castOrThrow(ServerPlayer.class, playerInventory.player, "Attempted to access server menu user on client.");
     }
 
     @SuppressWarnings("unchecked")
@@ -166,6 +165,8 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
+    protected abstract IItemHandlerModifiable menuContainer();
+
     //#region Quick move functions
     protected abstract boolean quickMoveInternal(int index, ItemStack stack);
 
@@ -176,7 +177,18 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected boolean quickMoveToContainerSlots(ItemStack stack, int startInclusive, int endExclusive, boolean reverse)
     {
-        return moveItemStackTo(stack, startInclusive, endExclusive, reverse);
+        boolean result = moveItemStackTo(stack, startInclusive, endExclusive, reverse);
+
+        int i = reverse ? endExclusive - 1 : startInclusive;
+        final int step = reverse ? -1 : 1;
+
+        while (reverse ? i >= startInclusive : i < endExclusive)
+        {
+            if (slots.get(i) instanceof LimaItemHandlerMenuSlot handlerSlot) handlerSlot.setBaseContainerChanged();
+            i += step;
+        }
+
+        return result;
     }
 
     protected boolean quickMoveToInventory(ItemStack stack, boolean reverse)
@@ -202,6 +214,16 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
     //#endregion
 
+    protected void addSlot(int slotIndex, int xPos, int yPos)
+    {
+        addSlot(new LimaItemHandlerMenuSlot(menuContainer(), slotIndex, xPos, yPos));
+    }
+
+    protected void addSlot(int slotIndex, int xPos, int yPos, boolean allowInsert)
+    {
+        addSlot(new LimaItemHandlerMenuSlot(menuContainer(), slotIndex, xPos, yPos, allowInsert));
+    }
+
     protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
     {
         for (int y = 0; y < rows; y++)
@@ -213,14 +235,19 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
-    protected void addRecipeResultSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, RecipeType<?> recipeType)
+    protected void addSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows)
     {
-        addSlot(new RecipeResultMenuSlot(itemHandler, slotIndex, xPos, yPos, playerInventory.player, recipeType));
+        addSlotsGrid(menuContainer(), startIndex, xPos, yPos, columns, rows, LimaItemHandlerMenuSlot::new);
     }
 
-    protected void addRecipeResultSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, Holder<RecipeType<?>> holder)
+    protected void addRecipeResultSlot(int slotIndex, int xPos, int yPos, RecipeType<?> recipeType)
     {
-        addRecipeResultSlot(itemHandler, slotIndex, xPos, yPos, holder.value());
+        addSlot(new RecipeResultMenuSlot(menuContainer(), slotIndex, xPos, yPos, playerInventory.player, recipeType));
+    }
+
+    protected void addRecipeResultSlot(int slotIndex, int xPos, int yPos, Holder<RecipeType<?>> recipeTypeHolder)
+    {
+        addRecipeResultSlot(slotIndex, xPos, yPos, recipeTypeHolder.value());
     }
 
     protected void addPlayerInventory(int xPos, int yPos, MenuSlotFactory<Container> factory)
@@ -258,6 +285,17 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     protected void addPlayerHotbar(int xPos, int yPos)
     {
         addPlayerHotbar(xPos, yPos, Slot::new);
+    }
+
+    protected void addPlayerInventoryAndHotbar(int xPos, int yPos)
+    {
+        addPlayerInventory(xPos, yPos);
+        addPlayerHotbar(xPos, yPos + DEFAULT_INV_HOTBAR_OFFSET);
+    }
+
+    protected void addDefaultPlayerInventoryAndHotbar()
+    {
+        addPlayerInventoryAndHotbar(DEFAULT_INV_X, DEFAULT_INV_Y);
     }
 
     protected Slot lockedSlot(Container container, int index, int x, int y)

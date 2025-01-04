@@ -9,7 +9,6 @@ import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.nbt.*;
@@ -45,7 +44,7 @@ public final class LimaNbtUtil
         return codec.encodeStart(ops, object).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to encode to NBT tag: %s", codec, msg)));
     }
 
-    public static <T> Tag codecEncode(Codec<T> codec, RegistryAccess registries, T object)
+    public static <T> Tag codecEncode(Codec<T> codec, HolderLookup.Provider registries, T object)
     {
         return codecEncode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), object);
     }
@@ -61,7 +60,7 @@ public final class LimaNbtUtil
         return codec.decode(ops, tag).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to decode NBT tag: %s", codec, msg))).getFirst();
     }
 
-    public static <T> T codecDecode(Codec<T> codec, RegistryAccess registries, Tag tag)
+    public static <T> T codecDecode(Codec<T> codec, HolderLookup.Provider registries, Tag tag)
     {
         return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), tag);
     }
@@ -76,7 +75,7 @@ public final class LimaNbtUtil
         return codecDecode(codec, ops, Objects.requireNonNull(compoundTag.get(key), "Compound tag does not contain sub-tag '" + key + "'"));
     }
 
-    public static <T> T codecDecode(Codec<T> codec, RegistryAccess registries, CompoundTag compoundTag, String key)
+    public static <T> T codecDecode(Codec<T> codec, HolderLookup.Provider registries, CompoundTag compoundTag, String key)
     {
         return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), compoundTag, key);
     }

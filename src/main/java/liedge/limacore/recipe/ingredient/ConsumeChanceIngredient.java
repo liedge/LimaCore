@@ -1,6 +1,7 @@
 package liedge.limacore.recipe.ingredient;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.LimaCoreIngredientTypes;
@@ -14,9 +15,21 @@ import java.util.stream.Stream;
 
 public record ConsumeChanceIngredient(Ingredient child, float consumeChance) implements ICustomIngredient
 {
+    private static DataResult<Float> checkRange(float value)
+    {
+        if (value >= 0f && value < 1f)
+        {
+            return DataResult.success(value);
+        }
+        else
+        {
+            return DataResult.error(() -> "Ingredient consume chance " + value + " outside of range [0,1)");
+        }
+    }
+
     public static final MapCodec<ConsumeChanceIngredient> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Ingredient.CODEC_NONEMPTY.fieldOf("child").forGetter(ConsumeChanceIngredient::child),
-            Codec.floatRange(0f, 1f).fieldOf("consume_chance").forGetter(ConsumeChanceIngredient::consumeChance))
+            Codec.FLOAT.flatXmap(ConsumeChanceIngredient::checkRange, ConsumeChanceIngredient::checkRange).fieldOf("consume_chance").forGetter(ConsumeChanceIngredient::consumeChance))
             .apply(instance, ConsumeChanceIngredient::new));
 
     @Override
