@@ -6,6 +6,7 @@ import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -22,6 +23,7 @@ public final class LimaCoreLootRegistries
     private static final DeferredRegister<LootItemFunctionType<?>> FUNCTIONS = RESOURCES.deferredRegister(Registries.LOOT_FUNCTION_TYPE);
     private static final DeferredRegister<LootPoolEntryType> LOOT_ENTRY_TYPES = RESOURCES.deferredRegister(Registries.LOOT_POOL_ENTRY_TYPE);
     private static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> GLM_CODECS = RESOURCES.deferredRegister(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
+    private static final DeferredRegister<LootNumberProviderType> NUMBER_PROVIDERS = RESOURCES.deferredRegister(Registries.LOOT_NUMBER_PROVIDER_TYPE);
 
     public static void initRegister(IEventBus bus)
     {
@@ -29,6 +31,7 @@ public final class LimaCoreLootRegistries
         FUNCTIONS.register(bus);
         LOOT_ENTRY_TYPES.register(bus);
         GLM_CODECS.register(bus);
+        NUMBER_PROVIDERS.register(bus);
     }
 
     // Entity sub predicate types
@@ -38,9 +41,13 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<SaveBlockEntityFunction>> SAVE_BLOCK_ENTITY = FUNCTIONS.register("save_block_entity", () -> new LootItemFunctionType<>(SaveBlockEntityFunction.CODEC));
 
     // Loot entry types
-    public static final DeferredHolder<LootPoolEntryType, LootPoolEntryType> ENCHANTMENT_BASED_WEIGHT = LOOT_ENTRY_TYPES.register("enchantment_based_weight", () -> new LootPoolEntryType(EnchantmentBasedWeightLootItem.CODEC));
+    public static final DeferredHolder<LootPoolEntryType, LootPoolEntryType> DYNAMIC_WEIGHT_LOOT_ENTRY = LOOT_ENTRY_TYPES.register("dynamic_weight", () -> new LootPoolEntryType(DynamicWeightLootEntry.CODEC));
 
     // GLM Codecs
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<AddItemLootModifier>> ADD_ITEM_MODIFIER = GLM_CODECS.register("add_item", () -> AddItemLootModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<RemoveItemLootModifier>> REMOVE_ITEM_MODIFIER = GLM_CODECS.register("remove_item", () -> RemoveItemLootModifier.CODEC);
+
+    // Loot number types
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ROUNDING_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("rounding", () -> new LootNumberProviderType(RoundingNumberProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ENCHANTMENT_LEVEL_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("entity_enchantment_level", () -> new LootNumberProviderType(EntityEnchantmentLevelProvider.CODEC));
 }
