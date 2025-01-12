@@ -46,7 +46,12 @@ public record UnmanagedSprite(ResourceLocation textureSheet, int u, int v, int w
 
     public void singleBlit(GuiGraphics graphics, int x, int y)
     {
-        graphics.blit(textureSheet, x, y, u, v, width, height);
+        singleBlit(graphics, x, y, 0);
+    }
+
+    public void singleBlit(GuiGraphics graphics, int x, int y, int zOffset)
+    {
+        graphics.blit(textureSheet, x, y, zOffset, (float) u, (float) v, width, height, 256, 256);
     }
 
     public void directBlit(GuiGraphics graphics, float x, float y)

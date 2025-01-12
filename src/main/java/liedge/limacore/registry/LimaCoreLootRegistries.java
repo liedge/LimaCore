@@ -6,6 +6,7 @@ import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
@@ -20,6 +21,7 @@ public final class LimaCoreLootRegistries
     private LimaCoreLootRegistries() {}
 
     private static final DeferredRegister<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATES = RESOURCES.deferredRegister(Registries.ENTITY_SUB_PREDICATE_TYPE);
+    private static final DeferredRegister<LootItemConditionType> CONDITIONS = RESOURCES.deferredRegister(Registries.LOOT_CONDITION_TYPE);
     private static final DeferredRegister<LootItemFunctionType<?>> FUNCTIONS = RESOURCES.deferredRegister(Registries.LOOT_FUNCTION_TYPE);
     private static final DeferredRegister<LootPoolEntryType> LOOT_ENTRY_TYPES = RESOURCES.deferredRegister(Registries.LOOT_POOL_ENTRY_TYPE);
     private static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> GLM_CODECS = RESOURCES.deferredRegister(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
@@ -28,6 +30,7 @@ public final class LimaCoreLootRegistries
     public static void initRegister(IEventBus bus)
     {
         ENTITY_SUB_PREDICATES.register(bus);
+        CONDITIONS.register(bus);
         FUNCTIONS.register(bus);
         LOOT_ENTRY_TYPES.register(bus);
         GLM_CODECS.register(bus);
@@ -36,6 +39,9 @@ public final class LimaCoreLootRegistries
 
     // Entity sub predicate types
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<HostileEntitySubPredicate>> HOSTILE_ENTITY_SUB_PREDICATE = ENTITY_SUB_PREDICATES.register("hostile_entity", () -> HostileEntitySubPredicate.CODEC);
+
+    // Conditions
+    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> ENTITY_ENCHANTMENT_LEVELS_CONDITION = CONDITIONS.register("entity_enchantment_level", () -> new LootItemConditionType(EntityEnchantmentLevelsCondition.CODEC));
 
     // Functions
     public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<SaveBlockEntityFunction>> SAVE_BLOCK_ENTITY = FUNCTIONS.register("save_block_entity", () -> new LootItemFunctionType<>(SaveBlockEntityFunction.CODEC));

@@ -8,6 +8,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
@@ -37,6 +39,16 @@ public final class LimaEntityUtil
     {
         AttributeInstance instance = getAttributeInstanceSafe(entity, attribute);
         return instance != null ? instance.getBaseValue() : 0d;
+    }
+
+    public static int getEnchantmentLevel(@Nullable Entity entity, Holder<Enchantment> enchantment)
+    {
+        if (entity instanceof LivingEntity livingEntity)
+        {
+            return EnchantmentHelper.getEnchantmentLevel(enchantment, livingEntity);
+        }
+
+        return 0;
     }
 
     public static int getEntityId(@Nullable Entity entity)

@@ -14,6 +14,13 @@ public interface ItemHolderBlockEntity
 
     void onItemSlotChanged(int slot);
 
+    IOAccess getItemIOForSide(Direction side);
+
+    default IOAccess getPerSlotIO(int slot)
+    {
+        return IOAccess.INPUT_AND_OUTPUT;
+    }
+
     default void onItemHandlerLoaded() {}
 
     default @Nullable IItemHandler createItemIOWrapper(@Nullable Direction side)
@@ -24,15 +31,5 @@ public interface ItemHolderBlockEntity
         }
 
         return null;
-    }
-
-    default IOAccess getItemIOForSide(Direction side)
-    {
-        return IOAccess.DISABLED;
-    }
-
-    default IOAccess getExternalItemSlotIO(int slot)
-    {
-        return IOAccess.INPUT_AND_OUTPUT;
     }
 }

@@ -1,5 +1,6 @@
 package liedge.limacore.data;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -127,6 +128,14 @@ public final class LimaCoreCodecs
     public static <R, T extends R> Codec<T> classCastRegistryCodec(Registry<R> registry, Class<T> valueClass)
     {
         return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
+    }
+
+    public static <T, A, F extends A> Codec<A> flatDispatchCodec(Codec<T> typeCodec, Class<F> flatClass, Codec<F> flatCodec, Function<? super A, ? extends T> typeFunction, Function<? super T, MapCodec<? extends A>> typeCodecFunction)
+    {
+        Codec<A> dispatch = typeCodec.dispatch(typeFunction, typeCodecFunction);
+        return Codec.either(flatCodec, dispatch).xmap(
+                either -> either.map(Function.identity(), Function.identity()),
+                value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
     }
 
     public static MapCodec<NonNullList<Ingredient>> ingredientsMapCodec(int minInclusive, int maxInclusive)

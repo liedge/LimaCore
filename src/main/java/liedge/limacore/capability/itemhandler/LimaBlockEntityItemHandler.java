@@ -23,7 +23,7 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
     @Override
     public IOAccess getSlotIOAccess(int slot)
     {
-        return itemHolder.getExternalItemSlotIO(slot);
+        return itemHolder.getPerSlotIO(slot);
     }
 
     @Override

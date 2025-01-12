@@ -1,6 +1,8 @@
 package liedge.limacore.recipe;
 
 import com.google.common.base.Preconditions;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -12,6 +14,9 @@ import java.util.List;
 
 public abstract class LimaSizedIngredientRecipe<T extends LimaRecipeInput> implements Recipe<T>
 {
+    public static final String EMPTY_GROUP = "";
+    public static final MapCodec<String> GROUP_MAP_CODEC = Codec.STRING.optionalFieldOf("group", EMPTY_GROUP);
+
     private final List<SizedIngredient> recipeIngredients;
 
     protected LimaSizedIngredientRecipe(List<SizedIngredient> recipeIngredients)

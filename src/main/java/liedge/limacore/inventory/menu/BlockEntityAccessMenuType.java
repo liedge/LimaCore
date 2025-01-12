@@ -1,6 +1,6 @@
 package liedge.limacore.inventory.menu;
 
-import liedge.limacore.blockentity.LimaBlockEntity;
+import liedge.limacore.blockentity.LimaBlockEntityAccess;
 import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -10,14 +10,17 @@ import net.minecraft.world.entity.player.Player;
 
 import java.util.Objects;
 
-public class BlockEntityMenuType<BE extends LimaBlockEntity, M extends LimaMenu<BE>> extends LimaMenuType<BE, M>
+/**
+ * Convenience menu type for game objects that implement {@link LimaBlockEntityAccess}.
+ */
+public class BlockEntityAccessMenuType<BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> extends LimaMenuType<BE, M>
 {
-    public static <BE extends LimaBlockEntity, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(ResourceLocation registryId, Class<BE> contextClass, MenuFactory<BE, M> factory)
+    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityAccessMenuType<BE, M> create(ResourceLocation id, Class<BE> contextClass, MenuFactory<BE, M> factory)
     {
-        return new BlockEntityMenuType<>(registryId, contextClass, factory);
+        return new BlockEntityAccessMenuType<>(id, contextClass, factory);
     }
 
-    private BlockEntityMenuType(ResourceLocation registryId, Class<BE> contextClass, MenuFactory<BE, M> factory)
+    private BlockEntityAccessMenuType(ResourceLocation registryId, Class<BE> contextClass, MenuFactory<BE, M> factory)
     {
         super(registryId, contextClass, factory);
     }
@@ -25,7 +28,7 @@ public class BlockEntityMenuType<BE extends LimaBlockEntity, M extends LimaMenu<
     @Override
     public void encodeContext(BE menuContext, RegistryFriendlyByteBuf net)
     {
-        net.writeBlockPos(menuContext.getBlockPos());
+        net.writeBlockPos(menuContext.getAsLimaBlockEntity().getBlockPos());
     }
 
     @Override
@@ -38,6 +41,6 @@ public class BlockEntityMenuType<BE extends LimaBlockEntity, M extends LimaMenu<
     @Override
     public boolean canPlayerKeepUsing(BE menuContext, Player player)
     {
-        return menuContext.canPlayerUse(player);
+        return menuContext.getAsLimaBlockEntity().canPlayerUse(player);
     }
 }

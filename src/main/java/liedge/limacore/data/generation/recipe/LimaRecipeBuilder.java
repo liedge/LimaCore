@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.advancement.LimaAdvancementUtil;
 import liedge.limacore.lib.ModResources;
+import liedge.limacore.recipe.LimaSizedIngredientRecipe;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.advancements.*;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
@@ -96,7 +97,7 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
 
     public String getGroupOrBlank()
     {
-        return Objects.requireNonNullElse(getGroup(), "");
+        return Objects.requireNonNullElse(getGroup(), LimaSizedIngredientRecipe.EMPTY_GROUP);
     }
 
     protected String makeTypePrefix(Recipe<?> recipe)

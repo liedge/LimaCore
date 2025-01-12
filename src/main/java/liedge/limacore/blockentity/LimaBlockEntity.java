@@ -107,14 +107,14 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
             }
             else
             {
-                onLoadServer(level);
+                onLoadServer(LimaCoreUtil.castOrThrow(ServerLevel.class, level));
             }
         }
     }
 
     protected void onLoadClient(Level level) {}
 
-    protected void onLoadServer(Level level) {}
+    protected void onLoadServer(ServerLevel level) {}
 
     // Override here to avoid needing warning suppression in subclasses
     @SuppressWarnings("deprecation")

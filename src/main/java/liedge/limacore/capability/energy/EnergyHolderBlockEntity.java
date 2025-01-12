@@ -7,9 +7,15 @@ import org.jetbrains.annotations.Nullable;
 
 public interface EnergyHolderBlockEntity
 {
+    int getBaseEnergyCapacity();
+
+    int getBaseEnergyTransferRate();
+
     LimaEnergyStorage getEnergyStorage();
 
     void onEnergyChanged();
+
+    IOAccess getEnergyIOForSide(Direction side);
 
     default @Nullable IEnergyStorage createEnergyIOWrapper(@Nullable Direction side)
     {
@@ -19,10 +25,5 @@ public interface EnergyHolderBlockEntity
         }
 
         return null;
-    }
-
-    default IOAccess getEnergyIOForSide(Direction side)
-    {
-        return IOAccess.DISABLED;
     }
 }

@@ -1,5 +1,6 @@
 package liedge.limacore.network.sync;
 
+import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.registry.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
@@ -7,7 +8,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -33,9 +33,12 @@ public class AutomaticDataWatcher<T> extends ManualDataWatcher<T>
         return new ItemWatcher(getter, setter);
     }
 
-    public static LimaDataWatcher<Optional<Entity>> keepClientsideEntitySynced(Supplier<@Nullable Entity> getter, Consumer<@Nullable Entity> setter)
+    public static LimaDataWatcher<Integer> keepClientsideEntitySynced(Supplier<@Nullable Entity> getter, Consumer<@Nullable Entity> setter)
     {
-        return keepSynced(LimaCoreNetworkSerializers.CLIENTSIDE_ENTITY, () -> Optional.ofNullable(getter.get()), optional -> setter.accept(optional.orElse(null)));
+        return keepSynced(LimaCoreNetworkSerializers.VAR_INT, () -> {
+            Entity entity = getter.get();
+            return (entity != null && !entity.isRemoved()) ? entity.getId() : -1;
+        }, eid -> setter.accept(LimaCoreClientUtil.getClientEntity(eid)));
     }
 
     private T previousData;

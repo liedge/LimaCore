@@ -46,6 +46,11 @@ public abstract class LimaSizedIngredientListRecipeBuilder<R extends Recipe<?>, 
         return input(new SizedIngredient(ingredient, 1));
     }
 
+    public B input(Ingredient ingredient, int count)
+    {
+        return input(new SizedIngredient(ingredient, count));
+    }
+
     public B input(ItemLike itemLike)
     {
         return input(Ingredient.of(itemLike));

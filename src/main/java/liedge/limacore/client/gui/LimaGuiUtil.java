@@ -22,7 +22,7 @@ public final class LimaGuiUtil
         return isMouseWithinXYBounds(mouseX, mouseY, x, y, x + width, y + height);
     }
 
-    public static void directBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1)
+    public static void directBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, int zOffset, float u0, float u1, float v0, float v1)
     {
         RenderSystem.setShaderTexture(0, atlasLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -30,15 +30,20 @@ public final class LimaGuiUtil
         Matrix4f mx4 = graphics.pose().last().pose();
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        buffer.addVertex(mx4, x1, y1, 0).setUv(u0, v0);
-        buffer.addVertex(mx4, x1, y2, 0).setUv(u0, v1);
-        buffer.addVertex(mx4, x2, y2, 0).setUv(u1, v1);
-        buffer.addVertex(mx4, x2, y1, 0).setUv(u1, v0);
+        buffer.addVertex(mx4, x1, y1, zOffset).setUv(u0, v0);
+        buffer.addVertex(mx4, x1, y2, zOffset).setUv(u0, v1);
+        buffer.addVertex(mx4, x2, y2, zOffset).setUv(u1, v1);
+        buffer.addVertex(mx4, x2, y1, zOffset).setUv(u1, v0);
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
+    public static void directBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1)
+    {
+        directBlit(graphics, atlasLocation, x1, y1, x2, y2, 0, u0, u1, v0, v1);
+    }
+
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, int zOffset, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
     {
         RenderSystem.setShaderTexture(0, atlasLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -47,13 +52,18 @@ public final class LimaGuiUtil
         Matrix4f mx4 = graphics.pose().last().pose();
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
-        buffer.addVertex(mx4, x1, y1, 0).setUv(u0, v0).setColor(red, green, blue, alpha);
-        buffer.addVertex(mx4, x1, y2, 0).setUv(u0, v1).setColor(red, green, blue, alpha);
-        buffer.addVertex(mx4, x2, y2, 0).setUv(u1, v1).setColor(red, green, blue, alpha);
-        buffer.addVertex(mx4, x2, y1, 0).setUv(u1, v0).setColor(red, green, blue, alpha);
+        buffer.addVertex(mx4, x1, y1, zOffset).setUv(u0, v0).setColor(red, green, blue, alpha);
+        buffer.addVertex(mx4, x1, y2, zOffset).setUv(u0, v1).setColor(red, green, blue, alpha);
+        buffer.addVertex(mx4, x2, y2, zOffset).setUv(u1, v1).setColor(red, green, blue, alpha);
+        buffer.addVertex(mx4, x2, y1, zOffset).setUv(u1, v0).setColor(red, green, blue, alpha);
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
         RenderSystem.disableBlend();
+    }
+
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
+    {
+        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, 0, u0, u1, v0, v1, red, green, blue, alpha);
     }
 
     public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha)

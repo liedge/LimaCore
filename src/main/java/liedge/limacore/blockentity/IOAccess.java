@@ -9,24 +9,15 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 public enum IOAccess implements StringRepresentable, OrderedEnum<IOAccess>, Translatable
 {
     DISABLED("disabled", false, false),
-    INPUT_AND_OUTPUT("input_and_output", true, true),
     INPUT_ONLY("input_only", true, false),
-    OUTPUT_ONLY("output_only", false, true);
+    OUTPUT_ONLY("output_only", false, true),
+    INPUT_AND_OUTPUT("input_and_output", true, true);
 
     public static final LimaEnumCodec<IOAccess> CODEC = LimaEnumCodec.createLenient(IOAccess.class, DISABLED);
     public static final StreamCodec<FriendlyByteBuf, IOAccess> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(IOAccess.class);
-
-    public static final Set<IOAccess> ALL_ALLOWED = EnumSet.allOf(IOAccess.class);
-    public static final Set<IOAccess> INPUT_OR_OUTPUT_ONLY_AND_DISABLED = EnumSet.of(DISABLED, INPUT_ONLY, OUTPUT_ONLY);
-    public static final Set<IOAccess> ONLY_INPUT_AND_DISABLED = EnumSet.of(DISABLED, INPUT_ONLY);
-    public static final Set<IOAccess> ONLY_OUTPUT_AND_DISABLED = EnumSet.of(DISABLED, OUTPUT_ONLY);
-    public static final Set<IOAccess> ONLY_BOTH_AND_DISABLED = EnumSet.of(DISABLED, INPUT_AND_OUTPUT);
 
     private final String name;
     private final String descriptionId;

@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -43,7 +42,6 @@ public final class LimaCoreNetworkSerializers
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<BlockPos>> BLOCK_POS = SERIALIZERS.register("block_pos", id -> NetworkSerializer.create(id, BlockPos.STREAM_CODEC));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemStack>> ITEM_STACK = SERIALIZERS.register("item_stack", id -> NetworkSerializer.create(id, ItemStack.OPTIONAL_STREAM_CODEC));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Direction>> DIRECTION = SERIALIZERS.register("direction", id -> NetworkSerializer.create(id, Direction.STREAM_CODEC));
-    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<Entity>>> CLIENTSIDE_ENTITY = SERIALIZERS.register("remote_entity", id -> NetworkSerializer.create(id, LimaStreamCodecs.CLIENTSIDE_ENTITY));
 
     // NBT tags
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<CompoundTag>> COMPOUND_TAG = SERIALIZERS.register("compound_tag", id -> NetworkSerializer.create(id, ByteBufCodecs.COMPOUND_TAG));

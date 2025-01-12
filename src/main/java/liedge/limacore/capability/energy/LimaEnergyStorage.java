@@ -1,6 +1,7 @@
 package liedge.limacore.capability.energy;
 
 import liedge.limacore.network.sync.AutomaticDataWatcher;
+import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.LimaCoreNetworkSerializers;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -18,9 +19,26 @@ public abstract class LimaEnergyStorage implements IEnergyStorage
 
     protected abstract void onEnergyChanged();
 
-    public LimaDataWatcher<Integer> createDataWatcher()
+    public LimaDataWatcher<Integer> keepStoredEnergySynced()
     {
         return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getEnergyStored, this::setEnergyStored);
+    }
+
+    public LimaDataWatcher<Integer> keepCapacitySynced()
+    {
+        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getMaxEnergyStored, this::setMaxEnergyStored);
+    }
+
+    public LimaDataWatcher<Integer> keepTransferRateSynced()
+    {
+        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate);
+    }
+
+    public void keepAllPropertiesSynced(DataWatcherHolder.DataWatcherCollector collector)
+    {
+        collector.register(keepStoredEnergySynced());
+        collector.register(keepCapacitySynced());
+        collector.register(keepTransferRateSynced());
     }
 
     public int getTransferRate()

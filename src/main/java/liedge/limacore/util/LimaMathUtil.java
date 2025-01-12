@@ -1,8 +1,11 @@
 package liedge.limacore.util;
 
+import com.mojang.serialization.MapCodec;
+import liedge.limacore.data.LimaEnumCodec;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
@@ -71,6 +74,42 @@ public final class LimaMathUtil
     {
         double d = RANDOM.nextDouble();
         return d <= chance;
+    }
+
+    public static int valueOf(boolean bool)
+    {
+        return bool ? 1 : 0;
+    }
+
+    /**
+     * Rounds a double to an int by applying either a floor or ceiling operation with a random chance depending on how close
+     * the number is towards zero or the +/- infinities. For example, -4.8 has an 80% to round towards -5 and 20% to go towards -4.
+     * @param value The double to be rounded.
+     * @return The whole number after rounding.
+     */
+    public static int roundRandomly(double value)
+    {
+        int base = (int) value;
+        if (base == value || base == 0) return base;
+
+        value -= base;
+        return base + (valueOf(rollRandomChance(Math.abs(value))) * Mth.sign(value));
+    }
+
+    public static int round(double value)
+    {
+        return round(value, RoundingStrategy.NATURAL);
+    }
+
+    public static int round(double value, RoundingStrategy strategy)
+    {
+        return switch (strategy)
+        {
+            case NATURAL -> Math.round((float) value);
+            case FLOOR -> Mth.floor(value);
+            case CEIL -> Mth.ceil(value);
+            case RANDOM -> roundRandomly(value);
+        };
     }
 
     public static double triangle(double min, double max)
@@ -228,4 +267,28 @@ public final class LimaMathUtil
         };
     }
     //#endregion
+
+    public enum RoundingStrategy implements StringRepresentable
+    {
+        NATURAL("natural"),
+        FLOOR("floor"),
+        CEIL("ceil"),
+        RANDOM("random");
+
+        public static final LimaEnumCodec<RoundingStrategy> CODEC = LimaEnumCodec.createLenient(RoundingStrategy.class, NATURAL);
+        public static final MapCodec<RoundingStrategy> NATURAL_DEFAULT_MAP_CODEC = CODEC.optionalFieldOf("rounding_strategy", NATURAL);
+
+        private final String name;
+
+        RoundingStrategy(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public String getSerializedName()
+        {
+            return name;
+        }
+    }
 }

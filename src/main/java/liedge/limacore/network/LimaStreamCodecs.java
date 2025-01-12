@@ -44,24 +44,6 @@ public final class LimaStreamCodecs
     public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, StringTag> STRING_NBT_TAG = ByteBufCodecs.STRING_UTF8.map(StringTag::valueOf, StringTag::getAsString);
 
-    @Deprecated
-    public static final StreamCodec<ByteBuf, Optional<Entity>> CLIENTSIDE_ENTITY = new StreamCodec<>()
-    {
-        @Override
-        public Optional<Entity> decode(ByteBuf net)
-        {
-            int eid = VarInt.read(net);
-            return Optional.ofNullable(LimaCoreClientUtil.getClientEntity(eid));
-        }
-
-        @Override
-        public void encode(ByteBuf net, Optional<Entity> value)
-        {
-            int eid = value.map(e -> !e.isRemoved() ? e.getId() : -1).orElse(-1);
-            VarInt.write(net, eid);
-        }
-    };
-
     public static StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
 
     //#region Value encode/decode helpers

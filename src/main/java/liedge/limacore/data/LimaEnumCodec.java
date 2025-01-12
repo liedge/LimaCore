@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.util.ExtraCodecs;
@@ -79,6 +80,11 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
     public Codec<Set<A>> setOf()
     {
         return listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
+    }
+
+    public <B, F extends B> Codec<B> flatDispatch(Class<F> flatClass, Codec<F> flatCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
+    {
+        return LimaCoreCodecs.flatDispatchCodec(this, flatClass, flatCodec, typeGetter, codecGetter);
     }
 
     @Override

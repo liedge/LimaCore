@@ -1,6 +1,7 @@
 package liedge.limacore.capability.energy;
 
 import liedge.limacore.util.LimaMathUtil;
+import net.minecraft.util.Mth;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import static liedge.limacore.util.LimaMathUtil.*;
@@ -28,6 +29,11 @@ public final class LimaEnergyUtil
     public static float getFillPercentage(IEnergyStorage storage)
     {
         return LimaMathUtil.divideFloat(storage.getEnergyStored(), storage.getMaxEnergyStored());
+    }
+
+    public static float getClampedFillPercentage(IEnergyStorage storage)
+    {
+        return Mth.clamp(getFillPercentage(storage), 0f, 1f);
     }
 
     public static String formatEnergyWithSuffix(int energy)

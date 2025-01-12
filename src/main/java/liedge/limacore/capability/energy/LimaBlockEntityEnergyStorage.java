@@ -15,6 +15,11 @@ public class LimaBlockEntityEnergyStorage extends LimaEnergyStorage implements I
         this.energyHolder = energyHolder;
     }
 
+    public LimaBlockEntityEnergyStorage(EnergyHolderBlockEntity energyHolder)
+    {
+        this(energyHolder, energyHolder.getBaseEnergyCapacity(), energyHolder.getBaseEnergyTransferRate());
+    }
+
     @Override
     protected void onEnergyChanged()
     {

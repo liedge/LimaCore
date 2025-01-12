@@ -27,35 +27,34 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     public static final int DEFAULT_HEIGHT = 166;
     public static final int DEFAULT_LABEL_COLOR = 4210752;
 
-    protected final int labelColor;
     private final List<LimaRenderable> tooltipWidgets = new ObjectArrayList<>();
+    protected final int labelColor;
+    protected final int primaryWidth;
 
-    protected int bgWidth;
-    protected int bgHeight;
+    protected boolean alignInventoryLabelRight;
+    protected int leftPadding;
+    protected int rightPadding;
+    protected int bottomPos;
+    protected int rightPos;
 
-    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int width, int height, int labelColor)
+    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int primaryWidth, int height, int labelColor)
     {
         super(menu, inventory, title);
-        this.imageWidth = width;
+        this.primaryWidth = primaryWidth;
         this.imageHeight = height;
-        this.bgWidth = width;
-        this.bgHeight = height;
-
-        this.titleLabelY = 7;
-        this.inventoryLabelY = 72;
-
         this.labelColor = labelColor;
-    }
-
-    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int width, int height)
-    {
-        this(menu, inventory, title, width, height, DEFAULT_LABEL_COLOR);
     }
 
     @Override
     protected void init()
     {
-        super.init();
+        this.imageWidth = primaryWidth + leftPadding + rightPadding;
+
+        this.leftPos = (this.width - this.imageWidth) / 2 + leftPadding;
+        this.topPos = (this.height - this.imageHeight) / 2;
+
+        this.rightPos = this.leftPos + this.primaryWidth;
+        this.bottomPos = this.topPos + imageHeight;
 
         positionLabels();
         addWidgets();
@@ -120,20 +119,24 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
-        graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, bgWidth, bgHeight);
+        graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, primaryWidth, imageHeight);
     }
 
     protected void positionLabels()
     {
-        titleLabelX = (bgWidth - font.width(title)) / 2;
+        titleLabelX = (primaryWidth - font.width(title)) / 2;
     }
 
-    public  <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
+    protected abstract void addWidgets();
+
+    public abstract ResourceLocation getBgTexture();
+
+    public <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
     {
         PacketDistributor.sendToServer(new ServerboundCustomMenuButtonPacket<>(menu.containerId, buttonId, serializer, value));
     }
 
-    public  <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
+    public <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
     {
         sendCustomButtonData(buttonId, value, supplier.get());
     }
@@ -166,8 +169,4 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
             return false;
         }
     }
-
-    protected abstract void addWidgets();
-
-    public abstract ResourceLocation getBgTexture();
 }
