@@ -95,7 +95,7 @@ public final class LimaCoreCodecs
     /**
      * Strict {@link Direction} codec with {@link LimaEnumCodec} convenience extensions.
      */
-    public static final LimaEnumCodec<Direction> STRICT_DIRECTION = LimaEnumCodec.createStrict(Direction.class);
+    public static final LimaEnumCodec<Direction> STRICT_DIRECTION = LimaEnumCodec.create(Direction.class);
 
     /**
      * Vector codec that scales decoded values down by 16x and encoded values up by 16x. Useful for baked models.

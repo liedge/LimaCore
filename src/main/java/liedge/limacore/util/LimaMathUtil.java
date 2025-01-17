@@ -275,7 +275,7 @@ public final class LimaMathUtil
         CEIL("ceil"),
         RANDOM("random");
 
-        public static final LimaEnumCodec<RoundingStrategy> CODEC = LimaEnumCodec.createLenient(RoundingStrategy.class, NATURAL);
+        public static final LimaEnumCodec<RoundingStrategy> CODEC = LimaEnumCodec.create(RoundingStrategy.class);
         public static final MapCodec<RoundingStrategy> NATURAL_DEFAULT_MAP_CODEC = CODEC.optionalFieldOf("rounding_strategy", NATURAL);
 
         private final String name;

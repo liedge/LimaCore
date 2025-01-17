@@ -16,7 +16,7 @@ public enum IOAccess implements StringRepresentable, OrderedEnum<IOAccess>, Tran
     OUTPUT_ONLY("output_only", false, true),
     INPUT_AND_OUTPUT("input_and_output", true, true);
 
-    public static final LimaEnumCodec<IOAccess> CODEC = LimaEnumCodec.createLenient(IOAccess.class, DISABLED);
+    public static final LimaEnumCodec<IOAccess> CODEC = LimaEnumCodec.create(IOAccess.class);
     public static final StreamCodec<FriendlyByteBuf, IOAccess> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(IOAccess.class);
 
     private final String name;

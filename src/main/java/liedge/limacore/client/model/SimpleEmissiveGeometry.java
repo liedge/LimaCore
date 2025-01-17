@@ -291,7 +291,7 @@ public class SimpleEmissiveGeometry extends EmissiveBlockBenchGeometry<SimpleEmi
         @Override
         protected BlockBenchGroupGeometry<GroupData> createGeometry(JsonObject modelJson, List<BlockElement> elements, List<GroupData> groups)
         {
-            BakeType bakeType = BakeType.CODEC.byName(GsonHelper.getAsString(modelJson, "model_type", ""));
+            BakeType bakeType = BakeType.CODEC.byNameOrElse(GsonHelper.getAsString(modelJson, "model_type", ""), BakeType.BLOCK_AND_ITEM);
             return new SimpleEmissiveGeometry(elements, groups, bakeType);
         }
 
@@ -308,7 +308,7 @@ public class SimpleEmissiveGeometry extends EmissiveBlockBenchGeometry<SimpleEmi
         ITEM_ONLY("item_only"),
         BLOCK_AND_ITEM("block_and_item");
 
-        private static final LimaEnumCodec<BakeType> CODEC = LimaEnumCodec.createLenient(BakeType.class, BLOCK_AND_ITEM);
+        private static final LimaEnumCodec<BakeType> CODEC = LimaEnumCodec.create(BakeType.class);
 
         private final String name;
 

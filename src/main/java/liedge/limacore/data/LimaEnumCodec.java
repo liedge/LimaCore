@@ -8,73 +8,53 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaStreamsUtil;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implements Codec<A>
 {
-    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> createStrict(Class<E> enumClass)
+    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> create(Class<E> enumClass, List<E> validValues)
     {
-        return new LimaEnumCodec<>(enumClass, null);
+        return new LimaEnumCodec<>(enumClass, validValues);
     }
 
-    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> createLenient(Class<E> enumClass, @NotNull E defaultValue)
+    public static <E extends Enum<E> & StringRepresentable> LimaEnumCodec<E> create(Class<E> enumClass)
     {
-        return new LimaEnumCodec<>(enumClass, Objects.requireNonNull(defaultValue, "Lenient enum codec must have a non-null default value"));
+        return new LimaEnumCodec<>(enumClass, List.of(LimaCollectionsUtil.checkedEnumConstants(enumClass)));
     }
 
     private final String name;
-    private final @Nullable A defaultValue;
-    private final A[] values;
     private final Map<String, A> nameLookup;
+    private final String validValueString;
     private final Codec<A> baseCodec;
 
-    private LimaEnumCodec(Class<A> enumClass, @Nullable A defaultValue)
+    private LimaEnumCodec(Class<A> enumClass, Collection<A> values)
     {
         this.name = "LimaEnumCodec[" + enumClass.getSimpleName() + "]";
-        this.defaultValue = defaultValue;
-        this.values = LimaCollectionsUtil.checkedEnumConstants(enumClass);
-        this.nameLookup = Stream.of(values).collect(LimaStreamsUtil.toUnmodifiableObject2ObjectMap(StringRepresentable::getSerializedName, Function.identity()));
-        this.baseCodec = ExtraCodecs.orCompressed(
-                Codec.stringResolver(StringRepresentable::getSerializedName, this::byNameInternal),
-                ExtraCodecs.idResolverCodec(Enum::ordinal, this::byOrdinalInternal, -1));
+        this.nameLookup = values.stream().collect(LimaStreamsUtil.toUnmodifiableObject2ObjectMap(StringRepresentable::getSerializedName, Function.identity()));
+        this.validValueString = values.stream().map(StringRepresentable::getSerializedName).collect(Collectors.joining(","));
+        this.baseCodec = Codec.STRING
+                .flatXmap(sn -> nameLookup.containsKey(sn) ? DataResult.success(nameLookup.get(sn)) : DataResult.error(() -> "Unknown element name '" + sn + "', allowed names: " + validValueString),
+                        a -> nameLookup.containsKey(a.getSerializedName()) ? DataResult.success(a.getSerializedName()) : DataResult.error(() -> "Element not allowed for serialization, allowed elements: " + validValueString));
     }
 
-    private @Nullable A byNameInternal(String name)
+    public @Nullable A byName(String name)
     {
-        return nameLookup.getOrDefault(name, defaultValue);
+        return nameLookup.get(name);
     }
 
-    private @Nullable A byOrdinalInternal(int ordinal)
+    public A byNameOrThrow(String name)
     {
-        A val = LimaCollectionsUtil.getFrom(values, ordinal);
-        return val != null ? val : defaultValue;
+        return Objects.requireNonNull(byName(name), "Unknown element name '" + name + "' in " + name);
     }
 
-    public A byName(String name)
+    public A byNameOrElse(String name, A fallback)
     {
-        return Objects.requireNonNull(byNameInternal(name), this + " doesn't support default values");
-    }
-
-    public A byName(String name, A fallback)
-    {
-        return Objects.requireNonNullElse(byNameInternal(name), fallback);
-    }
-
-    public A byOrdinal(int ordinal)
-    {
-        return Objects.requireNonNull(byOrdinalInternal(ordinal), this + " doesn't support default values");
-    }
-
-    public A byOrdinal(int ordinal, A fallback)
-    {
-        return Objects.requireNonNullElse(byOrdinalInternal(ordinal), fallback);
+        return Objects.requireNonNullElse(byName(name), fallback);
     }
 
     public Codec<Set<A>> setOf()

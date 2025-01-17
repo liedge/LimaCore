@@ -55,5 +55,6 @@ public final class LimaCoreLootRegistries
 
     // Loot number types
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ROUNDING_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("rounding", () -> new LootNumberProviderType(RoundingNumberProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ATTRIBUTE_VALUE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("entity_attribute_value", () -> new LootNumberProviderType(EntityAttributeValueProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ENCHANTMENT_LEVEL_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("entity_enchantment_level", () -> new LootNumberProviderType(EntityEnchantmentLevelProvider.CODEC));
 }
