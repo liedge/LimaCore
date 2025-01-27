@@ -22,14 +22,8 @@ public abstract class LivingEntityMixin
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 7))
     private boolean checkNoKnockback(DamageSource instance, TagKey<DamageType> damageTypeKey, Operation<Boolean> original)
     {
-        if (instance instanceof LimaDynamicDamageSource source)
-        {
-            return source.getKnockbackMultiplier() == 0f;
-        }
-        else
-        {
-            return original.call(instance, damageTypeKey);
-        }
+        if (instance instanceof LimaDynamicDamageSource dynamicSource && dynamicSource.getKnockbackMultiplier() == 0f) return true;
+        return original.call(instance, damageTypeKey);
     }
 
     @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))

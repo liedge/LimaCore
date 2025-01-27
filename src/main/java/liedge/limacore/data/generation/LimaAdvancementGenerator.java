@@ -1,7 +1,9 @@
 package liedge.limacore.data.generation;
 
 import liedge.limacore.advancement.LimaAdvancementUtil;
-import net.minecraft.advancements.*;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.AdvancementType;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
@@ -10,152 +12,65 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.data.AdvancementProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static liedge.limacore.advancement.LimaAdvancementUtil.defaultAdvancementDescriptionKey;
+import static liedge.limacore.advancement.LimaAdvancementUtil.defaultAdvancementTitleKey;
 
 public abstract class LimaAdvancementGenerator implements AdvancementProvider.AdvancementGenerator
 {
-    private final ExistingFileHelper helper;
-
-    protected LimaAdvancementGenerator(ExistingFileHelper helper)
+    public static AdvancementProvider createDataProvider(PackOutput packOutput, ExistingFileHelper helper, CompletableFuture<HolderLookup.Provider> registries, Supplier<? extends LimaAdvancementGenerator> supplier)
     {
-        this.helper = helper;
+        LimaAdvancementGenerator generator = supplier.get();
+        return new AdvancementProvider(packOutput, registries, helper, List.of(generator));
     }
 
-    public AdvancementProvider buildProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries)
+    protected Component defaultTitle(ResourceLocation id)
     {
-        return new AdvancementProvider(output, registries, helper, List.of(this));
+        return Component.translatable(defaultAdvancementTitleKey(id));
     }
 
-    protected BuilderHelper getBuilder(ResourceLocation id)
+    protected Component defaultDesc(ResourceLocation id)
     {
-        return new BuilderHelper(id);
+        return Component.translatable(defaultAdvancementDescriptionKey(id));
     }
 
-    protected static class BuilderHelper
+    protected Advancement.Builder builder(ResourceLocation id, ItemStack icon, AdvancementType type, @Nullable ResourceLocation background, boolean showToast, boolean announceToChat, boolean hidden)
     {
-        private final ResourceLocation id;
-        private final Advancement.Builder builder = Advancement.Builder.advancement();
+        return Advancement.Builder.advancement().display(icon, defaultTitle(id), defaultDesc(id), background, type, showToast, announceToChat, hidden);
+    }
 
-        private ItemLike iconItem;
-        private AdvancementType advancementType = AdvancementType.TASK;
-        private ResourceLocation background;
-        private boolean showToast = true;
-        private boolean announceToChat = true;
-        private boolean hidden = false;
-        private Component title;
-        private Component description;
+    protected Advancement.Builder builder(ResourceLocation id, ItemLike iconItem, AdvancementType type, @Nullable ResourceLocation background, boolean showToast, boolean announceToChat, boolean hidden)
+    {
+        return builder(id, new ItemStack(iconItem.asItem()), type, background, showToast, announceToChat, hidden);
+    }
 
-        private BuilderHelper(ResourceLocation id)
-        {
-            this.id = id;
-        }
+    protected Advancement.Builder rootBuilder(ResourceLocation id, ItemStack icon, AdvancementType type, ResourceLocation background)
+    {
+        return builder(id, icon, type, background, false, false, false);
+    }
 
-        public AdvancementHolder build(Consumer<AdvancementHolder> saver, ExistingFileHelper helper)
-        {
-            ItemStack icon = new ItemStack(Objects.requireNonNull(iconItem, "No icon item for advancement " + id));
-            this.defaultTitle().defaultDescription().builder.display(new DisplayInfo(icon, title, description, Optional.ofNullable(background), advancementType, showToast, announceToChat, hidden));
-            return builder.save(saver, id, helper);
-        }
+    protected Advancement.Builder rootBuilder(ResourceLocation id, ItemLike iconItem, AdvancementType type, ResourceLocation background)
+    {
+        return rootBuilder(id, new ItemStack(iconItem.asItem()), type, background);
+    }
 
-        public BuilderHelper parent(AdvancementHolder holder)
-        {
-            builder.parent(holder);
-            return this;
-        }
+    protected Advancement.Builder normalBuilder(ResourceLocation id, ItemStack icon, AdvancementType type)
+    {
+        return builder(id, icon, type, null, true, true, false);
+    }
 
-        public BuilderHelper icon(ItemLike iconItem)
-        {
-            this.iconItem = iconItem;
-            return this;
-        }
+    protected Advancement.Builder normalBuilder(ResourceLocation id, ItemLike iconItem, AdvancementType type)
+    {
+        return normalBuilder(id, new ItemStack(iconItem.asItem()), type);
+    }
 
-        public BuilderHelper defaultTitle(Object... args)
-        {
-            if (title == null)
-            {
-                String key = LimaAdvancementUtil.defaultAdvancementTitleKey(id);
-                title = Component.translatable(key, args);
-            }
-
-            return this;
-        }
-
-        public BuilderHelper defaultDescription(Object... args)
-        {
-            if (description == null)
-            {
-                String key = LimaAdvancementUtil.defaultAdvancementDescriptionKey(id);
-                description = Component.translatable(key, args);
-            }
-
-            return this;
-        }
-
-        public BuilderHelper customTitle(Component title)
-        {
-            this.title = title;
-            return this;
-        }
-
-        public BuilderHelper customDescription(Component description)
-        {
-            this.description = description;
-            return this;
-        }
-
-        public BuilderHelper setAdvancementType(AdvancementType advancementType)
-        {
-            this.advancementType = advancementType;
-            return this;
-        }
-
-        public BuilderHelper visibility(boolean showToast, boolean announceToChat, boolean hidden)
-        {
-            this.showToast = showToast;
-            this.announceToChat = announceToChat;
-            this.hidden = hidden;
-            return this;
-        }
-
-        public BuilderHelper rootAdvancement(ItemLike iconItem, ResourceLocation background)
-        {
-            this.background = background;
-            return icon(iconItem).setAdvancementType(AdvancementType.TASK).visibility(false, false, false);
-        }
-
-        public BuilderHelper criterion(String criterionKey, Criterion<?> criterion)
-        {
-            builder.addCriterion(criterionKey, criterion);
-            return this;
-        }
-
-        public BuilderHelper criterionStrategy(AdvancementRequirements.Strategy strategy)
-        {
-            builder.requirements(strategy);
-            return this;
-        }
-
-        public BuilderHelper criterionStrategy(AdvancementRequirements requirements)
-        {
-            builder.requirements(requirements);
-            return this;
-        }
-
-        public BuilderHelper rewards(AdvancementRewards.Builder rewardsBuilder)
-        {
-            builder.rewards(rewardsBuilder);
-            return this;
-        }
-
-        public BuilderHelper accessBuilder(Consumer<Advancement.Builder> consumer)
-        {
-            consumer.accept(builder);
-            return this;
-        }
+    protected AdvancementRewards.Builder defaultLootReward(ResourceLocation id)
+    {
+        return AdvancementRewards.Builder.loot(LimaAdvancementUtil.defaultAdvancementLootTable(id));
     }
 }

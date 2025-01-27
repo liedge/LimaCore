@@ -40,14 +40,19 @@ public final class LimaItemHandlerUtil
         return ItemStack.EMPTY;
     }
 
-    public static ItemStack insertIntoAnySlot(IItemHandler destination, ItemStack toInsert, boolean simulate)
+    public static void transferStackBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlot)
     {
+        if (source.getStackInSlot(sourceSlot).isEmpty()) return;
+
         for (int i = 0; i < destination.getSlots(); i++)
         {
-            ItemStack inserted = destination.insertItem(i, toInsert, simulate);
-            if (inserted != toInsert) return inserted;
-        }
+            ItemStack sourceItem = source.getStackInSlot(sourceSlot);
+            ItemStack inserted = destination.insertItem(i, sourceItem, true);
 
-        return toInsert;
+            int insertCount = sourceItem.getCount() - inserted.getCount();
+            if (insertCount > 0) destination.insertItem(i, source.extractItem(sourceSlot, insertCount, false), false);
+
+            if (source.getStackInSlot(sourceSlot).isEmpty() || inserted.isEmpty()) break;
+        }
     }
 }
