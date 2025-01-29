@@ -1,17 +1,15 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.LimaCore;
-import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.network.NetworkSerializer;
-import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.PacketFlow;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public final class ClientboundMenuDataWatcherPacket<T> extends ClientboundDataWatcherPacket<T>
 {
-    static final PacketSpec<ClientboundMenuDataWatcherPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "menu_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataWatcherPacket::new));
+    static final Type<ClientboundMenuDataWatcherPacket<?>> TYPE = LimaCore.RESOURCES.packetType("menu_data");
+    static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMenuDataWatcherPacket<?>> STREAM_CODEC = StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundMenuDataWatcherPacket::new);
 
     private final int containerId;
 
@@ -27,6 +25,11 @@ public final class ClientboundMenuDataWatcherPacket<T> extends ClientboundDataWa
         this.containerId = net.readVarInt();
     }
 
+    public int getContainerId()
+    {
+        return containerId;
+    }
+
     @Override
     void encodeWatcherContext(RegistryFriendlyByteBuf net)
     {
@@ -34,14 +37,8 @@ public final class ClientboundMenuDataWatcherPacket<T> extends ClientboundDataWa
     }
 
     @Override
-    @Nullable DataWatcherHolder watcherContext()
+    public Type<? extends CustomPacketPayload> type()
     {
-        return LimaCoreClientUtil.getClientPlayerMenu(containerId, DataWatcherHolder.class);
-    }
-
-    @Override
-    public PacketSpec<?> getPacketSpec()
-    {
-        return PACKET_SPEC;
+        return TYPE;
     }
 }

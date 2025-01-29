@@ -1,18 +1,16 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.LimaCore;
-import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.network.NetworkSerializer;
-import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.PacketFlow;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public final class ClientboundBlockEntityDataWatcherPacket<T> extends ClientboundDataWatcherPacket<T>
 {
-    static final PacketSpec<ClientboundBlockEntityDataWatcherPacket<?>> PACKET_SPEC = LimaCore.RESOURCES.packetSpec(PacketFlow.CLIENTBOUND, "block_entity_data", StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundBlockEntityDataWatcherPacket::new));
+    static final Type<ClientboundBlockEntityDataWatcherPacket<?>> TYPE = LimaCore.RESOURCES.packetType("block_entity_data");
+    static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEntityDataWatcherPacket<?>> STREAM_CODEC = StreamCodec.of((net, pkt) -> pkt.encodePacket(net), ClientboundBlockEntityDataWatcherPacket::new);
 
     private final BlockPos pos;
 
@@ -28,6 +26,11 @@ public final class ClientboundBlockEntityDataWatcherPacket<T> extends Clientboun
         this.pos = net.readBlockPos();
     }
 
+    public BlockPos getPos()
+    {
+        return pos;
+    }
+
     @Override
     void encodeWatcherContext(RegistryFriendlyByteBuf net)
     {
@@ -35,14 +38,8 @@ public final class ClientboundBlockEntityDataWatcherPacket<T> extends Clientboun
     }
 
     @Override
-    @Nullable DataWatcherHolder watcherContext()
+    public Type<? extends CustomPacketPayload> type()
     {
-        return LimaCoreClientUtil.getClientSafeBlockEntity(pos, DataWatcherHolder.class);
-    }
-
-    @Override
-    public PacketSpec<?> getPacketSpec()
-    {
-        return PACKET_SPEC;
+        return TYPE;
     }
 }

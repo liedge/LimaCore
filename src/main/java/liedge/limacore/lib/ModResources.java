@@ -1,12 +1,8 @@
 package liedge.limacore.lib;
 
-import liedge.limacore.network.packet.LimaPlayPacket;
 import liedge.limacore.registry.LimaDeferredBlocks;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -21,7 +17,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -201,13 +196,7 @@ public record ModResources(String modid)
     //#endregion
 
     //#region Misc resources
-    public <T extends LimaPlayPacket> LimaPlayPacket.PacketSpec<T> packetSpec(@Nullable PacketFlow packetFlow, String name, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
-    {
-        CustomPacketPayload.Type<T> type = new CustomPacketPayload.Type<>(location(name));
-        return new LimaPlayPacket.PacketSpec<>(packetFlow, type, streamCodec);
-    }
-
-    public <T extends LimaPlayPacket> CustomPacketPayload.Type<T> packetType(String name)
+    public <T extends CustomPacketPayload> CustomPacketPayload.Type<T> packetType(String name)
     {
         return new CustomPacketPayload.Type<>(location(name));
     }

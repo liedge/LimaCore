@@ -1,23 +1,13 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.network.NetworkSerializer;
-import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.codec.StreamDecoder;
-import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import static liedge.limacore.network.NetworkSerializer.REGISTRY_STREAM_CODEC;
 
-public abstract class ClientboundDataWatcherPacket<T> implements LimaPlayPacket.ClientboundOnly
+public abstract class ClientboundDataWatcherPacket<T> implements CustomPacketPayload
 {
-    static <E, T extends ClientboundDataWatcherPacket<E>> StreamCodec<RegistryFriendlyByteBuf, T> createStreamCodec(StreamDecoder<RegistryFriendlyByteBuf, T> decoder)
-    {
-        return StreamCodec.of((buf, pkt) -> pkt.encodePacket(buf), decoder);
-    }
-
     private final int index;
     private final NetworkSerializer<T> serializer;
     private final T data;
@@ -45,17 +35,15 @@ public abstract class ClientboundDataWatcherPacket<T> implements LimaPlayPacket.
         encodeWatcherContext(net);
     }
 
-    @Override
-    public final void onReceivedByClient(IPayloadContext context, Player localPlayer)
-    {
-        DataWatcherHolder holder = watcherContext();
-        if (holder != null)
-        {
-            holder.receiveDataPacket(index, data);
-        }
-    }
-
     abstract void encodeWatcherContext(RegistryFriendlyByteBuf net);
 
-    abstract @Nullable DataWatcherHolder watcherContext();
+    public int getIndex()
+    {
+        return index;
+    }
+
+    public T getData()
+    {
+        return data;
+    }
 }
