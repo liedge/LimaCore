@@ -2,8 +2,6 @@ package liedge.limacore.util;
 
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -83,16 +81,6 @@ public final class LimaJsonUtil
     //#endregion
 
     //#region Helper serializers/deserializers
-    public static <T> JsonElement codecEncode(Codec<T> codec, T object)
-    {
-        return codec.encodeStart(JsonOps.INSTANCE, object).getOrThrow(msg -> new RuntimeException(String.format("%s failed to encode to json: %s", codec, msg)));
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, JsonElement json)
-    {
-        return codec.decode(JsonOps.INSTANCE, json).getOrThrow(msg -> new RuntimeException(String.format("%s failed to decode json element: %s", codec, msg))).getFirst();
-    }
-
     public static ResourceLocation getAsResourceLocation(JsonObject json, String key)
     {
         return getAsResourceLocation(json.get(key));

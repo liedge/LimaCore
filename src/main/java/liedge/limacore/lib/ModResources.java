@@ -2,6 +2,7 @@ package liedge.limacore.lib;
 
 import liedge.limacore.registry.LimaDeferredBlocks;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
@@ -70,9 +71,9 @@ public record ModResources(String modid)
     //#endregion
 
     //#region Deferred registers
-    public <T> DeferredRegister<T> deferredRegister(Registry<T> forgeRegistry)
+    public <T> DeferredRegister<T> deferredRegister(Registry<T> registry)
     {
-        return DeferredRegister.create(forgeRegistry, modid);
+        return DeferredRegister.create(registry, modid);
     }
 
     public <T> DeferredRegister<T> deferredRegister(ResourceKey<? extends Registry<T>> registryKey)
@@ -93,6 +94,16 @@ public record ModResources(String modid)
     public LimaDeferredBlocks deferredBlocks()
     {
         return new LimaDeferredBlocks(modid);
+    }
+
+    public DeferredRegister.DataComponents deferredDataComponents(ResourceKey<Registry<DataComponentType<?>>> componentRegistryKey)
+    {
+        return DeferredRegister.DataComponents.createDataComponents(componentRegistryKey, modid);
+    }
+
+    public DeferredRegister.DataComponents deferredDataComponents()
+    {
+        return deferredDataComponents(Registries.DATA_COMPONENT_TYPE);
     }
 
     public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)

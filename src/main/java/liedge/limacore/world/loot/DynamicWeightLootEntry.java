@@ -20,13 +20,13 @@ import java.util.function.Consumer;
 public final class DynamicWeightLootEntry extends LootPoolEntryContainer
 {
     public static final MapCodec<DynamicWeightLootEntry> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            NumberProviders.CODEC.fieldOf("weight").forGetter(o -> o.weight),
+            NumberProviders.CODEC.fieldOf("dynamic_weight").forGetter(o -> o.dynamicWeight),
             Codec.BOOL.optionalFieldOf("replace_weight", true).forGetter(o -> o.replaceWeight),
             LootPoolEntries.CODEC.fieldOf("child").forGetter(o -> o.child))
             .and(commonFields(instance).t1())
             .apply(instance, DynamicWeightLootEntry::new));
 
-    private final NumberProvider weight;
+    private final NumberProvider dynamicWeight;
     private final boolean replaceWeight;
     private final LootPoolEntryContainer child;
 
@@ -40,10 +40,15 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
         return dynamicWeight(LootItem.lootTableItem(item));
     }
 
-    private DynamicWeightLootEntry(NumberProvider weight, boolean replaceWeight, LootPoolEntryContainer child, List<LootItemCondition> conditions)
+    public static Builder dynamicWeightItem(ItemLike item, int baseWeight)
+    {
+        return dynamicWeight(LootItem.lootTableItem(item).setWeight(baseWeight));
+    }
+
+    private DynamicWeightLootEntry(NumberProvider dynamicWeight, boolean replaceWeight, LootPoolEntryContainer child, List<LootItemCondition> conditions)
     {
         super(conditions);
-        this.weight = weight;
+        this.dynamicWeight = dynamicWeight;
         this.replaceWeight = replaceWeight;
         this.child = child;
     }
@@ -66,7 +71,7 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
     {
         if (canRun(ctx))
         {
-            int dynamicWeight = weight.getInt(ctx);
+            int dynamicWeight = this.dynamicWeight.getInt(ctx);
 
             return child.expand(ctx, original -> entryConsumer.accept(new LootPoolEntry()
             {
@@ -91,7 +96,7 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
     {
         private final LootPoolEntryContainer child;
 
-        private NumberProvider weight;
+        private NumberProvider dynamicWeight;
         private boolean replaceWeight = true;
 
         public Builder(LootPoolEntryContainer child)
@@ -105,9 +110,9 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
             return this;
         }
 
-        public Builder setWeight(NumberProvider weight)
+        public Builder setDynamicWeight(NumberProvider dynamicWeight)
         {
-            this.weight = weight;
+            this.dynamicWeight = dynamicWeight;
             return this;
         }
 
@@ -120,8 +125,8 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
         @Override
         public LootPoolEntryContainer build()
         {
-            Objects.requireNonNull(weight, "Dynamic weight not set.");
-            return new DynamicWeightLootEntry(weight, replaceWeight, child, getConditions());
+            Objects.requireNonNull(dynamicWeight, "Dynamic weight not set.");
+            return new DynamicWeightLootEntry(dynamicWeight, replaceWeight, child, getConditions());
         }
     }
 }

@@ -5,6 +5,7 @@ import liedge.limacore.LimaCore;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaCollectionsUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -18,7 +19,6 @@ public final class LimaComponentUtil
     private LimaComponentUtil() {}
 
     // Standard constant components
-    public static final Component NEWLINE = Component.literal("\n");
     public static final Component COMMA_SEPARATOR = Component.literal(", ");
     public static final Component INFINITY_SYMBOL = Component.literal(LimaCommonConstants.INFINITY_SYMBOL);
     public static final Component BULLET_1_INDENT = Component.literal(" • ");
@@ -36,12 +36,12 @@ public final class LimaComponentUtil
     //#region Component helper functions
     public static MutableComponent bulletPointListWithHeader(Component header, Component bullet, Collection<? extends Component> elements)
     {
-        return header.copy().append(NEWLINE).append(bulletPointList(bullet, elements));
+        return header.copy().append(CommonComponents.NEW_LINE).append(bulletPointList(bullet, elements));
     }
 
     public static MutableComponent bulletPointList(Component bullet, Collection<? extends Component> elements)
     {
-        return ComponentUtils.formatList(elements, NEWLINE, component -> bullet.copy().append(component));
+        return ComponentUtils.formatList(elements, CommonComponents.NEW_LINE, component -> bullet.copy().append(component));
     }
 
     public static void accumulateWithDelimiter(MutableComponent master, Component delimiter, Component line)

@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class CustomRecipeTypeTrigger extends SimpleCriterionTrigger<CustomRecipeTypeTrigger.TriggerInstance>
+public final class CustomRecipeTypeTrigger extends SimpleCriterionTrigger<CustomRecipeTypeTrigger.TriggerInstance>
 {
     private static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> LimaAdvancementUtil.playerCodecStart(instance)
             .and(BuiltInRegistries.RECIPE_TYPE.byNameCodec().fieldOf("recipe_type").forGetter(TriggerInstance::recipeType))

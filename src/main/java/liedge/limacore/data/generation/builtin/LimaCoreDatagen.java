@@ -18,6 +18,9 @@ final class LimaCoreDatagen
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
 
+        // Server data
+        generator.addProvider(event.includeServer(), new LootModifiersGen(output, event.getLookupProvider()));
+
         // Client assets
         generator.addProvider(event.includeClient(), new LanguageGen(output));
     }

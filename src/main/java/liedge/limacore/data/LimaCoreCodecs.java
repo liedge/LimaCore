@@ -2,6 +2,7 @@ package liedge.limacore.data;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.function.Function;
@@ -32,6 +34,8 @@ import static liedge.limacore.util.LimaMathUtil.toRad;
 
 public final class LimaCoreCodecs
 {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private LimaCoreCodecs() {}
 
     /**
@@ -192,4 +196,35 @@ public final class LimaCoreCodecs
     {
         return MapCodec.of(baseCodec.flatComap(to), baseCodec.map(from));
     }
+
+    // #region Encoding/Decoding utilities
+    public static <A, U> U strictEncode(Codec<A> codec, DynamicOps<U> ops, A input)
+    {
+        return codec.encodeStart(ops, input).getOrThrow(msg -> {
+            LOGGER.error("Codec {} failed strict encoding: {}", codec, msg);
+            throw new IllegalStateException("Encoding error.");
+        });
+    }
+
+    public static <A, U> U lenientEncode(Codec<A> codec, DynamicOps<U> ops, A input)
+    {
+        return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient encoding: {}", codec, msg)).orElseThrow(() -> new IllegalStateException("Encoding error."));
+    }
+
+    public static <A, U> A strictDecode(Codec<A> codec, DynamicOps<U> ops, U input)
+    {
+        return codec.decode(ops, input).getOrThrow(msg -> {
+            LOGGER.error("Codec {} failed strict decoding: {}", codec, msg);
+            throw new IllegalStateException("Decoding error.");
+        }).getFirst();
+    }
+
+    public static <A, U> A lenientDecode(Codec<A> codec, DynamicOps<U> ops, U input)
+    {
+        return codec.decode(ops, input)
+                .resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient decoding: {}", codec, msg))
+                .orElseThrow(() -> new IllegalStateException("Decoding error."))
+                .getFirst();
+    }
+    //#endregion
 }

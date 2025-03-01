@@ -7,12 +7,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import liedge.limacore.data.LimaCoreCodecs;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.nbt.*;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
@@ -38,51 +38,17 @@ public final class LimaNbtUtil
 
     private LimaNbtUtil() {}
 
-    // Codec encoding helpers
-    public static <T> Tag codecEncode(Codec<T> codec, DynamicOps<Tag> ops, T object)
+    // Compound tag codec decode helpers
+    public static <T> T strictDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
     {
-        return codec.encodeStart(ops, object).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to encode to NBT tag: %s", codec, msg)));
+        Tag tag = Objects.requireNonNull(compoundTag.get(key), "Child tag '" + key + "' not found in compound tag.");
+        return LimaCoreCodecs.strictDecode(codec, ops, tag);
     }
 
-    public static <T> Tag codecEncode(Codec<T> codec, HolderLookup.Provider registries, T object)
+    public static <T> T lenientDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
     {
-        return codecEncode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), object);
-    }
-
-    public static <T> Tag codecEncode(Codec<T> codec, T object)
-    {
-        return codecEncode(codec, NbtOps.INSTANCE, object);
-    }
-
-    // Codec decoding helpers
-    public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, Tag tag)
-    {
-        return codec.decode(ops, tag).getOrThrow(msg -> new RuntimeException(String.format("%s codec failed to decode NBT tag: %s", codec, msg))).getFirst();
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, HolderLookup.Provider registries, Tag tag)
-    {
-        return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), tag);
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, Tag tag)
-    {
-        return codecDecode(codec, NbtOps.INSTANCE, tag);
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
-    {
-        return codecDecode(codec, ops, Objects.requireNonNull(compoundTag.get(key), "Compound tag does not contain sub-tag '" + key + "'"));
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, HolderLookup.Provider registries, CompoundTag compoundTag, String key)
-    {
-        return codecDecode(codec, RegistryOps.create(NbtOps.INSTANCE, registries), compoundTag, key);
-    }
-
-    public static <T> T codecDecode(Codec<T> codec, CompoundTag compoundTag, String key)
-    {
-        return codecDecode(codec, NbtOps.INSTANCE, compoundTag, key);
+        Tag tag = Objects.requireNonNull(compoundTag.get(key), "Child tag '" + key + "' not found in compound tag.");
+        return LimaCoreCodecs.lenientDecode(codec, ops, tag);
     }
 
     //#region Fallback getters

@@ -13,7 +13,7 @@ public record NetworkSerializer<T>(ResourceLocation id, StreamCodec<? super Regi
         return new NetworkSerializer<>(id, streamCodec);
     }
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, NetworkSerializer<?>> REGISTRY_STREAM_CODEC = ByteBufCodecs.registry(LimaCoreRegistries.NETWORK_SERIALIZERS_KEY);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NetworkSerializer<?>> REGISTRY_STREAM_CODEC = ByteBufCodecs.registry(LimaCoreRegistries.Keys.NETWORK_SERIALIZERS);
 
     @Override
     public String toString()

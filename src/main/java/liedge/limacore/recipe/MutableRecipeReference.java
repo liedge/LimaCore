@@ -104,6 +104,7 @@ public final class MutableRecipeReference<T extends Recipe<?>> implements INBTSe
     private void deserialize(String value)
     {
         id = !value.equals("null") ? ResourceLocation.parse(value) : null;
+        holder = null; // Fix: Changing ID should make holder be looked up again.
     }
 
     @Override

@@ -13,8 +13,10 @@ import org.joml.Vector3f;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Stream;
 
 public final class LimaMathUtil
 {
@@ -26,6 +28,8 @@ public final class LimaMathUtil
     public static final int THOUSAND = 1000;
     public static final int MILLION = 1_000_000;
     public static final int BILLION = 1_000_000_000;
+
+    private static final Vec3 Y_UNIT_VEC = new Vec3(0, 1, 0);
 
     // Formats
     public static final DecimalFormat FORMAT_PERCENTAGE = new DecimalFormat("#%");
@@ -89,11 +93,14 @@ public final class LimaMathUtil
      */
     public static int roundRandomly(double value)
     {
+        // Return early if value is an integer
         int base = (int) value;
-        if (base == value || base == 0) return base;
+        if (base == value) return base;
 
-        value -= base;
-        return base + (valueOf(rollRandomChance(Math.abs(value))) * Mth.sign(value));
+        double d = value - base;
+        int n = valueOf(rollRandomChance(Math.abs(d))) * Mth.sign(d);
+
+        return base + n;
     }
 
     public static int round(double value)
@@ -166,6 +173,53 @@ public final class LimaMathUtil
         double dy = y2 - y1;
         double dz = z2 - z1;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public static Vec3 normalizedCross(Vec3 a, Vec3 b)
+    {
+        double x = a.y * b.z - a.z * b.y;
+        double y = a.z * b.x - a.x * b.z;
+        double z = a.x * b.y - a.y * b.x;
+
+        double u = Math.sqrt(x * x + y * y + z * z);
+        return u < 1e-6 ? Vec3.ZERO : new Vec3(x / u, y / u, z / u);
+    }
+
+    public static Vec3 relativePointToRotations(float xRot, float yRot, double xOffset, double yOffset, double zOffset)
+    {
+        Vec3 dir = createMotionVector(xRot, yRot, 1f);
+
+        Vec3 vecZ = createMotionVector(0f, yRot, 1f);
+        Vec3 vecX = vecZ.cross(Y_UNIT_VEC);
+
+        float yRotRad = toRad(yRot);
+        float sinY = Mth.sin(yRotRad);
+        float cosY = Mth.cos(yRotRad);
+
+        double nx = (dir.x * zOffset) + (vecX.x * xOffset) + (-vecZ.x * yOffset * cosY);
+        double ny = (dir.y * zOffset) + (vecX.y * xOffset) + (-yOffset * sinY);
+        double nz = (dir.z * zOffset) + (vecX.z * xOffset) + (-vecZ.z * yOffset * cosY);
+
+        return new Vec3(nx, ny, nz);
+    }
+
+    public static Stream<Vec3> relativePointsToRotations(float xRot, float yRot, List<Vec3> list)
+    {
+        Vec3 dir = createMotionVector(xRot, yRot, 1f);
+
+        Vec3 vecZ = createMotionVector(0f, yRot, 1f);
+        Vec3 vecX = vecZ.cross(Y_UNIT_VEC);
+
+        float yRotRad = toRad(yRot);
+        float sinY = Mth.sin(yRotRad);
+        float cosY = Mth.cos(yRotRad);
+
+        return list.stream().map(v -> {
+            double nx = (dir.x * v.z) + (vecX.x * v.x) + (-vecZ.x * v.y * cosY);
+            double ny = (dir.y * v.z) + (vecX.y * v.x) + (-v.y * sinY);
+            double nz = (dir.z * v.z) + (vecX.z * v.x) + (-vecZ.z * v.y * cosY);
+            return new Vec3(nx, ny, nz);
+        });
     }
 
     public static Vec3 createMotionVector(LivingEntity entity, double length)

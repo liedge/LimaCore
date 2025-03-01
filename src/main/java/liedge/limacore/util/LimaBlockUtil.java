@@ -1,6 +1,7 @@
 package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -16,6 +17,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -123,6 +125,13 @@ public final class LimaBlockUtil
     {
         Preconditions.checkArgument(side.getAxis().isHorizontal(), "Direction must be horizontal for Y axis rotation angle.");
         return (int) (side.toYRot() + 180f) % 360;
+    }
+
+    public static List<AABB> blockPosShiftedAABBs(VoxelShape shape, BlockPos pos)
+    {
+        List<AABB> list = new ObjectArrayList<>();
+        shape.forAllBoxes((x1, y1, z1, x2, y2, z2) -> list.add(new AABB(x1 + pos.getX(), y1 + pos.getY(), z1 + pos.getZ(), x2 + pos.getX(), y2 + pos.getY(), z2 + pos.getZ())));
+        return list;
     }
 
     public static VoxelShape modifyAndMergeAllBoxes(VoxelShape original, VoxelShapeFactory factory)
