@@ -23,20 +23,38 @@ public final class LimaCollectionsUtil
     private LimaCollectionsUtil() {}
 
     //#region Collection modification helpers
-    public static <E, C extends Collection<E>> C mergeIntoFirstCollection(C collection1, C collection2)
+    /**
+     * Appends {@code second} into {@code first} with {@link Collection#addAll(Collection)}.
+     * For use when combining collections and returning the destination collection in one line is needed.
+     * @param first The 'destination' collection
+     * @param second The 'source' collection
+     * @return The first collection
+     * @param <E> The type of the collection element
+     * @param <C> The type of the first collection
+     */
+    public static <E, C extends Collection<E>> C mergeCollections(C first, Collection<E> second)
     {
-        collection1.addAll(collection2);
-        return collection1;
+        first.addAll(second);
+        return first;
     }
 
-    public static <K, V, M extends Map<K, V>> M mergeIntoFirstMap(M map1, M map2)
+    /**
+     * Puts all {@code second} entries into {@code first} using {@link LimaCollectionsUtil#putNoDuplicates(Map, K, V)}
+     * @param first The 'destination' of the map entries
+     * @param second The 'source' of the map entries
+     * @return The first map
+     * @param <K> The type of the map keys
+     * @param <V> The type of the map values
+     * @param <M> The type of the first (destination) map
+     */
+    public static <K, V, M extends Map<K, V>> M mergeMapsNoDuplicates(M first, Map<K, V> second)
     {
-        for (Map.Entry<K, V> entry : map2.entrySet())
+        for (Map.Entry<K, V> entry : second.entrySet())
         {
-            putNoDuplicates(map1, entry.getKey(), entry.getValue());
+            putNoDuplicates(first, entry.getKey(), entry.getValue());
         }
 
-        return map1;
+        return first;
     }
     //#endregion
 
@@ -104,6 +122,16 @@ public final class LimaCollectionsUtil
         if (added != null) throw exceptionSupplier.get();
     }
 
+    /**
+     * Attempts to insert an entry into a map with {@link Map#putIfAbsent(K, V)}. If the key is already in the map and
+     * associated with a non-null value, an {@link IllegalArgumentException} will be thrown.
+     * @param map The map object
+     * @param key The key of the map entry
+     * @param value The value of the map entry
+     * @param <K> The type of the map keys
+     * @param <V> The type of the map values
+     * @throws IllegalArgumentException If a key previously had a non-null value assigned to it.
+     */
     public static <K, V> void putNoDuplicates(Map<K, V> map, K key, V value)
     {
         putNoDuplicates(map, key, value, () -> new IllegalArgumentException("Duplicate map key '" + key + "'."));

@@ -1,11 +1,9 @@
 package liedge.limacore.util;
 
-import com.mojang.serialization.MapCodec;
-import liedge.limacore.data.LimaEnumCodec;
+import liedge.limacore.lib.math.LimaRoundingMode;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
@@ -76,8 +74,7 @@ public final class LimaMathUtil
 
     public static boolean rollRandomChance(double chance)
     {
-        double d = RANDOM.nextDouble();
-        return d <= chance;
+        return RANDOM.nextDouble() <= chance;
     }
 
     public static int valueOf(boolean bool)
@@ -85,9 +82,14 @@ public final class LimaMathUtil
         return bool ? 1 : 0;
     }
 
+    //#region Double-to-Int rounding operations
     /**
-     * Rounds a double to an int by applying either a floor or ceiling operation with a random chance depending on how close
-     * the number is towards zero or the +/- infinities. For example, -4.8 has an 80% to round towards -5 and 20% to go towards -4.
+     * Rounds a double to an int by applying either a floor or ceiling operation with a random chance based on the absolute value of the decimal portion.
+     * <ul>
+     *     <li>Decimal ABS values < 0.5 are biased towards zero.</li>
+     *     <li>Decimal ABS values > 0.5 are biased towards positive/negative infinity depending on the number's sign.</li>
+     * </ul>
+     * For example, -4.8 has an 80% to round towards -5 and 20% to go towards -4.
      * @param value The double to be rounded.
      * @return The whole number after rounding.
      */
@@ -105,12 +107,12 @@ public final class LimaMathUtil
 
     public static int round(double value)
     {
-        return round(value, RoundingStrategy.NATURAL);
+        return round(value, LimaRoundingMode.NATURAL);
     }
 
-    public static int round(double value, RoundingStrategy strategy)
+    public static int round(double value, LimaRoundingMode mode)
     {
-        return switch (strategy)
+        return switch (mode)
         {
             case NATURAL -> Math.round((float) value);
             case FLOOR -> Mth.floor(value);
@@ -118,6 +120,8 @@ public final class LimaMathUtil
             case RANDOM -> roundRandomly(value);
         };
     }
+
+    //#endregion
 
     public static double triangle(double min, double max)
     {
@@ -321,28 +325,4 @@ public final class LimaMathUtil
         };
     }
     //#endregion
-
-    public enum RoundingStrategy implements StringRepresentable
-    {
-        NATURAL("natural"),
-        FLOOR("floor"),
-        CEIL("ceil"),
-        RANDOM("random");
-
-        public static final LimaEnumCodec<RoundingStrategy> CODEC = LimaEnumCodec.create(RoundingStrategy.class);
-        public static final MapCodec<RoundingStrategy> NATURAL_DEFAULT_MAP_CODEC = CODEC.optionalFieldOf("rounding_strategy", NATURAL);
-
-        private final String name;
-
-        RoundingStrategy(String name)
-        {
-            this.name = name;
-        }
-
-        @Override
-        public String getSerializedName()
-        {
-            return name;
-        }
-    }
 }

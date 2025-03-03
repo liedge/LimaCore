@@ -7,23 +7,30 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class LimaBlockEntityItemHandler extends ItemStackHandler implements LimaItemHandlerBase
 {
-    private final ItemHolderBlockEntity itemHolder;
+    private final ItemHolderBlockEntity blockEntity;
+    private final int handlerIndex;
 
-    public LimaBlockEntityItemHandler(ItemHolderBlockEntity itemHolder, int size)
+    public LimaBlockEntityItemHandler(ItemHolderBlockEntity blockEntity, int handlerIndex, int size)
     {
         super(size);
-        this.itemHolder = itemHolder;
+        this.blockEntity = blockEntity;
+        this.handlerIndex = handlerIndex;
+    }
+
+    public LimaBlockEntityItemHandler(ItemHolderBlockEntity blockEntity, int size)
+    {
+        this(blockEntity, 0, size);
     }
 
     public ItemHolderBlockEntity getParentObject()
     {
-        return itemHolder;
+        return blockEntity;
     }
 
     @Override
     public IOAccess getSlotIOAccess(int slot)
     {
-        return itemHolder.getPerSlotIO(slot);
+        return blockEntity.getItemSlotIO(handlerIndex, slot);
     }
 
     @Override
@@ -51,18 +58,18 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
     @Override
     public boolean isItemValid(int slot, ItemStack stack)
     {
-        return itemHolder.isItemValid(slot, stack);
+        return blockEntity.isItemValid(handlerIndex, slot, stack);
     }
 
     @Override
     public void onContentsChanged(int slot)
     {
-        itemHolder.onItemSlotChanged(slot);
+        blockEntity.onItemSlotChanged(handlerIndex, slot);
     }
 
     @Override
     protected void onLoad()
     {
-        itemHolder.onItemHandlerLoaded();
+        blockEntity.onItemHandlerLoaded(handlerIndex);
     }
 }

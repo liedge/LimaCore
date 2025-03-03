@@ -1,4 +1,4 @@
-package liedge.limacore.world.loot;
+package liedge.limacore.world.loot.number;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,7 +18,7 @@ public record TargetedEnchantmentLevelProvider(LootContext.EntityTarget target, 
             LevelBasedValue.CODEC.fieldOf("amount").forGetter(TargetedEnchantmentLevelProvider::amount))
             .apply(instance, TargetedEnchantmentLevelProvider::new));
 
-    public static TargetedEnchantmentLevelProvider of(LootContext.EntityTarget target, Holder<Enchantment> enchantment, LevelBasedValue amount)
+    public static NumberProvider of(LootContext.EntityTarget target, Holder<Enchantment> enchantment, LevelBasedValue amount)
     {
         return new TargetedEnchantmentLevelProvider(target, enchantment, amount);
     }

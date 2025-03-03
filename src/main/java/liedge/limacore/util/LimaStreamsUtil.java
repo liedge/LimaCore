@@ -6,11 +6,11 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.function.*;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +25,7 @@ public final class LimaStreamsUtil
     // Collection helpers
     public static <T, C extends Collection<T>> BinaryOperator<C> collectionMerger()
     {
-        return LimaCollectionsUtil::mergeIntoFirstCollection;
+        return LimaCollectionsUtil::mergeCollections;
     }
 
     public static <T, K, V, M extends Map<K, V>> BiConsumer<M, T> mapAccumulator(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper)
@@ -33,14 +33,9 @@ public final class LimaStreamsUtil
         return (map, t) -> putNoDuplicates(map, keyMapper.apply(t), valueMapper.apply(t));
     }
 
-    public static <K, V, M extends Map<K, V>> BiConsumer<M, K> idKeyMapAccumulator(Function<? super K, ? extends V> valueMapper)
-    {
-        return (map, key) -> putNoDuplicates(map, key, valueMapper.apply(key));
-    }
-
     public static <K, V, M extends Map<K, V>> BinaryOperator<M> mapMerger()
     {
-        return LimaCollectionsUtil::mergeIntoFirstMap;
+        return LimaCollectionsUtil::mergeMapsNoDuplicates;
     }
 
     //#region Stream collectors
@@ -74,29 +69,19 @@ public final class LimaStreamsUtil
         return Collector.of(mapSupplier, mapAccumulator(keyMapper, valueMapper), mapMerger(), Collector.Characteristics.IDENTITY_FINISH);
     }
 
-    public static <K, V, M extends Map<K, V>> Collector<K, ?, M> toIdKeyMap(Supplier<M> mapSupplier, Function<? super K, ? extends V> valueMapper)
-    {
-        return Collector.of(mapSupplier, idKeyMapAccumulator(valueMapper), mapMerger(), Collector.Characteristics.IDENTITY_FINISH);
-    }
-
     public static <T, K, V, A extends Map<K, V>, R extends Map<K, V>> Collector<T, A, R> toMap(Supplier<A> accumulatorMapSupplier, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper, Function<A, R> finisher)
     {
         return Collector.of(accumulatorMapSupplier, mapAccumulator(keyMapper, valueMapper), mapMerger(), finisher);
     }
 
-    public static <K, V, A extends Map<K, V>, R extends Map<K, V>> Collector<K, A, R> toIdKeyMap(Supplier<A> accumulatorMapSupplier, Function<? super K, ? extends V> valueMapper, Function<A, R> finisher)
-    {
-        return Collector.of(accumulatorMapSupplier, idKeyMapAccumulator(valueMapper), mapMerger(), finisher);
-    }
-
     public static <E extends Enum<E>, V> Collector<E, ?, Map<E, V>> toEnumMap(Class<E> enumClass, Function<? super E, ? extends V> valueMapper)
     {
-        return toIdKeyMap(() -> new EnumMap<>(enumClass), valueMapper);
+        return toMap(() -> new EnumMap<>(enumClass), Function.identity(), valueMapper);
     }
 
     public static <E extends Enum<E>, V> Collector<E, EnumMap<E, V>, Map<E, V>> toUnmodifiableEnumMap(Class<E> enumClass, Function<? super E, ? extends V> valueMapper)
     {
-        return toIdKeyMap(() -> new EnumMap<>(enumClass), valueMapper, ImmutableMap::copyOf);
+        return toMap(() -> new EnumMap<>(enumClass), Function.identity(), valueMapper, ImmutableMap::copyOf);
     }
 
     public static <T, K, U> Collector<T, ?, Object2ObjectMap<K, U>> toObject2ObjectMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper)
@@ -118,12 +103,5 @@ public final class LimaStreamsUtil
     public static <E extends Enum<E>> Stream<E> enumStream(Class<E> enumClass)
     {
         return Arrays.stream(checkedEnumConstants(enumClass));
-    }
-
-    public static <T> Stream<T> buildStream(Consumer<Consumer<T>> elementSupplier)
-    {
-        Stream.Builder<T> builder = Stream.builder();
-        elementSupplier.accept(builder);
-        return builder.build();
     }
 }

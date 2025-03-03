@@ -5,6 +5,7 @@ import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
@@ -63,6 +64,11 @@ public final class LimaLootUtil
     public static LootItemCondition.Builder needsEntityType(EntityType<?> type)
     {
         return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().of(type));
+    }
+
+    public static LootItemCondition.Builder needsEntityTag(TagKey<EntityType<?>> tagKey)
+    {
+        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().of(tagKey));
     }
 
     public static NumberProvider linearEnchantmentLevel()

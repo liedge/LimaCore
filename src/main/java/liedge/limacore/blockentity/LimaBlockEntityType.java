@@ -4,11 +4,9 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,29 +15,20 @@ import java.util.Set;
 
 public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntityType<BE>
 {
-    public static <BE extends LimaBlockEntity> LimaBlockEntityType<BE> of(WithTypeConstructor<BE> constructor, Holder<Block> holder)
+    public static <BE extends LimaBlockEntity> LimaBlockEntityType<BE> of(BlockEntitySupplier<BE> factory, Holder<Block> holder)
     {
-        return new LimaBlockEntityType<>(constructor, Set.of(holder.value()));
+        return new LimaBlockEntityType<>(factory, Set.of(holder.value()));
     }
 
-    public static <BE extends LimaBlockEntity> Builder<BE> builder(WithTypeConstructor<BE> constructor)
+    public static <BE extends LimaBlockEntity> Builder<BE> builder(BlockEntitySupplier<BE> factory)
     {
-        return new Builder<>(constructor);
+        return new Builder<>(factory);
     }
-
-    private final WithTypeConstructor<BE> constructor;
 
     @SuppressWarnings("ConstantConditions")
-    protected LimaBlockEntityType(WithTypeConstructor<BE> constructor, Set<Block> validBlocks)
+    protected LimaBlockEntityType(BlockEntitySupplier<BE> factory, Set<Block> validBlocks)
     {
-        super(null, validBlocks, null);
-        this.constructor = constructor;
-    }
-
-    @Override
-    public BE create(BlockPos pos, BlockState state)
-    {
-        return constructor.newInstance(this, pos, state);
+        super(factory, validBlocks, null);
     }
 
     public @Nullable <T> T getDataMap(DataMapType<BlockEntityType<?>, T> dataMapType)
@@ -52,37 +41,53 @@ public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntity
         return Objects.requireNonNullElse(getDataMap(dataMapType), fallback);
     }
 
-    @FunctionalInterface
-    public interface WithTypeConstructor<BE extends LimaBlockEntity>
+    public static abstract class AbstractBuilder<BE extends LimaBlockEntity, TYPE extends LimaBlockEntityType<BE>, B extends AbstractBuilder<BE, TYPE, B>>
     {
-        BE newInstance(LimaBlockEntityType<? extends BE> type, BlockPos pos, BlockState state);
-    }
-
-    public static class Builder<BE extends LimaBlockEntity>
-    {
-        private final WithTypeConstructor<BE> constructor;
+        private final BlockEntitySupplier<BE> factory;
         private final ObjectSet<Block> validBlocks = new ObjectOpenHashSet<>();
 
-        protected Builder(WithTypeConstructor<BE> constructor)
+        protected AbstractBuilder(BlockEntitySupplier<BE> factory)
         {
-            this.constructor = constructor;
+            this.factory = factory;
         }
 
-        public Builder<BE> withBlock(Block block)
+        public B withBlock(Block block)
         {
             validBlocks.add(block);
-            return this;
+            return thisBuilder();
         }
 
-        public Builder<BE> withBlock(Holder<Block> holder)
+        public B withBlock(Holder<Block> holder)
         {
             return withBlock(holder.value());
         }
 
-        public LimaBlockEntityType<BE> build()
+        @SuppressWarnings("unchecked")
+        protected B thisBuilder()
         {
-            Preconditions.checkState(!validBlocks.isEmpty(), "Valid blocks for block entity type cannot be empty.");
-            return new LimaBlockEntityType<>(constructor, ObjectSets.unmodifiable(validBlocks));
+            return (B) this;
+        }
+
+        public final TYPE build()
+        {
+            Preconditions.checkState(!validBlocks.isEmpty(), "Valid blocks cannot be empty.");
+            return build(factory, ObjectSets.unmodifiable(validBlocks));
+        }
+
+        protected abstract TYPE build(BlockEntitySupplier<BE> factory, Set<Block> validBlocks);
+    }
+
+    public static class Builder<BE extends LimaBlockEntity> extends AbstractBuilder<BE, LimaBlockEntityType<BE>, Builder<BE>>
+    {
+        private Builder(BlockEntitySupplier<BE> factory)
+        {
+            super(factory);
+        }
+
+        @Override
+        protected LimaBlockEntityType<BE> build(BlockEntitySupplier<BE> factory, Set<Block> validBlocks)
+        {
+            return new LimaBlockEntityType<>(factory, validBlocks);
         }
     }
 }

@@ -134,10 +134,20 @@ public final class LimaCoreCodecs
         return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
     }
 
+    public static <A, B1 extends A, B2 extends A> Codec<A> eitherSubclassCodec(Codec<B1> firstCodec, Codec<B2> secondCodec, Class<B1> firstClass, Class<B2> secondClass)
+    {
+        return Codec.xor(firstCodec, secondCodec).flatComapMap(
+                either -> either.map(Function.identity(), Function.identity()),
+                value -> {
+                    if (firstClass.isInstance(value)) return DataResult.success(Either.left(firstClass.cast(value)));
+                    else if (secondClass.isInstance(value)) return DataResult.success(Either.right(secondClass.cast(value)));
+                    else return DataResult.error(() -> "Value not an instance of either " + firstClass.getName() + " or " + secondClass.getName());
+                });
+    }
+
     public static <T, A, F extends A> Codec<A> flatDispatchCodec(Codec<T> typeCodec, Class<F> flatClass, Codec<F> flatCodec, Function<? super A, ? extends T> typeFunction, Function<? super T, MapCodec<? extends A>> typeCodecFunction)
     {
-        Codec<A> dispatch = typeCodec.dispatch(typeFunction, typeCodecFunction);
-        return Codec.either(flatCodec, dispatch).xmap(
+        return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(
                 either -> either.map(Function.identity(), Function.identity()),
                 value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
     }

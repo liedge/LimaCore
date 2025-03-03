@@ -3,6 +3,8 @@ package liedge.limacore.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.util.LimaCoreUtil;
@@ -43,8 +45,36 @@ public final class LimaStreamCodecs
     public static final StreamCodec<ByteBuf, Integer> NON_NEGATIVE_VAR_INT = varIntRange(0, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, StringTag> STRING_NBT_TAG = ByteBufCodecs.STRING_UTF8.map(StringTag::valueOf, StringTag::getAsString);
+    public static final StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
 
-    public static StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
+    public static final StreamCodec<ByteBuf, IntList> INT_LIST = new StreamCodec<>()
+    {
+        @Override
+        public IntList decode(ByteBuf buffer)
+        {
+            int size = VarInt.read(buffer);
+            if (size <= 0) return IntList.of();
+
+            IntList list = new IntArrayList(size);
+
+            for (int i = 0; i < size; i++)
+            {
+                list.add(VarInt.read(buffer));
+            }
+
+            return list;
+        }
+
+        @Override
+        public void encode(ByteBuf buffer, IntList value)
+        {
+            VarInt.write(buffer, value.size());
+            for (int i : value)
+            {
+                VarInt.write(buffer, i);
+            }
+        }
+    };
 
     //#region Value encode/decode helpers
     public static int readClampedVarInt(ByteBuf net, int min, int max)

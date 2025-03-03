@@ -9,7 +9,6 @@ import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -70,7 +69,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     @Override
     public @Nullable Packet<ClientGamePacketListener> getUpdatePacket()
     {
-        CompoundTag updateTag = getUpdateTag(nonNullRegistryAccess());
+        CompoundTag updateTag = getUpdateTag(nonNullLevel().registryAccess());
         if (!updateTag.isEmpty())
         {
             return ClientboundBlockEntityDataPacket.create(this, ($1, $2) -> updateTag);
@@ -135,7 +134,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
 
     public void onPlacedByPlayer(Level level, Player player, ItemStack blockItem)
     {
-        if (this instanceof BlockEntityWithOwner ownable) ownable.setOwner(player);
+        if (this instanceof OwnableBlockEntity ownable) ownable.setOwner(player);
     }
 
     /**
@@ -148,19 +147,17 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     public void onBlockStateUpdated(BlockPos pos, BlockState oldState, BlockState newState) {}
     //#endregion
 
-    public ServerLevel nonNullServerLevel()
+    @Override
+    public final Level nonNullLevel()
     {
-        return LimaCoreUtil.castOrThrow(ServerLevel.class, level, "Attempted to access server level on client or before it has been assigned.");
+        return Objects.requireNonNull(level, () -> String.format("Attempted to access level for block entity at %s before it has been assigned.", worldPosition.toShortString()));
     }
 
-    public Level nonNullLevel()
+    @Override
+    public final ServerLevel nonNullServerLevel()
     {
-        return Objects.requireNonNull(level, "Attempted to access block entity level before it has been assigned.");
-    }
-
-    public RegistryAccess nonNullRegistryAccess()
-    {
-        return nonNullLevel().registryAccess();
+        return LimaCoreUtil.castOrThrow(ServerLevel.class, level, () ->
+                new IllegalStateException(String.format("Attempted to access server level for block entity at %s on the client or before it has been assigned.", worldPosition.toShortString())));
     }
 
     public boolean checkServerSide()

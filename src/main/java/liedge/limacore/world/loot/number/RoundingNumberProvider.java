@@ -1,7 +1,8 @@
-package liedge.limacore.world.loot;
+package liedge.limacore.world.loot.number;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import liedge.limacore.lib.math.LimaRoundingMode;
 import liedge.limacore.registry.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -9,33 +10,28 @@ import net.minecraft.world.level.storage.loot.providers.number.LootNumberProvide
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
-public record RoundingNumberProvider(NumberProvider child, LimaMathUtil.RoundingStrategy strategy) implements NumberProvider
+public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode) implements NumberProvider
 {
     public static final MapCodec<RoundingNumberProvider> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             NumberProviders.CODEC.fieldOf("child").forGetter(RoundingNumberProvider::child),
-            LimaMathUtil.RoundingStrategy.NATURAL_DEFAULT_MAP_CODEC.forGetter(RoundingNumberProvider::strategy))
+            LimaRoundingMode.NATURAL_OPTIONAL_MAP_CODEC.forGetter(RoundingNumberProvider::mode))
             .apply(instance, RoundingNumberProvider::new));
 
-    public static RoundingNumberProvider roundValue(LimaMathUtil.RoundingStrategy strategy, NumberProvider child)
+    public static NumberProvider of(NumberProvider child, LimaRoundingMode mode)
     {
-        return new RoundingNumberProvider(child, strategy);
-    }
-
-    public static RoundingNumberProvider roundRandomly(NumberProvider child)
-    {
-        return new RoundingNumberProvider(child, LimaMathUtil.RoundingStrategy.RANDOM);
+        return new RoundingNumberProvider(child, mode);
     }
 
     @Override
-    public float getFloat(LootContext lootContext)
+    public float getFloat(LootContext context)
     {
-        return child.getFloat(lootContext);
+        return getInt(context);
     }
 
     @Override
-    public int getInt(LootContext lootContext)
+    public int getInt(LootContext context)
     {
-        return LimaMathUtil.round(getFloat(lootContext), strategy);
+        return LimaMathUtil.round(child.getFloat(context), mode);
     }
 
     @Override

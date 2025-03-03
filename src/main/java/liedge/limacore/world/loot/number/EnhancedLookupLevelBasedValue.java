@@ -1,4 +1,4 @@
-package liedge.limacore.world.loot;
+package liedge.limacore.world.loot.number;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -38,7 +38,7 @@ public record EnhancedLookupLevelBasedValue(List<Float> values, int levelOffset,
         else
         {
             int n = level - levelOffset;
-            return n <= values.size() ? values.get(n - 1) : defaultAbove;
+            return n <= values.size() ? values.get(n) : defaultAbove;
         }
     }
 

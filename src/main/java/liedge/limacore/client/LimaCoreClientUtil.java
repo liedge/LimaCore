@@ -28,7 +28,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public final class LimaCoreClientUtil
@@ -46,11 +45,6 @@ public final class LimaCoreClientUtil
     {
         ResourceLocation id = LimaRegistryUtil.getItemId(itemLike.asItem());
         return ModelResourceLocation.inventory(id);
-    }
-
-    public static ModelResourceLocation inventoryModelPath(Supplier<? extends ItemLike> supplier)
-    {
-        return inventoryModelPath(supplier.get());
     }
 
     public static <T extends BakedModel> T getCustomBakedModel(ModelResourceLocation modelPath, Class<T> modelClass)

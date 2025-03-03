@@ -1,11 +1,12 @@
 package liedge.limacore.capability.energy;
 
 import liedge.limacore.blockentity.IOAccess;
+import liedge.limacore.blockentity.LimaBlockEntityAccess;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
-public interface EnergyHolderBlockEntity
+public interface EnergyHolderBlockEntity extends LimaBlockEntityAccess
 {
     int getBaseEnergyCapacity();
 
@@ -13,7 +14,10 @@ public interface EnergyHolderBlockEntity
 
     LimaEnergyStorage getEnergyStorage();
 
-    void onEnergyChanged();
+    default void onEnergyChanged()
+    {
+        setChanged();
+    }
 
     IOAccess getEnergyIOForSide(Direction side);
 

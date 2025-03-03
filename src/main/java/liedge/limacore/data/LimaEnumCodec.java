@@ -38,7 +38,7 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
         this.nameLookup = values.stream().collect(LimaStreamsUtil.toUnmodifiableObject2ObjectMap(StringRepresentable::getSerializedName, Function.identity()));
         this.validValueString = values.stream().map(StringRepresentable::getSerializedName).collect(Collectors.joining(","));
         this.baseCodec = Codec.STRING
-                .flatXmap(sn -> nameLookup.containsKey(sn) ? DataResult.success(nameLookup.get(sn)) : DataResult.error(() -> "Unknown element name '" + sn + "', allowed names: " + validValueString),
+                .flatXmap(sn -> nameLookup.containsKey(sn) ? DataResult.success(nameLookup.get(sn)) : DataResult.error(() -> "Unknown or disallowed element name '" + sn + "', allowed names: " + validValueString),
                         a -> nameLookup.containsKey(a.getSerializedName()) ? DataResult.success(a.getSerializedName()) : DataResult.error(() -> "Element not allowed for serialization, allowed elements: " + validValueString));
     }
 
