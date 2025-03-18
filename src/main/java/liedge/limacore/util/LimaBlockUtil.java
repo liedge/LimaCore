@@ -79,19 +79,29 @@ public final class LimaBlockUtil
         return BlockPos.betweenClosedStream(Mth.floor(boundingBox.minX), Mth.floor(boundingBox.minY), Mth.floor(boundingBox.minZ), Mth.ceil(boundingBox.maxX), Mth.ceil(boundingBox.maxY), Mth.ceil(boundingBox.maxZ)).filter(level::hasChunkAt);
     }
 
+
+    /**
+     * Calls {@link LevelReader#getBlockEntity(BlockPos)} only if {@code level} and {@code blockPos} are both non-null,
+     * and if the chunk is loaded.
+     * @param level The level to get the block entity from. Can be null.
+     * @param blockPos The position of the block entity. Can be null.
+     * @return The result of {@link LevelReader#getBlockEntity(BlockPos)}, or null if either {@code level} or {@code blockPos} are null.
+    */
     @SuppressWarnings("deprecation")
-    public static @Nullable BlockEntity getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos)
+    public static @Nullable BlockEntity getSafeBlockEntity(@Nullable LevelReader level, @Nullable BlockPos blockPos)
     {
-        if (level != null && level.hasChunkAt(blockPos))
+        if (level != null && blockPos != null && level.hasChunkAt(blockPos))
         {
             return level.getBlockEntity(blockPos);
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
+    /**
+     * Convenience method that wraps the result of {@link LimaBlockUtil#getSafeBlockEntity(LevelReader, BlockPos)} with a call to
+     * {@link LimaCoreUtil#castOrNull(Class, Object)}
+     */
     public static <BE> @Nullable BE getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos, Class<BE> beClass)
     {
         return castOrNull(beClass, getSafeBlockEntity(level, blockPos));

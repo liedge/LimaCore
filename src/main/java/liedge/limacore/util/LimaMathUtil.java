@@ -82,6 +82,18 @@ public final class LimaMathUtil
         return bool ? 1 : 0;
     }
 
+    public static void validateOpenIndexRange(int start, int end, int size)
+    {
+        if (start < 0 || start >= size || end > size)
+        {
+            throw new IllegalArgumentException(String.format("Index range (%s,%s] out of bounds: (0,%s]", start, end, size));
+        }
+        if (start > end)
+        {
+            throw new IllegalArgumentException(String.format("Start index %s cannot be higher than open end index %s", start, end));
+        }
+    }
+
     //#region Double-to-Int rounding operations
     /**
      * Rounds a double to an int by applying either a floor or ceiling operation with a random chance based on the absolute value of the decimal portion.
