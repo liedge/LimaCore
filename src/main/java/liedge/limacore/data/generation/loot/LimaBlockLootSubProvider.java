@@ -3,12 +3,13 @@ package liedge.limacore.data.generation.loot;
 import liedge.limacore.util.LimaRegistryUtil;
 import liedge.limacore.world.loot.SaveBlockEntityFunction;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider implements LimaLootSubProviderExtensions
@@ -36,25 +36,25 @@ public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider impl
         return LimaRegistryUtil.allNamespaceRegistryValues(modid, BuiltInRegistries.BLOCK).toList();
     }
 
-    protected void add(Supplier<? extends Block> supplier, LootTable.Builder builder)
+    protected void add(Holder<Block> holder, LootTable.Builder builder)
     {
-        add(supplier.get(), builder);
+        add(holder.value(), builder);
     }
 
-    protected void dropSelf(Supplier<? extends Block> supplier)
+    protected void dropSelf(Holder<Block> holder)
     {
-        dropSelf(supplier.get());
+        dropSelf(holder.value());
     }
 
-    protected void dropSelf(Collection<? extends Supplier<Block>> suppliers)
+    protected void dropSelf(Collection<? extends Holder<Block>> holders)
     {
-        suppliers.forEach(this::dropSelf);
+        holders.forEach(this::dropSelf);
     }
 
     @SafeVarargs
-    protected final void dropSelf(Supplier<? extends Block>... suppliers)
+    protected final void dropSelf(Holder<Block>... holders)
     {
-        Stream.of(suppliers).forEach(this::dropSelf);
+        Stream.of(holders).forEach(this::dropSelf);
     }
 
     protected void dropSelfWithEntity(Block block)
@@ -62,18 +62,28 @@ public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider impl
         add(block, singlePoolTable(applyExplosionCondition(block, singleItemPool(block)).apply(SaveBlockEntityFunction.saveBlockEntityData())));
     }
 
-    protected void dropSelfWithEntity(Supplier<? extends Block> supplier)
+    protected void dropSelfWithEntity(Holder<Block> holder)
     {
-        dropSelfWithEntity(supplier.get());
+        dropSelfWithEntity(holder.value());
     }
 
-    protected void oreDrop(Supplier<? extends Block> oreBlock, Supplier<? extends Item> rawOreItem)
+    protected void oreDrop(Block oreBlock, ItemLike rawOreItem)
     {
-        add(oreBlock.get(), createOreDrop(oreBlock.get(), rawOreItem.get()));
+        add(oreBlock, createOreDrop(oreBlock, rawOreItem.asItem()));
     }
 
-    protected <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchStateProperty(Supplier<? extends Block> supplier, Property<T> property, T value)
+    protected void oreDrop(Holder<Block> oreBlockHolder, ItemLike rawOreItem)
     {
-        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(supplier.get()).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, value));
+        oreDrop(oreBlockHolder.value(), rawOreItem);
+    }
+
+    protected <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchStateProperty(Block block, Property<T> property, T value)
+    {
+        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, value));
+    }
+
+    protected <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchStateProperty(Holder<Block> holder, Property<T> property, T value)
+    {
+        return matchStateProperty(holder.value(), property, value);
     }
 }
