@@ -18,6 +18,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
@@ -134,15 +135,21 @@ public final class LimaCoreCodecs
         return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
     }
 
-    public static <A, B1 extends A, B2 extends A> Codec<A> eitherSubclassCodec(Codec<B1> firstCodec, Codec<B2> secondCodec, Class<B1> firstClass, Class<B2> secondClass)
+    public static <A, L extends A, R extends A> DataResult<Either<L, R>> eitherSubclassDataResult(A value, Class<L> leftClass, Class<R> rightClass)
     {
-        return Codec.xor(firstCodec, secondCodec).flatComapMap(
-                either -> either.map(Function.identity(), Function.identity()),
-                value -> {
-                    if (firstClass.isInstance(value)) return DataResult.success(Either.left(firstClass.cast(value)));
-                    else if (secondClass.isInstance(value)) return DataResult.success(Either.right(secondClass.cast(value)));
-                    else return DataResult.error(() -> "Value not an instance of either " + firstClass.getName() + " or " + secondClass.getName());
-                });
+        if (leftClass.isInstance(value)) return DataResult.success(Either.left(leftClass.cast(value)));
+        else if (rightClass.isInstance(value)) return DataResult.success(Either.right(rightClass.cast(value)));
+        else return DataResult.error(() -> "Value is not an instance of either " + leftClass.getName() + " or " + rightClass.getName());
+    }
+
+    public static <A, L extends A, R extends A> Codec<A> eitherSubclassCodec(Codec<L> leftCodec, Codec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
+    {
+        return Codec.xor(leftCodec, rightCodec).flatComapMap(Either::unwrap, value -> eitherSubclassDataResult(value, leftClass, rightClass));
+    }
+
+    public static <A, L extends A, R extends A> MapCodec<A> eitherSubclassMapCodec(MapCodec<L> leftCodec, MapCodec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
+    {
+        return flatComapMapMapCodec(NeoForgeExtraCodecs.xor(leftCodec, rightCodec), value -> eitherSubclassDataResult(value, leftClass, rightClass), Either::unwrap);
     }
 
     public static <T, A, F extends A> Codec<A> flatDispatchCodec(Codec<T> typeCodec, Class<F> flatClass, Codec<F> flatCodec, Function<? super A, ? extends T> typeFunction, Function<? super T, MapCodec<? extends A>> typeCodecFunction)
