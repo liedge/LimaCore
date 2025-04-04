@@ -18,7 +18,7 @@ public abstract class LimaSoundDefinitionsProvider extends SoundDefinitionsProvi
 {
     public static String defaultSubtitleKey(ResourceLocation id)
     {
-        return ModResources.prefixIdTranslationKey("subtitle", id);
+        return ModResources.prefixedIdLangKey("subtitle", id);
     }
 
     public static String defaultSubtitleKey(Holder<SoundEvent> holder)

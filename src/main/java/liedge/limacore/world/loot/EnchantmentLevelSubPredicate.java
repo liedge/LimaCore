@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.core.Holder;

@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import liedge.limacore.LimaCore;
-import liedge.limacore.registry.LimaCoreWorldGen;
+import liedge.limacore.registry.game.LimaCoreWorldGen;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.core.BlockPos;

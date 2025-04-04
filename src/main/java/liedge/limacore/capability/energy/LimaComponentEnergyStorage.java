@@ -2,7 +2,7 @@ package liedge.limacore.capability.energy;
 
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
 
-import static liedge.limacore.registry.LimaCoreDataComponents.ENERGY;
+import static liedge.limacore.registry.game.LimaCoreDataComponents.ENERGY;
 
 public class LimaComponentEnergyStorage extends LimaEnergyStorage
 {
@@ -12,6 +12,11 @@ public class LimaComponentEnergyStorage extends LimaEnergyStorage
     {
         super(maxEnergy, transferRate);
         this.dataHolder = dataHolder;
+    }
+
+    public LimaComponentEnergyStorage(MutableDataComponentHolder dataHolder, EnergyContainerSpec spec)
+    {
+        this(dataHolder, spec.capacity(), spec.transferRate());
     }
 
     @Override

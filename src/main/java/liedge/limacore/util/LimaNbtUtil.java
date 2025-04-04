@@ -39,6 +39,11 @@ public final class LimaNbtUtil
     private LimaNbtUtil() {}
 
     // Compound tag codec decode helpers
+    public static <T> void lenientEncodeTo(Codec<T> codec, DynamicOps<Tag> ops, T value, CompoundTag compoundTag, String key)
+    {
+        LimaCoreCodecs.lenientEncodeTo(codec, ops, value, tag -> compoundTag.put(key, tag));
+    }
+
     public static <T> T strictDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
     {
         Tag tag = Objects.requireNonNull(compoundTag.get(key), "Child tag '" + key + "' not found in compound tag.");

@@ -26,6 +26,8 @@ import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -135,28 +137,26 @@ public final class LimaCoreCodecs
         return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
     }
 
-    public static <A, L extends A, R extends A> DataResult<Either<L, R>> eitherSubclassDataResult(A value, Class<L> leftClass, Class<R> rightClass)
+    public static <A, L extends A, R extends A> DataResult<Either<L, R>> xorSubclassDataResult(A value, Class<L> leftClass, Class<R> rightClass)
     {
         if (leftClass.isInstance(value)) return DataResult.success(Either.left(leftClass.cast(value)));
         else if (rightClass.isInstance(value)) return DataResult.success(Either.right(rightClass.cast(value)));
         else return DataResult.error(() -> "Value is not an instance of either " + leftClass.getName() + " or " + rightClass.getName());
     }
 
-    public static <A, L extends A, R extends A> Codec<A> eitherSubclassCodec(Codec<L> leftCodec, Codec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
+    public static <A, L extends A, R extends A> Codec<A> xorSubclassCodec(Codec<L> leftCodec, Codec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
     {
-        return Codec.xor(leftCodec, rightCodec).flatComapMap(Either::unwrap, value -> eitherSubclassDataResult(value, leftClass, rightClass));
+        return Codec.xor(leftCodec, rightCodec).flatComapMap(Either::unwrap, value -> xorSubclassDataResult(value, leftClass, rightClass));
     }
 
-    public static <A, L extends A, R extends A> MapCodec<A> eitherSubclassMapCodec(MapCodec<L> leftCodec, MapCodec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
+    public static <A, L extends A, R extends A> MapCodec<A> xorSubclassMapCodec(MapCodec<L> leftCodec, MapCodec<R> rightCodec, Class<L> leftClass, Class<R> rightClass)
     {
-        return flatComapMapMapCodec(NeoForgeExtraCodecs.xor(leftCodec, rightCodec), value -> eitherSubclassDataResult(value, leftClass, rightClass), Either::unwrap);
+        return flatComapMapMapCodec(NeoForgeExtraCodecs.xor(leftCodec, rightCodec), value -> xorSubclassDataResult(value, leftClass, rightClass), Either::unwrap);
     }
 
     public static <T, A, F extends A> Codec<A> flatDispatchCodec(Codec<T> typeCodec, Class<F> flatClass, Codec<F> flatCodec, Function<? super A, ? extends T> typeFunction, Function<? super T, MapCodec<? extends A>> typeCodecFunction)
     {
-        return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(
-                either -> either.map(Function.identity(), Function.identity()),
-                value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
+        return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(Either::unwrap, value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
     }
 
     public static MapCodec<NonNullList<Ingredient>> ingredientsMapCodec(int minInclusive, int maxInclusive)
@@ -225,7 +225,12 @@ public final class LimaCoreCodecs
 
     public static <A, U> U lenientEncode(Codec<A> codec, DynamicOps<U> ops, A input)
     {
-        return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient encoding: {}", codec, msg)).orElseThrow(() -> new IllegalStateException("Encoding error."));
+        return lenientEncodeInternal(codec, ops, input).orElseThrow(() -> new IllegalStateException("Encoding error."));
+    }
+
+    public static <A, U> void lenientEncodeTo(Codec<A> codec, DynamicOps<U> ops, A input, Consumer<U> consumer)
+    {
+        lenientEncodeInternal(codec, ops, input).ifPresent(consumer);
     }
 
     public static <A, U> A strictDecode(Codec<A> codec, DynamicOps<U> ops, U input)
@@ -238,10 +243,23 @@ public final class LimaCoreCodecs
 
     public static <A, U> A lenientDecode(Codec<A> codec, DynamicOps<U> ops, U input)
     {
-        return codec.decode(ops, input)
-                .resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient decoding: {}", codec, msg))
-                .orElseThrow(() -> new IllegalStateException("Decoding error."))
-                .getFirst();
+        return lenientDecodeInternal(codec, ops, input).orElseThrow(() -> new IllegalStateException("Decoding error.")).getFirst();
+    }
+
+    public static <A, U> A lenientDecode(Codec<A> codec, DynamicOps<U> ops, U input, A fallback)
+    {
+        Optional<com.mojang.datafixers.util.Pair<A, U>> optional = lenientDecodeInternal(codec, ops, input);
+        return optional.isPresent() ? optional.get().getFirst() : fallback;
+    }
+
+    private static <A, U> Optional<U> lenientEncodeInternal(Codec<A> codec, DynamicOps<U> ops, A input)
+    {
+        return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient encoding: {}", codec, msg));
+    }
+
+    private static <A, U> Optional<com.mojang.datafixers.util.Pair<A, U>> lenientDecodeInternal(Codec<A> codec, DynamicOps<U> ops, U input)
+    {
+        return codec.decode(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient decoding: {}", codec, msg));
     }
     //#endregion
 }

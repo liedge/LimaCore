@@ -1,6 +1,6 @@
 package liedge.limacore.lib;
 
-import liedge.limacore.registry.LimaDeferredBlocks;
+import liedge.limacore.registry.LimaDeferredBlocksWithItems;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -32,29 +32,34 @@ public record ModResources(String modid)
         return Arrays.stream(components).filter(StringUtils::isNotBlank).reduce((s1, s2) -> s1 + delimiter + s2).orElseThrow(() -> new IllegalArgumentException("Path must have at least 1 non-blank component."));
     }
 
-    public static String translationKeyFromId(ResourceLocation id)
+    public static String idLangKey(ResourceLocation id)
     {
-        return translationKeyFromId(id, "{n}.{p}");
+        return idLangKey(id, "{n}.{p}");
     }
 
-    public static String translationKeyFromId(ResourceLocation id, String keyTemplate)
+    public static String idLangKey(ResourceLocation id, String keyTemplate)
     {
         return keyTemplate.replace("{n}", id.getNamespace()).replace("{p}", id.getPath()).replace('/', '.');
     }
 
-    public static String translationKeyFromId(ResourceLocation id, String... keyComponents)
+    public static String idLangKey(ResourceLocation id, String... keyComponents)
     {
-        return translationKeyFromId(id, joinComponents('.', keyComponents));
+        return idLangKey(id, joinComponents('.', keyComponents));
     }
 
-    public static String prefixIdTranslationKey(String prefix, ResourceLocation id)
+    public static String prefixedIdLangKey(String prefix, ResourceLocation id)
     {
-        return translationKeyFromId(id, prefix, "{n}.{p}");
+        return idLangKey(id, prefix, "{n}.{p}");
     }
 
-    public static String prefixSuffixIdTranslationKey(String prefix, String suffix, ResourceLocation id)
+    public static String prefixedVariantIdLangKey(String prefix, String suffix, ResourceLocation id)
     {
-        return translationKeyFromId(id, prefix, "{n}.{p}", suffix);
+        return idLangKey(id, prefix, "{n}.{p}", suffix);
+    }
+
+    public static String registryPrefixVariantIdLangKey(ResourceKey<?> key, String suffix)
+    {
+        return prefixedVariantIdLangKey(key.registry().getPath(), suffix, key.location());
     }
     //#endregion
 
@@ -88,12 +93,17 @@ public record ModResources(String modid)
 
     public DeferredRegister.Items deferredItems()
     {
-        return DeferredRegister.Items.createItems(modid);
+        return DeferredRegister.createItems(modid);
     }
 
-    public LimaDeferredBlocks deferredBlocks()
+    public DeferredRegister.Blocks deferredBlocks()
     {
-        return new LimaDeferredBlocks(modid);
+        return DeferredRegister.createBlocks(modid);
+    }
+
+    public LimaDeferredBlocksWithItems deferredBlocksWithItems()
+    {
+        return LimaDeferredBlocksWithItems.create(modid);
     }
 
     public DeferredRegister.DataComponents deferredDataComponents(ResourceKey<Registry<DataComponentType<?>>> componentRegistryKey)

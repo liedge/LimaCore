@@ -51,8 +51,5 @@ public interface LimaCreativeTabFillerItem extends ItemLike
         return true;
     }
 
-    default void addAdditionalToCreativeTab(ResourceLocation tabId, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output output, CreativeModeTab.TabVisibility tabVisibility)
-    {
-        output.accept(this, tabVisibility);
-    }
+    default void addAdditionalToCreativeTab(ResourceLocation tabId, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output output, CreativeModeTab.TabVisibility tabVisibility) { }
 }

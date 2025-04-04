@@ -1,4 +1,4 @@
-package liedge.limacore.registry;
+package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCore;
 import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
@@ -14,7 +14,7 @@ public final class LimaCoreIngredientTypes
 
     private static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = LimaCore.RESOURCES.deferredRegister(NeoForgeRegistries.INGREDIENT_TYPES);
 
-    public static void init(IEventBus bus)
+    public static void register(IEventBus bus)
     {
         INGREDIENT_TYPES.register(bus);
     }

@@ -27,14 +27,14 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
         return new LimaEnumCodec<>(enumClass, List.of(LimaCollectionsUtil.checkedEnumConstants(enumClass)));
     }
 
-    private final String name;
+    private final Class<A> enumClass;
     private final Map<String, A> nameLookup;
     private final String validValueString;
     private final Codec<A> baseCodec;
 
     private LimaEnumCodec(Class<A> enumClass, Collection<A> values)
     {
-        this.name = "LimaEnumCodec[" + enumClass.getSimpleName() + "]";
+        this.enumClass = enumClass;
         this.nameLookup = values.stream().collect(LimaStreamsUtil.toUnmodifiableObject2ObjectMap(StringRepresentable::getSerializedName, Function.identity()));
         this.validValueString = values.stream().map(StringRepresentable::getSerializedName).collect(Collectors.joining(","));
         this.baseCodec = Codec.STRING
@@ -62,6 +62,11 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
         return listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
     }
 
+    public LimaEnumCodec<A> restricted(List<A> validValues)
+    {
+        return new LimaEnumCodec<>(enumClass, validValues);
+    }
+
     public <B, F extends B> Codec<B> flatDispatch(Class<F> flatClass, Codec<F> flatCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
     {
         return LimaCoreCodecs.flatDispatchCodec(this, flatClass, flatCodec, typeGetter, codecGetter);
@@ -82,6 +87,6 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
     @Override
     public String toString()
     {
-        return name;
+        return "LimaEnumCodec[" + enumClass.getSimpleName() + "]";
     }
 }

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.network.packet.LimaCorePackets;
 import liedge.limacore.registry.*;
+import liedge.limacore.registry.game.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -21,12 +22,12 @@ public class LimaCore
 
     public LimaCore(IEventBus modBus, ModContainer modContainer)
     {
-        LimaCoreDataComponents.initRegister(modBus);
-        LimaCoreIngredientTypes.init(modBus);
-        LimaCoreLootRegistries.initRegister(modBus);
-        LimaCoreNetworkSerializers.initRegister(modBus);
-        LimaCoreTriggerTypes.init(modBus);
-        LimaCoreWorldGen.initRegister(modBus);
+        LimaCoreDataComponents.register(modBus);
+        LimaCoreIngredientTypes.register(modBus);
+        LimaCoreLootRegistries.register(modBus);
+        LimaCoreNetworkSerializers.register(modBus);
+        LimaCoreTriggerTypes.register(modBus);
+        LimaCoreWorldGen.register(modBus);
 
         modBus.register(new CommonSetup());
     }

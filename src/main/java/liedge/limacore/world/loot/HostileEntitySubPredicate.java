@@ -1,7 +1,7 @@
 package liedge.limacore.world.loot;
 
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;

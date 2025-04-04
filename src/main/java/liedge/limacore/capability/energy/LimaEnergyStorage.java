@@ -3,7 +3,7 @@ package liedge.limacore.capability.energy;
 import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
-import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public abstract class LimaEnergyStorage implements IEnergyStorage

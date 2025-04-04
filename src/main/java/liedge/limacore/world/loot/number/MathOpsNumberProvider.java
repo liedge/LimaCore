@@ -3,7 +3,7 @@ package liedge.limacore.world.loot.number;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.math.MathOperation;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;

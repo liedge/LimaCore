@@ -1,4 +1,4 @@
-package liedge.limacore.registry;
+package liedge.limacore.registry.game;
 
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.world.loot.*;
@@ -30,7 +30,7 @@ public final class LimaCoreLootRegistries
     private static final DeferredRegister<MapCodec<? extends LevelBasedValue>> LBV_CODECS = RESOURCES.deferredRegister(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE);
     private static final DeferredRegister<LootNumberProviderType> NUMBER_PROVIDERS = RESOURCES.deferredRegister(Registries.LOOT_NUMBER_PROVIDER_TYPE);
 
-    public static void initRegister(IEventBus bus)
+    public static void register(IEventBus bus)
     {
         ENTITY_SUB_PREDICATES.register(bus);
         CONDITIONS.register(bus);

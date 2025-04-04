@@ -2,7 +2,7 @@ package liedge.limacore.world.loot.number;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;

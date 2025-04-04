@@ -1,4 +1,4 @@
-package liedge.limacore.registry;
+package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCore;
 import liedge.limacore.advancement.CustomRecipeTypeTrigger;
@@ -15,7 +15,7 @@ public final class LimaCoreTriggerTypes
 
     private static final DeferredRegister<CriterionTrigger<?>> TRIGGER_TYPES = LimaCore.RESOURCES.deferredRegister(BuiltInRegistries.TRIGGER_TYPES);
 
-    public static void init(IEventBus bus)
+    public static void register(IEventBus bus)
     {
         TRIGGER_TYPES.register(bus);
     }

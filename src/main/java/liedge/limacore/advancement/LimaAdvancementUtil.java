@@ -59,12 +59,12 @@ public final class LimaAdvancementUtil
 
     public static String defaultAdvancementTitleKey(ResourceLocation id)
     {
-        return ModResources.prefixSuffixIdTranslationKey("advancement", "title", id);
+        return ModResources.prefixedVariantIdLangKey("advancement", "title", id);
     }
 
     public static String defaultAdvancementDescriptionKey(ResourceLocation id)
     {
-        return ModResources.prefixSuffixIdTranslationKey("advancement", "description", id);
+        return ModResources.prefixedVariantIdLangKey("advancement", "description", id);
     }
 
     public static ResourceKey<LootTable> defaultAdvancementLootTable(ResourceLocation id)

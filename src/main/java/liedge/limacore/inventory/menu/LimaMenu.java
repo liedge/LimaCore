@@ -8,7 +8,7 @@ import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
-import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.Holder;

@@ -1,6 +1,6 @@
 package liedge.limacore.inventory.menu;
 
-import liedge.limacore.registry.LimaCoreTriggerTypes;
+import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

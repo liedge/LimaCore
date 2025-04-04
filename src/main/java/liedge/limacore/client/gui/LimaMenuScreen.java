@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.inventory.menu.LimaMenu;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
-import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

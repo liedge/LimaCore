@@ -1,6 +1,6 @@
 package liedge.limacore.advancement;
 
-import liedge.limacore.registry.LimaCoreTriggerTypes;
+import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.PlayerTrigger;

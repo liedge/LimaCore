@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static liedge.limacore.lib.ModResources.prefixIdTranslationKey;
+import static liedge.limacore.lib.ModResources.prefixedIdLangKey;
 
 public abstract class LimaLanguageProvider extends LanguageProvider
 {
@@ -103,7 +103,7 @@ public abstract class LimaLanguageProvider extends LanguageProvider
 
     protected void damageTypeVariants(ResourceKey<DamageType> damageTypeKey, Consumer<BiConsumer<String, String>> collector)
     {
-        String baseKey = prefixIdTranslationKey("death.attack", damageTypeKey.location());
+        String baseKey = prefixedIdLangKey("death.attack", damageTypeKey.location());
         collector.accept((variant, value) -> {
             String key = StringUtils.isNotBlank(variant) ? baseKey + '.' + variant : baseKey;
             add(key, value);

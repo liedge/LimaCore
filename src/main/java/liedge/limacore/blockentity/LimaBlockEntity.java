@@ -170,7 +170,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         return level != null && level.isClientSide();
     }
 
-    protected void tickServer(Level level, BlockPos pos, BlockState state)
+    protected void tickServer(ServerLevel level, BlockPos pos, BlockState state)
     { }
 
     protected void tickClient(Level level, BlockPos pos, BlockState state)
@@ -179,7 +179,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     public static BlockEntityTicker<LimaBlockEntity> createServerTicker()
     {
         return (level, pos, state, be) -> {
-          be.tickServer(level, pos, state);
+          be.tickServer((ServerLevel) level, pos, state);
           be.tickDataWatchers();
         };
     }

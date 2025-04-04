@@ -3,7 +3,6 @@ package liedge.limacore.util;
 import liedge.limacore.world.loot.EnchantmentLevelSubPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -26,14 +25,14 @@ public final class LimaLootUtil
     private LimaLootUtil() {}
 
     // Loot condition helpers
-    public static LootItemCondition.Builder randomChanceLinearEnchantBonus(Holder<Enchantment> enchantment, float baseChance, float perLevelAfterFirst)
+    public static LootItemCondition.Builder randomChanceWithEnchantBonus(Holder<Enchantment> enchantment, float nonEnchantedChance, LevelBasedValue enchantedChance)
     {
-        return () -> new LootItemRandomChanceWithEnchantedBonusCondition(baseChance, new LevelBasedValue.Linear(baseChance + perLevelAfterFirst, perLevelAfterFirst), enchantment);
+        return () -> new LootItemRandomChanceWithEnchantedBonusCondition(nonEnchantedChance, enchantedChance, enchantment);
     }
 
-    public static LootItemCondition.Builder randomChanceLinearEnchantBonus(HolderLookup.Provider registries, ResourceKey<Enchantment> enchantmentKey, float baseChance, float perLevelAfterFirst)
+    public static LootItemCondition.Builder randomChanceLinearEnchantBonus(Holder<Enchantment> enchantment, float baseChance, float perLevelAfterFirst)
     {
-        return randomChanceLinearEnchantBonus(registries.holderOrThrow(enchantmentKey), baseChance, perLevelAfterFirst);
+        return randomChanceWithEnchantBonus(enchantment, baseChance, new LevelBasedValue.Linear(baseChance + perLevelAfterFirst, perLevelAfterFirst));
     }
 
     public static LootItemCondition.Builder specificLootTable(ResourceKey<LootTable> lootTableKey)

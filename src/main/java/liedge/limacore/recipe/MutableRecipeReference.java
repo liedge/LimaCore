@@ -2,7 +2,7 @@ package liedge.limacore.recipe;
 
 import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.LimaDataWatcher;
-import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaRecipesUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.StringTag;

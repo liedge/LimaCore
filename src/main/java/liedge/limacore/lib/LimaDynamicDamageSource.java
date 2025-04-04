@@ -7,8 +7,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -114,10 +112,5 @@ public class LimaDynamicDamageSource extends DamageSource
     public float modifyAppliedArmorToughness(LivingEntity target, float armorToughness)
     {
         return Math.max(0, armorToughness + armorToughnessModifier);
-    }
-
-    public int modifyEnchantmentLevel(LootContext context, Holder<Enchantment> enchantment, int entityLevel)
-    {
-        return entityLevel;
     }
 }

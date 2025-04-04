@@ -2,8 +2,8 @@ package liedge.limacore.world.loot;
 
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import liedge.limacore.registry.LimaCoreDataComponents;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreDataComponents;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;

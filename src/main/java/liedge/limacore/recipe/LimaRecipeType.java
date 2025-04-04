@@ -13,7 +13,7 @@ public record LimaRecipeType<R extends Recipe<?>>(ResourceLocation id, String de
 {
     public static <T extends Recipe<?>> LimaRecipeType<T> create(ResourceLocation id)
     {
-        return new LimaRecipeType<>(id, ModResources.prefixIdTranslationKey("recipe_type", id));
+        return new LimaRecipeType<>(id, ModResources.prefixedIdLangKey("recipe_type", id));
     }
 
     @Override

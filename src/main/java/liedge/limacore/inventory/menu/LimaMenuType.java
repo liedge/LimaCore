@@ -27,7 +27,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
         this.registryId = registryId;
         this.contextClass = contextClass;
         this.factory = factory;
-        this.descriptionId = ModResources.prefixIdTranslationKey("container", registryId);
+        this.descriptionId = ModResources.prefixedIdLangKey("container", registryId);
     }
 
     public Class<CTX> getContextClass()

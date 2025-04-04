@@ -1,10 +1,11 @@
-package liedge.limacore.registry;
+package liedge.limacore.registry.game;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import liedge.limacore.LimaCore;
 import liedge.limacore.blockentity.RelativeHorizontalSide;
 import liedge.limacore.network.LimaStreamCodecs;
 import liedge.limacore.network.NetworkSerializer;
+import liedge.limacore.registry.LimaCoreRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -24,7 +25,7 @@ public final class LimaCoreNetworkSerializers
 
     private static final DeferredRegister<NetworkSerializer<?>> SERIALIZERS = LimaCore.RESOURCES.deferredRegister(LimaCoreRegistries.Keys.NETWORK_SERIALIZERS);
 
-    public static void initRegister(IEventBus modBus)
+    public static void register(IEventBus modBus)
     {
         SERIALIZERS.register(modBus);
     }

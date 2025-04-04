@@ -46,7 +46,7 @@ public final class LimaBootstrapUtil
     // Damage type helpers
     public static void registerDamageType(BootstrapContext<DamageType> context, ResourceKey<DamageType> key, Function<String, DamageType> fromNameConstructor)
     {
-        context.register(key, fromNameConstructor.apply(ModResources.translationKeyFromId(key.location())));
+        context.register(key, fromNameConstructor.apply(ModResources.idLangKey(key.location())));
     }
 
     public static void registerDamageType(BootstrapContext<DamageType> context, ResourceKey<DamageType> key, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType messageType)

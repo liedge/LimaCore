@@ -64,7 +64,7 @@ public final class LimaItemUtil
     public static CreativeModeTab.Builder tabBuilderWithTitle(ResourceLocation id)
     {
         return CreativeModeTab.builder()
-                .title(Component.translatable(ModResources.prefixIdTranslationKey("creative_tab", id)));
+                .title(Component.translatable(ModResources.prefixedIdLangKey("creative_tab", id)));
     }
     //#endregion
 

@@ -2,7 +2,7 @@ package liedge.limacore.advancement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.LimaCoreTriggerTypes;
+import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.registries.BuiltInRegistries;

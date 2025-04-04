@@ -1,4 +1,4 @@
-package liedge.limacore.registry;
+package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCore;
 import liedge.limacore.world.generation.*;
@@ -16,7 +16,7 @@ public final class LimaCoreWorldGen
     private static final DeferredRegister<Feature<?>> FEATURES = LimaCore.RESOURCES.deferredRegister(Registries.FEATURE);
     private static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIERS = LimaCore.RESOURCES.deferredRegister(Registries.PLACEMENT_MODIFIER_TYPE);
 
-    public static void initRegister(IEventBus bus)
+    public static void register(IEventBus bus)
     {
         FEATURES.register(bus);
         PLACEMENT_MODIFIERS.register(bus);

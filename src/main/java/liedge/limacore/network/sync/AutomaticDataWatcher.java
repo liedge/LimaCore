@@ -2,7 +2,7 @@ package liedge.limacore.network.sync;
 
 import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.network.NetworkSerializer;
-import liedge.limacore.registry.LimaCoreNetworkSerializers;
+import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;

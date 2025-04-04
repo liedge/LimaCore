@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.FloatList;
-import liedge.limacore.registry.LimaCoreLootRegistries;
+import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public record EnhancedLookupLevelBasedValue(List<Float> values, int levelOffset,
         else
         {
             int n = level - levelOffset;
-            return n <= values.size() ? values.get(n) : defaultAbove;
+            return n < values.size() ? values.get(n) : defaultAbove;
         }
     }
 

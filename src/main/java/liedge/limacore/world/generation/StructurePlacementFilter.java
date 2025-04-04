@@ -3,7 +3,7 @@ package liedge.limacore.world.generation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.LimaCoreWorldGen;
+import liedge.limacore.registry.game.LimaCoreWorldGen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
