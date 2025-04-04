@@ -3,6 +3,6 @@
   "package": "liedge.limacore.mixin",
   "compatibilityLevel": "JAVA_21",
   "refmap": "limacore.refmap.json",
-  "mixins": [ "EnchantedCountIncreaseMixin", "LivingEntityMixin", "LootItemRandomChanceMixin" ],
+  "mixins": [ "LivingEntityMixin" ],
   "client": [ "GuiGraphicsMixin" ]
 }
