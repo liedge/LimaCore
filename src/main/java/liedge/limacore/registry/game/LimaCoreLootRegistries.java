@@ -56,7 +56,6 @@ public final class LimaCoreLootRegistries
     // GLM Codecs
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<AddItemLootModifier>> ADD_ITEM_MODIFIER = GLM_CODECS.register("add_item", () -> AddItemLootModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<RemoveItemLootModifier>> REMOVE_ITEM_MODIFIER = GLM_CODECS.register("remove_item", () -> RemoveItemLootModifier.CODEC);
-    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ExtraLootTableEffectLootModifier>> LOOT_TABLE_ENCHANTMENT_COMPONENT_MODIFIER = GLM_CODECS.register("loot_table_enchantment_component", () -> ExtraLootTableEffectLootModifier.CODEC);
 
     // Level based value types
     public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<EnhancedLookupLevelBasedValue>> ENHANCED_LOOKUP_LEVEL_BASED_VALUE = LBV_CODECS.register("enhanced_lookup", () -> EnhancedLookupLevelBasedValue.CODEC);

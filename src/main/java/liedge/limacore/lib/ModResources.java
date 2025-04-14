@@ -1,5 +1,6 @@
 package liedge.limacore.lib;
 
+import liedge.limacore.data.TransientDataComponentType;
 import liedge.limacore.registry.LimaDeferredBlocksWithItems;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -220,6 +221,11 @@ public record ModResources(String modid)
     public <T extends CustomPacketPayload> CustomPacketPayload.Type<T> packetType(String name)
     {
         return new CustomPacketPayload.Type<>(location(name));
+    }
+
+    public <T> TransientDataComponentType<T> transientDataComponent(String name)
+    {
+        return new TransientDataComponentType<>(location(name));
     }
     //#endregion
 

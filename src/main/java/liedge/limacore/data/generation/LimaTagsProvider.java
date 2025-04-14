@@ -53,21 +53,27 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
     }
 
     @SafeVarargs
-    protected final void reverseTag(ResourceKey<T> resourceKey, TagKey<T>... tags)
+    protected final void reverseElementToTags(ResourceKey<T> resourceKey, TagKey<T>... tags)
     {
         Stream.of(tags).forEach(tag -> getOrCreateRawBuilder(tag).addElement(resourceKey.location()));
     }
 
     @SafeVarargs
-    protected final void reverseTag(T value, TagKey<T>... tags)
+    protected final void reverseElementToTags(T value, TagKey<T>... tags)
     {
-        reverseTag(resolveKey(value), tags);
+        reverseElementToTags(resolveKey(value), tags);
     }
 
     @SafeVarargs
-    protected final void reverseTag(Holder<T> holder, TagKey<T>... tags)
+    protected final void reverseElementToTags(Holder<T> holder, TagKey<T>... tags)
     {
-        reverseTag(holder.value(), tags);
+        reverseElementToTags(holder.value(), tags);
+    }
+
+    @SafeVarargs
+    protected final void reverseTagToTags(TagKey<T> identity, TagKey<T>... destinationTags)
+    {
+        Stream.of(destinationTags).forEach(tag -> getOrCreateRawBuilder(tag).addTag(identity.location()));
     }
 
     public static abstract class RegistryTags<T> extends LimaTagsProvider<T>
@@ -209,6 +215,19 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
         public final LimaTagHelper<T> addTags(TagKey<T>... tags)
         {
             Stream.of(tags).map(TagKey::location).forEach(rawBuilder::addTag);
+            return this;
+        }
+
+        public LimaTagHelper<T> addOptionalTag(TagKey<T> tag)
+        {
+            rawBuilder.addOptionalTag(tag.location());
+            return this;
+        }
+
+        @SafeVarargs
+        public final LimaTagHelper<T> addOptionalTags(TagKey<T>... tags)
+        {
+            Stream.of(tags).map(TagKey::location).forEach(rawBuilder::addOptionalTag);
             return this;
         }
 

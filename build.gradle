@@ -42,7 +42,7 @@ neoForge {
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     // Interface injection file
-    // interfaceInjectionData.from "interfaces.json"
+    interfaceInjectionData.from "interfaces.json"
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.

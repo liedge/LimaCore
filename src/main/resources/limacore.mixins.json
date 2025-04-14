@@ -3,6 +3,6 @@
   "package": "liedge.limacore.mixin",
   "compatibilityLevel": "JAVA_21",
   "refmap": "limacore.refmap.json",
-  "mixins": [ "LivingEntityMixin" ],
+  "mixins": [ "DamageSourceMixin", "LivingEntityMixin" ],
   "client": [ "GuiGraphicsMixin" ]
 }

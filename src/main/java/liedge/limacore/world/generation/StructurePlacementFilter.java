@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.Map;
 
-public class StructurePlacementFilter extends PlacementFilter
+public final class StructurePlacementFilter extends PlacementFilter
 {
     public static final MapCodec<StructurePlacementFilter> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             RegistryCodecs.homogeneousList(Registries.STRUCTURE, Structure.DIRECT_CODEC).fieldOf("structures").forGetter(o -> o.structures),

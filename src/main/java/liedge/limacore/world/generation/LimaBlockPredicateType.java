@@ -2,18 +2,18 @@ package liedge.limacore.world.generation;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.placement.PlacementModifier;
-import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicateType;
 
 import java.util.Objects;
 
-public record LimaPlacementType<T extends PlacementModifier>(ResourceLocation id, MapCodec<T> codec) implements PlacementModifierType<T>
+public record LimaBlockPredicateType<T extends BlockPredicate>(ResourceLocation id, MapCodec<T> codec) implements BlockPredicateType<T>
 {
     @Override
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LimaPlacementType<?> that)) return false;
+        if (!(o instanceof LimaBlockPredicateType<?> that)) return false;
         return Objects.equals(id, that.id);
     }
 
@@ -26,6 +26,6 @@ public record LimaPlacementType<T extends PlacementModifier>(ResourceLocation id
     @Override
     public String toString()
     {
-        return "PlacementType[" + id + "]";
+        return "BlockPredicateType[" + id + "]";
     }
 }

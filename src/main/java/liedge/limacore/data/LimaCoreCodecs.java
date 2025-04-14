@@ -1,5 +1,6 @@
 package liedge.limacore.data;
 
+import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.logging.LogUtils;
@@ -25,8 +26,10 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -117,9 +120,14 @@ public final class LimaCoreCodecs
 
     public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
 
+    public static <E extends Enum<E>> Codec<Set<E>> enumSetCodec(Codec<E> enumElementCodec)
+    {
+        return enumElementCodec.listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
+    }
+
     public static <E> Codec<ObjectSet<E>> objectSetCodec(Codec<E> elementCodec)
     {
-        return elementCodec.listOf().xmap(list -> ObjectSets.unmodifiable(new ObjectOpenHashSet<>(list)), List::copyOf);
+        return elementCodec.listOf().xmap(list -> ObjectSets.unmodifiable(new ObjectLinkedOpenHashSet<>(list)), List::copyOf);
     }
 
     public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec, Codec<Integer> valueCodec)
@@ -223,14 +231,14 @@ public final class LimaCoreCodecs
         });
     }
 
-    public static <A, U> U lenientEncode(Codec<A> codec, DynamicOps<U> ops, A input)
+    public static <A, U> @Nullable U tryEncode(Codec<A> codec, DynamicOps<U> ops, A input)
     {
-        return lenientEncodeInternal(codec, ops, input).orElseThrow(() -> new IllegalStateException("Encoding error."));
+        return partialEncode(codec, ops, input).orElse(null);
     }
 
-    public static <A, U> void lenientEncodeTo(Codec<A> codec, DynamicOps<U> ops, A input, Consumer<U> consumer)
+    public static <A, U> void tryEncodeTo(Codec<A> codec, DynamicOps<U> ops, A input, Consumer<? super U> consumer)
     {
-        lenientEncodeInternal(codec, ops, input).ifPresent(consumer);
+        partialEncode(codec, ops, input).ifPresent(consumer);
     }
 
     public static <A, U> A strictDecode(Codec<A> codec, DynamicOps<U> ops, U input)
@@ -241,25 +249,24 @@ public final class LimaCoreCodecs
         }).getFirst();
     }
 
-    public static <A, U> A lenientDecode(Codec<A> codec, DynamicOps<U> ops, U input)
+    public static <A, U> @Nullable A tryDecode(Codec<A> codec, DynamicOps<U> ops, U input)
     {
-        return lenientDecodeInternal(codec, ops, input).orElseThrow(() -> new IllegalStateException("Decoding error.")).getFirst();
+        return partialDecode(codec, ops, input).orElse(null);
     }
 
-    public static <A, U> A lenientDecode(Codec<A> codec, DynamicOps<U> ops, U input, A fallback)
+    public static <A, U> A tryDecode(Codec<A> codec, DynamicOps<U> ops, U input, A fallback)
     {
-        Optional<com.mojang.datafixers.util.Pair<A, U>> optional = lenientDecodeInternal(codec, ops, input);
-        return optional.isPresent() ? optional.get().getFirst() : fallback;
+        return partialDecode(codec, ops, input).orElse(fallback);
     }
 
-    private static <A, U> Optional<U> lenientEncodeInternal(Codec<A> codec, DynamicOps<U> ops, A input)
+    private static <A, U> Optional<U> partialEncode(Codec<A> codec, DynamicOps<U> ops, A input)
     {
-        return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient encoding: {}", codec, msg));
+        return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during encoding: {}", codec, msg));
     }
 
-    private static <A, U> Optional<com.mojang.datafixers.util.Pair<A, U>> lenientDecodeInternal(Codec<A> codec, DynamicOps<U> ops, U input)
+    private static <A, U> Optional<A> partialDecode(Codec<A> codec, DynamicOps<U> ops, U input)
     {
-        return codec.decode(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during lenient decoding: {}", codec, msg));
+        return codec.parse(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during decoding: {}", codec, msg));
     }
     //#endregion
 }

@@ -1,6 +1,5 @@
 package liedge.limacore.data;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -59,7 +58,7 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
 
     public Codec<Set<A>> setOf()
     {
-        return listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
+        return LimaCoreCodecs.enumSetCodec(this);
     }
 
     public LimaEnumCodec<A> restricted(List<A> validValues)
