@@ -64,7 +64,7 @@ public final class LimaMathUtil
 
     public static float divideFloatLerp(float partialTick, float dividendStart, float dividendEnd, float divisor)
     {
-        return divisor != 0 ? Mth.lerp(partialTick, dividendStart, dividendEnd) / divisor : 0f;
+        return divideFloat(Mth.lerp(partialTick, dividendStart, dividendEnd), divisor);
     }
 
     public static int nextIntBetweenInclusive(int min, int max)

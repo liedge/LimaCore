@@ -14,9 +14,9 @@ public class LimaComponentEnergyStorage extends LimaEnergyStorage
         this.dataHolder = dataHolder;
     }
 
-    public LimaComponentEnergyStorage(MutableDataComponentHolder dataHolder, EnergyContainerSpec spec)
+    public LimaComponentEnergyStorage(MutableDataComponentHolder dataHolder, ItemEnergyProperties properties)
     {
-        this(dataHolder, spec.capacity(), spec.transferRate());
+        this(dataHolder, properties.capacity(), properties.transferRate());
     }
 
     @Override

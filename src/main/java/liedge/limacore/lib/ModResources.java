@@ -53,6 +53,11 @@ public record ModResources(String modid)
         return idLangKey(id, prefix, "{n}.{p}");
     }
 
+    public static String registryPrefixedIdLangKey(ResourceKey<?> key)
+    {
+        return prefixedIdLangKey(key.registry().getPath(), key.location());
+    }
+
     public static String prefixedVariantIdLangKey(String prefix, String suffix, ResourceLocation id)
     {
         return idLangKey(id, prefix, "{n}.{p}", suffix);

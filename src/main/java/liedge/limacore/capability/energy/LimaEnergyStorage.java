@@ -19,6 +19,16 @@ public abstract class LimaEnergyStorage implements IEnergyStorage
 
     protected abstract void onEnergyChanged();
 
+    public ItemEnergyProperties copyProperties(int energyUsage)
+    {
+        return new ItemEnergyProperties(getMaxEnergyStored(), getTransferRate(), energyUsage);
+    }
+
+    public ItemEnergyProperties copyProperties()
+    {
+        return copyProperties(0);
+    }
+
     public LimaDataWatcher<Integer> keepStoredEnergySynced()
     {
         return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getEnergyStored, this::setEnergyStored);
