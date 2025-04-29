@@ -208,13 +208,13 @@ public final class LimaMathUtil
         Vec3 vecZ = createMotionVector(0f, yRot, 1f);
         Vec3 vecX = vecZ.cross(Y_UNIT_VEC);
 
-        float yRotRad = toRad(yRot);
-        float sinY = Mth.sin(yRotRad);
-        float cosY = Mth.cos(yRotRad);
+        float xRotRad = toRad(xRot);
+        float cosY = Mth.cos(xRotRad);
+        float sinY = Mth.sin(xRotRad);
 
-        double nx = (dir.x * zOffset) + (vecX.x * xOffset) + (-vecZ.x * yOffset * cosY);
-        double ny = (dir.y * zOffset) + (vecX.y * xOffset) + (-yOffset * sinY);
-        double nz = (dir.z * zOffset) + (vecX.z * xOffset) + (-vecZ.z * yOffset * cosY);
+        double nx = (dir.x * zOffset) + (vecX.x * xOffset) + (-vecZ.x * yOffset * sinY);
+        double ny = (dir.y * zOffset) + (vecX.y * xOffset) + (-yOffset * cosY);
+        double nz = (dir.z * zOffset) + (vecX.z * xOffset) + (-vecZ.z * yOffset * sinY);
 
         return new Vec3(nx, ny, nz);
     }
