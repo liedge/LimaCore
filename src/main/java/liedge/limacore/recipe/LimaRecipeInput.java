@@ -3,60 +3,59 @@ package liedge.limacore.recipe;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 
-public class LimaRecipeInput implements RecipeInput
+public interface LimaRecipeInput extends RecipeInput
 {
-    public static LimaRecipeInput matchingContainer(IItemHandler container)
+    static LimaRecipeInput create(IItemHandler container)
     {
-        return new LimaRecipeInput(container, container.getSlots(), 0);
+        return new SimpleInput(container);
     }
 
-    public static LimaRecipeInput createWithSize(IItemHandler container, int size)
+    static LimaRecipeInput createRanged(IItemHandlerModifiable container, int minSlot, int maxSlotExclusive)
     {
-        return new LimaRecipeInput(container, size, 0);
+        return new SimpleInput(new RangedWrapper(container, minSlot, maxSlotExclusive));
     }
 
-    public static LimaRecipeInput createWithOffset(IItemHandler container, int ingredientOffset)
+    static LimaRecipeInput createRanged(IItemHandlerModifiable container, int maxSlotExclusive)
     {
-        return new LimaRecipeInput(container, container.getSlots(), ingredientOffset);
+        return createRanged(container, 0, maxSlotExclusive);
     }
 
-    private final IItemHandler container;
-    private final int size;
-    private final int ingredientOffset;
-
-    public LimaRecipeInput(IItemHandler container, int size, int ingredientOffset)
+    static LimaRecipeInput createWithSize(IItemHandlerModifiable container, int minSlot, int size)
     {
-        if (size < 1 || size > container.getSlots()) throw new IllegalArgumentException("LimaItemInput exceeds valid parent container size (0," + container.getSlots() + "]");
-        this.container = container;
-        this.size = size;
-        this.ingredientOffset = ingredientOffset;
+        return createRanged(container, minSlot, minSlot + size);
     }
 
-    public IItemHandler getContainer()
+    static LimaRecipeInput createWithSize(IItemHandlerModifiable container, int size)
     {
-        return container;
+        return createWithSize(container, 0, size);
     }
 
-    public int getIngredientIndex(int index)
+    static LimaRecipeInput createSingleSlot(IItemHandlerModifiable container, int slotIndex)
     {
-        return index + ingredientOffset;
+        return createWithSize(container, slotIndex, 1);
     }
 
-    public ItemStack extractFromContainer(int index, int count, boolean simulate)
+    IItemHandler container();
+
+    default ItemStack extractFromContainer(int index, int count, boolean simulate)
     {
-        return container.extractItem(getIngredientIndex(index), count, simulate);
+        return container().extractItem(index, count, simulate);
     }
 
     @Override
-    public ItemStack getItem(int index)
+    default ItemStack getItem(int index)
     {
-        return container.getStackInSlot(getIngredientIndex(index));
+        return container().getStackInSlot(index);
     }
 
     @Override
-    public int size()
+    default int size()
     {
-        return size;
+        return container().getSlots();
     }
+
+    record SimpleInput(IItemHandler container) implements LimaRecipeInput {}
 }

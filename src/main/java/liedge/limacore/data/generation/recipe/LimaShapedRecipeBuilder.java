@@ -15,7 +15,6 @@ import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
 
 import java.util.List;
-import java.util.Objects;
 
 public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, LimaShapedRecipeBuilder>
 {
@@ -24,7 +23,6 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     private final ItemStack resultItem;
 
     private boolean showNotification = true;
-    private ShapedRecipePattern pattern;
 
     public LimaShapedRecipeBuilder(ModResources resources, ItemStack resultItem)
     {
@@ -77,23 +75,9 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     }
 
     @Override
-    protected void validate(ResourceLocation id)
-    {
-        try
-        {
-            this.pattern = ShapedRecipePattern.of(ingredients, rows);
-        }
-        catch (IllegalArgumentException ex)
-        {
-            throw new IllegalStateException("Caught error constructing shaped recipe pattern for '" + id + "'", ex);
-        }
-
-        Objects.requireNonNull(pattern, "Shaped recipe pattern not built for " + id);
-    }
-
-    @Override
     protected ShapedRecipe buildRecipe()
     {
+        ShapedRecipePattern pattern = ShapedRecipePattern.of(ingredients, rows);
         return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, resultItem, showNotification);
     }
 

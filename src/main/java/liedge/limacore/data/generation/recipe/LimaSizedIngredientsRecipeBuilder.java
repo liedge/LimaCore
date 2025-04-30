@@ -2,7 +2,6 @@ package liedge.limacore.data.generation.recipe;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,7 +13,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class LimaSizedIngredientListRecipeBuilder<R extends Recipe<?>, B extends LimaSizedIngredientListRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
+public abstract class LimaSizedIngredientsRecipeBuilder<R extends Recipe<?>, B extends LimaSizedIngredientsRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
 {
     public static <R extends Recipe<?>, B extends SimpleBuilder<R, B>> SimpleBuilder<R, B> simpleBuilder(ModResources resources, ItemStack resultItem, BiFunction<List<SizedIngredient>, ItemStack, R> factory)
     {
@@ -30,7 +29,7 @@ public abstract class LimaSizedIngredientListRecipeBuilder<R extends Recipe<?>, 
 
     protected final List<SizedIngredient> ingredients = new ObjectArrayList<>();
 
-    protected LimaSizedIngredientListRecipeBuilder(ModResources modResources)
+    protected LimaSizedIngredientsRecipeBuilder(ModResources modResources)
     {
         super(modResources);
     }
@@ -71,7 +70,7 @@ public abstract class LimaSizedIngredientListRecipeBuilder<R extends Recipe<?>, 
         return input(SizedIngredient.of(tagKey, count));
     }
 
-    public static abstract class SimpleBuilder<R extends Recipe<?>, B extends SimpleBuilder<R, B>> extends LimaSizedIngredientListRecipeBuilder<R, B>
+    public static abstract class SimpleBuilder<R extends Recipe<?>, B extends SimpleBuilder<R, B>> extends LimaSizedIngredientsRecipeBuilder<R, B>
     {
         protected final ItemStack resultItem;
 
@@ -80,9 +79,6 @@ public abstract class LimaSizedIngredientListRecipeBuilder<R extends Recipe<?>, 
             super(modResources);
             this.resultItem = resultItem;
         }
-
-        @Override
-        protected void validate(ResourceLocation id) {}
 
         @Override
         protected String getDefaultRecipeName()

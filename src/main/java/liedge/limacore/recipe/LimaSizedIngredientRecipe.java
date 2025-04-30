@@ -108,6 +108,12 @@ public abstract class LimaSizedIngredientRecipe<T extends LimaRecipeInput> imple
         return true;
     }
 
+    @Override
+    public boolean isIncomplete()
+    {
+        return recipeIngredients.isEmpty() || recipeIngredients.stream().map(SizedIngredient::ingredient).anyMatch(Ingredient::hasNoItems);
+    }
+
     @Deprecated
     @Override
     public boolean canCraftInDimensions(int width, int height)

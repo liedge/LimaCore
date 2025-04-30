@@ -2,20 +2,26 @@ package liedge.limacore.data.generation.recipe;
 
 import com.google.common.base.Preconditions;
 import liedge.limacore.lib.ModResources;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
 
-public class LimaCookingRecipeBuilder extends LimaIngredientListRecipeBuilder.SimpleBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
+import java.util.Objects;
+
+public class LimaCookingRecipeBuilder extends LimaIngredientsRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
 {
-    private float experience;
+    private final ItemStack result;
     private final int cookingTime;
     private final AbstractCookingRecipe.Factory<?> factory;
+    private Ingredient ingredient;
+    private float experience;
+    private CookingBookCategory category = CookingBookCategory.MISC;
 
-    public LimaCookingRecipeBuilder(ModResources resources, ItemStack resultItem, int cookingTime, AbstractCookingRecipe.Factory<?> factory)
+    public LimaCookingRecipeBuilder(ModResources resources, ItemStack result, int cookingTime, AbstractCookingRecipe.Factory<?> factory)
     {
-        super(resources, resultItem);
+        super(resources);
+        this.result = result;
         this.cookingTime = cookingTime;
         this.factory = factory;
     }
@@ -26,15 +32,29 @@ public class LimaCookingRecipeBuilder extends LimaIngredientListRecipeBuilder.Si
         return this;
     }
 
-    @Override
-    protected void validate(ResourceLocation id)
+    public LimaCookingRecipeBuilder cookCategory(CookingBookCategory category)
     {
-        Preconditions.checkState(ingredients.size() == 1, "Cooking recipe '" + id + "' must have exactly 1 ingredient.");
+        this.category = category;
+        return this;
+    }
+
+    @Override
+    public LimaCookingRecipeBuilder input(Ingredient ingredient)
+    {
+        Preconditions.checkState(this.ingredient == null, "Cooking recipe already has an ingredient.");
+        this.ingredient = ingredient;
+        return this;
     }
 
     @Override
     protected AbstractCookingRecipe buildRecipe()
     {
-        return factory.create("", CookingBookCategory.MISC, ingredients.getFirst(), resultItem, experience, cookingTime);
+        return factory.create(getGroupOrBlank(), category, Objects.requireNonNull(ingredient, "No ingredient for cooking recipe."), result, experience, cookingTime);
+    }
+
+    @Override
+    protected String getDefaultRecipeName()
+    {
+        return getDefaultStackName(result);
     }
 }

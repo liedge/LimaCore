@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -63,8 +62,6 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
         String name = "has_any_" + tag.location().getPath().replace("/", "_");
         return unlockedBy(name, LimaAdvancementUtil.playerHasItems(tag));
     }
-
-    protected abstract void validate(ResourceLocation id);
 
     protected abstract R buildRecipe();
 
@@ -122,10 +119,12 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
 
     private void save(RecipeOutput recipeOutput, ResourceLocation id, boolean appendFolderPrefix)
     {
-        validate(id);
+        // Build recipe & append prefix to id if necessary
+        R recipe = buildRecipe();
+        if (appendFolderPrefix) id = id.withPrefix(defaultFolderPrefix(recipe, id));
 
         // Build advancement (if criteria present)
-        AdvancementHolder holder;
+        AdvancementHolder advancement;
         if (!criteria.isEmpty())
         {
             Advancement.Builder builder = recipeOutput.advancement()
@@ -133,21 +132,15 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
                     .rewards(AdvancementRewards.Builder.recipe(id))
                     .requirements(AdvancementRequirements.Strategy.OR);
             criteria.forEach(builder::addCriterion);
-            holder = builder.build(id.withPrefix("recipes/"));
+            advancement = builder.build(id.withPrefix("recipes/"));
         }
         else
         {
-            holder = null;
+            advancement = null;
         }
 
-        // Build and save recipe
-        R recipe = buildRecipe();
-        if (appendFolderPrefix)
-        {
-            String prefix = defaultFolderPrefix(recipe, id);
-            if (StringUtils.isNotBlank(prefix)) id = id.withPrefix(prefix);
-        }
-        recipeOutput.accept(id, recipe, holder, conditions.toArray(ICondition[]::new));
+        // Save recipe
+        recipeOutput.accept(id, recipe, advancement, conditions.toArray(ICondition[]::new));
     }
 
     @Override

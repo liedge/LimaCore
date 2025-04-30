@@ -3,7 +3,6 @@ package liedge.limacore.data.generation.recipe;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,20 +12,14 @@ import net.minecraft.world.level.ItemLike;
 
 import java.util.List;
 
-public abstract class LimaIngredientListRecipeBuilder<R extends Recipe<?>, B extends LimaIngredientListRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
+public abstract class LimaIngredientsRecipeBuilder<R extends Recipe<?>, B extends LimaIngredientsRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
 {
-    protected final List<Ingredient> ingredients = new ObjectArrayList<>();
-
-    protected LimaIngredientListRecipeBuilder(ModResources modResources)
+    protected LimaIngredientsRecipeBuilder(ModResources modResources)
     {
         super(modResources);
     }
 
-    public B input(Ingredient ingredient)
-    {
-        ingredients.add(ingredient);
-        return selfUnchecked();
-    }
+    public abstract B input(Ingredient ingredient);
 
     public B input(ItemLike item)
     {
@@ -38,13 +31,9 @@ public abstract class LimaIngredientListRecipeBuilder<R extends Recipe<?>, B ext
         return input(Ingredient.of(tagKey));
     }
 
-    protected NonNullList<Ingredient> buildIngredients()
+    public static abstract class SimpleBuilder<R extends Recipe<?>, B extends SimpleBuilder<R, B>> extends LimaIngredientsRecipeBuilder<R, B>
     {
-        return NonNullList.copyOf(ingredients);
-    }
-
-    public static abstract class SimpleBuilder<R extends Recipe<?>, B extends SimpleBuilder<R, B>> extends LimaIngredientListRecipeBuilder<R, B>
-    {
+        protected final List<Ingredient> ingredients = new ObjectArrayList<>();
         protected final ItemStack resultItem;
 
         protected SimpleBuilder(ModResources modResources, ItemStack resultItem)
@@ -54,12 +43,21 @@ public abstract class LimaIngredientListRecipeBuilder<R extends Recipe<?>, B ext
         }
 
         @Override
-        protected void validate(ResourceLocation id) {}
+        public B input(Ingredient ingredient)
+        {
+            ingredients.add(ingredient);
+            return selfUnchecked();
+        }
 
         @Override
         protected String getDefaultRecipeName()
         {
             return getDefaultStackName(resultItem);
+        }
+
+        protected NonNullList<Ingredient> buildIngredients()
+        {
+            return NonNullList.copyOf(ingredients);
         }
     }
 }
