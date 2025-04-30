@@ -12,7 +12,6 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -30,7 +29,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.client.RenderTypeGroup;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -167,18 +165,6 @@ public final class LimaCoreClientUtil
     }
 
     // #region Baked model rendering helpers
-    @SuppressWarnings("ConstantValue")
-    public static RenderType getItemRenderTypeOrDefault(RenderTypeGroup group)
-    {
-        return group.entity() != null ? group.entity() : Sheets.translucentItemSheet();
-    }
-
-    @SuppressWarnings("ConstantValue")
-    public static RenderType getBlockRenderTypeOrDefault(RenderTypeGroup group)
-    {
-        return group.block() != null ? group.block() : RenderType.solid();
-    }
-
     public static void renderQuads(PoseStack poseStack, MultiBufferSource bufferSource, RenderType renderType, List<BakedQuad> quads, float red, float green, float blue, int packedLight)
     {
         PoseStack.Pose pose = poseStack.last();

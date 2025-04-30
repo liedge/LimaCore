@@ -36,13 +36,16 @@ public abstract class LimaGuiLayer implements LayeredDraw.Layer
     public void render(GuiGraphics graphics, DeltaTracker deltaTracker)
     {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && shouldRender(player))
+        if (player != null && isVisible(player))
         {
             renderGuiLayer(player, graphics, deltaTracker.getGameTimeDeltaPartialTick(true));
         }
     }
 
-    protected abstract boolean shouldRender(LocalPlayer player);
+    protected boolean isVisible(LocalPlayer player)
+    {
+        return !player.isSpectator() && !Minecraft.getInstance().options.hideGui;
+    }
 
     protected abstract void renderGuiLayer(LocalPlayer player, GuiGraphics graphics, float partialTicks);
 }

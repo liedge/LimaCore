@@ -2,16 +2,18 @@ package liedge.limacore.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.RenderTypeGroup;
+import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.BakedModelWrapper;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
@@ -23,26 +25,47 @@ public class BakedItemLayer extends BakedModelWrapper<BakedModel>
 {
     private final List<BakedQuad> quads;
     private final List<BakedModel> self;
-    private final RenderType renderType;
-    private final List<RenderType> renderTypeAsList;
+    private final @Nullable List<RenderType> renderTypes;
+    private final @Nullable List<RenderType> fabulousRenderTypes;
+    private final boolean skipNormalBufferAdd;
 
-    public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, RenderType renderType)
+    public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, @Nullable RenderType renderType, @Nullable RenderType fabulousRenderType, boolean skipNormalBufferAdd)
     {
         super(parent);
         this.quads = quads;
         this.self = List.of(this);
-        this.renderType = renderType;
-        this.renderTypeAsList = List.of(renderType);
+        this.renderTypes = renderType != null ? List.of(renderType) : null;
+        this.fabulousRenderTypes = fabulousRenderType != null ? List.of(fabulousRenderType) : null;
+        this.skipNormalBufferAdd = skipNormalBufferAdd;
     }
 
-    public void addToBufferDirect(PoseStack poseStack, MultiBufferSource bufferSource, int light)
+    public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, RenderTypeGroup renderTypeGroup, boolean skipNormalBufferAdd)
     {
-        VertexConsumer buffer = bufferSource.getBuffer(renderType);
-        PoseStack.Pose pose = poseStack.last();
+        this(parent, quads, renderTypeGroup.entity(), renderTypeGroup.entityFabulous(), skipNormalBufferAdd);
+    }
+
+    public List<BakedQuad> getQuads()
+    {
+        return quads;
+    }
+
+    public boolean addQuadsToBuffer(PoseStack.Pose pose, VertexConsumer buffer, ItemStack stack, ItemColors colors, List<BakedQuad> quads, int light, int overlay)
+    {
+        if (!skipNormalBufferAdd) return false;
+
         for (BakedQuad quad : quads)
         {
-            buffer.putBulkData(pose, quad, 1f, 1f, 1f, 1f, light, OverlayTexture.NO_OVERLAY);
+            int i = -1;
+            if (quad.isTinted()) i = colors.getColor(stack, quad.getTintIndex());
+
+            float red = FastColor.ARGB32.red(i) / 255f;
+            float green = FastColor.ARGB32.green(i) / 255f;
+            float blue = FastColor.ARGB32.blue(i) / 255f;
+
+            buffer.putBulkData(pose, quad, red, green, blue, 1f, light, overlay);
         }
+
+        return true;
     }
 
     @Override
@@ -60,7 +83,9 @@ public class BakedItemLayer extends BakedModelWrapper<BakedModel>
     @Override
     public List<RenderType> getRenderTypes(ItemStack itemStack, boolean fabulous)
     {
-        return renderTypeAsList;
+        if (fabulous && fabulousRenderTypes != null) return fabulousRenderTypes;
+        else if (!fabulous && renderTypes != null) return renderTypes;
+        else return List.of(RenderTypeHelper.getFallbackItemRenderType(itemStack, this, fabulous));
     }
 
     @Override

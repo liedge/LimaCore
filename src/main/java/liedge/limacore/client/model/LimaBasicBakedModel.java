@@ -1,8 +1,6 @@
 package liedge.limacore.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import liedge.limacore.client.LimaCoreClientUtil;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -30,9 +28,7 @@ public abstract class LimaBasicBakedModel implements BakedModel
     private final ItemTransforms transforms;
     private final ItemOverrides overrides;
     private final boolean useCustomRenderer;
-
-    private final RenderType blockRenderType;
-    private final ChunkRenderTypeSet chunkRenderTypeSet;
+    private final @Nullable ChunkRenderTypeSet blockRenderTypes;
 
     protected LimaBasicBakedModel(boolean ambientOcclusion,
                                   boolean gui3d,
@@ -50,17 +46,10 @@ public abstract class LimaBasicBakedModel implements BakedModel
         this.transforms = transforms;
         this.overrides = overrides;
         this.useCustomRenderer = useCustomRenderer;
-
-        this.blockRenderType = LimaCoreClientUtil.getBlockRenderTypeOrDefault(renderTypeGroup);
-        this.chunkRenderTypeSet = ChunkRenderTypeSet.of(this.blockRenderType);
+        this.blockRenderTypes = !renderTypeGroup.isEmpty() ? ChunkRenderTypeSet.of(renderTypeGroup.block()) : null;
     }
 
     public abstract List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side);
-
-    public RenderType getBlockRenderType()
-    {
-        return blockRenderType;
-    }
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource random)
@@ -114,7 +103,7 @@ public abstract class LimaBasicBakedModel implements BakedModel
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data)
     {
-        return chunkRenderTypeSet;
+        return blockRenderTypes != null ? blockRenderTypes : BakedModel.super.getRenderTypes(state, rand, data);
     }
 
     public static abstract class AbstractBuilder<T extends AbstractBuilder<T>> implements IModelBuilder<T>

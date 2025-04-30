@@ -4,5 +4,5 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "limacore.refmap.json",
   "mixins": [ "DamageSourceMixin", "LivingEntityMixin" ],
-  "client": [ "GuiGraphicsMixin" ]
+  "client": [ "GuiGraphicsMixin", "ItemRendererMixin" ]
 }

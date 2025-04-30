@@ -2,7 +2,7 @@ package liedge.limacore.client.model;
 
 import com.google.gson.JsonObject;
 import liedge.limacore.LimaCore;
-import liedge.limacore.client.LimaCoreClientUtil;
+import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import org.jetbrains.annotations.Nullable;
@@ -58,10 +57,10 @@ public class SimpleEmissiveGeometry extends BlockBenchGroupGeometry
             this.culledFaces = masterGroup.getCulledFaces();
             this.unculledFaces = masterGroup.getUnculledFaces();
 
-            BakedItemLayer emissiveLayer = new BakedItemLayer(this, masterGroup.getEmissiveQuads(), NeoForgeRenderTypes.ITEM_UNSORTED_UNLIT_TRANSLUCENT.get());
-            BakedItemLayer nonEmissiveLayer = new BakedItemLayer(this, masterGroup.getNonEmissiveQuads(), LimaCoreClientUtil.getItemRenderTypeOrDefault(renderTypeGroup));
+            BakedItemLayer baseLayer = new BakedItemLayer(this, masterGroup.getNonEmissiveQuads(), renderTypeGroup, false);
+            BakedItemLayer emissiveLayer = new BakedItemLayer(this, masterGroup.getEmissiveQuads(), LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID, LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID, true);
 
-            this.renderPasses = List.of(nonEmissiveLayer, emissiveLayer);
+            this.renderPasses = List.of(baseLayer, emissiveLayer);
         }
 
         @Override
