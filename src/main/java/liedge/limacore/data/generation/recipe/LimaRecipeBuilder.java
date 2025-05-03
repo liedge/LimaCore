@@ -27,11 +27,19 @@ import java.util.Objects;
 
 public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecipeBuilder<R, B>> implements RecipeBuilder
 {
+    public static final String DEFAULT_CRITERION_KEY = "has_the_recipe";
+    public static final AdvancementRequirements.Strategy HAS_RECIPE_OR_ALL_OF = keys ->
+    {
+        List<List<String>> requirements = keys.stream().map(s -> List.of(s, DEFAULT_CRITERION_KEY)).toList();
+        return new AdvancementRequirements(requirements);
+    };
+
     private final List<ICondition> conditions = new ObjectArrayList<>();
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
     protected final ModResources modResources;
 
     private String group;
+    private AdvancementRequirements.Strategy strategy = AdvancementRequirements.Strategy.OR;
 
     protected LimaRecipeBuilder(ModResources modResources)
     {
@@ -61,6 +69,12 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     {
         String name = "has_any_" + tag.location().getPath().replace("/", "_");
         return unlockedBy(name, LimaAdvancementUtil.playerHasItems(tag));
+    }
+
+    public B unlockStrategy(AdvancementRequirements.Strategy strategy)
+    {
+        this.strategy = strategy;
+        return selfUnchecked();
     }
 
     protected abstract R buildRecipe();
@@ -117,27 +131,26 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
         return LimaRegistryUtil.getItemName(stack.getItem());
     }
 
+    protected @Nullable AdvancementHolder buildAdvancement(Advancement.Builder builder, ResourceLocation id, Map<String, Criterion<?>> criteria)
+    {
+        if (criteria.isEmpty()) return null;
+
+        builder.addCriterion(DEFAULT_CRITERION_KEY, RecipeUnlockedTrigger.unlocked(id))
+                .rewards(AdvancementRewards.Builder.recipe(id))
+                .requirements(strategy);
+        criteria.forEach(builder::addCriterion);
+
+        return builder.build(id.withPrefix("recipes/"));
+    }
+
     private void save(RecipeOutput recipeOutput, ResourceLocation id, boolean appendFolderPrefix)
     {
         // Build recipe & append prefix to id if necessary
         R recipe = buildRecipe();
         if (appendFolderPrefix) id = id.withPrefix(defaultFolderPrefix(recipe, id));
 
-        // Build advancement (if criteria present)
-        AdvancementHolder advancement;
-        if (!criteria.isEmpty())
-        {
-            Advancement.Builder builder = recipeOutput.advancement()
-                    .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                    .rewards(AdvancementRewards.Builder.recipe(id))
-                    .requirements(AdvancementRequirements.Strategy.OR);
-            criteria.forEach(builder::addCriterion);
-            advancement = builder.build(id.withPrefix("recipes/"));
-        }
-        else
-        {
-            advancement = null;
-        }
+        // Build advancement
+        AdvancementHolder advancement = buildAdvancement(recipeOutput.advancement(), id, this.criteria);
 
         // Save recipe
         recipeOutput.accept(id, recipe, advancement, conditions.toArray(ICondition[]::new));

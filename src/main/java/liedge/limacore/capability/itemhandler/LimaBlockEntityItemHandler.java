@@ -1,6 +1,11 @@
 package liedge.limacore.capability.itemhandler;
 
 import liedge.limacore.blockentity.IOAccess;
+import liedge.limacore.util.LimaNbtUtil;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -71,5 +76,26 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
     protected void onLoad()
     {
         blockEntity.onItemHandlerLoaded(handlerIndex);
+    }
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt)
+    {
+        // We use the larger value here to allow for retroactive expansion from version changes.
+        setSize(Math.max(stacks.size(), LimaNbtUtil.getAsInt(nbt, "Size", -1)));
+
+        ListTag listTag = nbt.getList("Items", Tag.TAG_COMPOUND);
+        for (int i = 0; i < listTag.size(); i++)
+        {
+            CompoundTag stackTag = listTag.getCompound(i);
+            int slot = stackTag.getInt("Slot");
+
+            if (slot >= 0 && slot < stacks.size())
+            {
+                ItemStack.parse(provider, stackTag).ifPresent(stack -> stacks.set(slot, stack));
+            }
+        }
+
+        onLoad();
     }
 }

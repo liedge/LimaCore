@@ -1,7 +1,5 @@
 package liedge.limacore.lib;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import liedge.limacore.data.LimaCoreCodecs;
@@ -11,55 +9,54 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.FastColor.ARGB32;
 import org.jetbrains.annotations.ApiStatus;
 
-public record LimaColor(int packedRGB, float red, float green, float blue, Style chatStyle)
+public record LimaColor(int argb32, float red, float green, float blue, Style chatStyle)
 {
-    private static final Interner<LimaColor> INTERNER = Interners.newWeakInterner();
-
     public static final LimaColor WHITE = createOpaque(0xffffff);
     public static final LimaColor BLACK = createOpaque(0x000000);
 
-    public static final Codec<LimaColor> CODEC = Codec.withAlternative(Codec.INT, LimaCoreCodecs.HEXADECIMAL_INT).xmap(LimaColor::createOpaque, LimaColor::packedRGB);
-    public static final StreamCodec<ByteBuf, LimaColor> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(LimaColor::createOpaque, LimaColor::packedRGB);
+    public static final Codec<LimaColor> CODEC = Codec.withAlternative(Codec.INT, LimaCoreCodecs.HEXADECIMAL_INT).xmap(LimaColor::createOpaque, LimaColor::argb32);
+    public static final StreamCodec<ByteBuf, LimaColor> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(LimaColor::createOpaque, LimaColor::argb32);
 
-    private static LimaColor intern(int packedRGB, float red, float green, float blue)
+    public static LimaColor createOpaque(int rgb)
     {
-        Style chatStyle = Style.EMPTY.withColor(packedRGB);
-        return INTERNER.intern(new LimaColor(packedRGB, red, green, blue, chatStyle));
-    }
+        int argb32 = ARGB32.opaque(rgb);
+        float red = ARGB32.red(argb32) / 255f;
+        float green = ARGB32.green(argb32) / 255f;
+        float blue = ARGB32.blue(argb32) / 255f;
 
-    public static LimaColor createOpaque(int rgb32)
-    {
-        int packedRGB = ARGB32.opaque(rgb32);
-        float red = ARGB32.red(packedRGB) / 255f;
-        float green = ARGB32.green(packedRGB) / 255f;
-        float blue = ARGB32.blue(packedRGB) / 255f;
-
-        return intern(packedRGB, red, green, blue);
+        return new LimaColor(argb32, red, green, blue);
     }
 
     public static LimaColor createOpaque(float red, float green, float blue)
     {
-        return createOpaque(ARGB32.colorFromFloat(1f, red, green, blue));
+        int argb32 = ARGB32.colorFromFloat(1f, red, green, blue);
+
+        return new LimaColor(argb32, red, green, blue);
     }
 
     @ApiStatus.Internal
     public LimaColor {}
 
+    private LimaColor(int argb32, float red, float green, float blue)
+    {
+        this(argb32, red, green, blue, Style.EMPTY.withColor(argb32));
+    }
+
     public Style applyChatStyle(Style style)
     {
-        return style.withColor(packedRGB);
+        return style.withColor(argb32);
     }
 
     @Override
     public String toString()
     {
-        return "#" + packedRGB;
+        return "#" + argb32;
     }
 
     @Override
     public int hashCode()
     {
-        return Integer.hashCode(packedRGB);
+        return Integer.hashCode(argb32);
     }
 
     @Override
@@ -71,7 +68,7 @@ public record LimaColor(int packedRGB, float red, float green, float blue, Style
         }
         else if (obj instanceof LimaColor color)
         {
-            return this.packedRGB() == color.packedRGB();
+            return this.argb32() == color.argb32();
         }
         else
         {

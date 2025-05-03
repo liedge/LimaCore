@@ -2,10 +2,11 @@ package liedge.limacore.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import org.joml.Matrix4f;
 
 public final class LimaGuiUtil
@@ -22,6 +23,7 @@ public final class LimaGuiUtil
         return isMouseWithinXYBounds(mouseX, mouseY, x, y, x + width, y + height);
     }
 
+    //#region Blit Helpers
     public static void directBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, int zOffset, float u0, float u1, float v0, float v1)
     {
         RenderSystem.setShaderTexture(0, atlasLocation);
@@ -43,7 +45,12 @@ public final class LimaGuiUtil
         directBlit(graphics, atlasLocation, x1, y1, x2, y2, 0, u0, u1, v0, v1);
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, int zOffset, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
+    public static void directBlit(GuiGraphics graphics, float x, float y, int width, int height, TextureAtlasSprite sprite)
+    {
+        directBlit(graphics, sprite.atlasLocation(), x, y, x + width, y + height, 0, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+    }
+
+    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, int zOffset, float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha)
     {
         RenderSystem.setShaderTexture(0, atlasLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -61,26 +68,29 @@ public final class LimaGuiUtil
         RenderSystem.disableBlend();
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int red, int green, int blue, int alpha)
+    public static void directColorBlit(GuiGraphics graphics, float x, float y, int width, int height, float red, float green, float blue, float alpha, TextureAtlasSprite sprite)
     {
-        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, 0, u0, u1, v0, v1, red, green, blue, alpha);
+        directColorBlit(graphics, sprite.atlasLocation(), x, y, x + width, y + height, 0, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), red, green, blue, alpha);
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha)
+    public static void directColorBlit(GuiGraphics graphics, float x, float y, int width, int height, LimaColor color, float alpha, TextureAtlasSprite sprite)
     {
-        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, u0, u1, v0, v1,
-                (int) (red * 255f),
-                (int) (green * 255f),
-                (int) (blue * 255f),
-                (int) (alpha * 255f));
+        directColorBlit(graphics, x, y, width, height, color.red(), color.green(), color.blue(), alpha, sprite);
     }
 
-    public static void directColorBlit(GuiGraphics graphics, ResourceLocation atlasLocation, float x1, float y1, float x2, float y2, float u0, float u1, float v0, float v1, int argb32)
+    public static void partialHorizontalBlit(GuiGraphics graphics, float x, float y, int width, int height, float percentage, TextureAtlasSprite sprite)
     {
-        directColorBlit(graphics, atlasLocation, x1, y1, x2, y2, u0, u1, v0, v1,
-                FastColor.ARGB32.red(argb32),
-                FastColor.ARGB32.green(argb32),
-                FastColor.ARGB32.blue(argb32),
-                FastColor.ARGB32.alpha(argb32));
+        float partialWidth = width * percentage;
+
+        directBlit(graphics, sprite.atlasLocation(), x, y, x + partialWidth, y + height, 0, sprite.getU0(), sprite.getU(percentage), sprite.getV0(), sprite.getV1());
     }
+
+    public static void partialVerticalBlit(GuiGraphics graphics, float x, float y, int width, int height, float percentage, TextureAtlasSprite sprite)
+    {
+        float partialHeight = height * percentage;
+        y += height - partialHeight;
+
+        directBlit(graphics, sprite.atlasLocation(), x, y, x + width, y + partialHeight, 0, sprite.getU0(), sprite.getU1(), sprite.getV(1f - percentage), sprite.getV1());
+    }
+    //#endregion
 }

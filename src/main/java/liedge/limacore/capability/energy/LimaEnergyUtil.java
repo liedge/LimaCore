@@ -36,7 +36,7 @@ public final class LimaEnergyUtil
         return Mth.clamp(getFillPercentage(storage), 0f, 1f);
     }
 
-    public static String formatEnergyWithSuffix(int energy)
+    public static String toEnergyString(int energy)
     {
         if (energy >= BILLION)
         {
@@ -56,9 +56,19 @@ public final class LimaEnergyUtil
         }
     }
 
-    public static String formatStoredAndTotal(IEnergyStorage storage)
+    public static String toEnergyPerTickString(int energy)
     {
-        return formatEnergyWithSuffix(storage.getEnergyStored()) + "/" + formatEnergyWithSuffix(storage.getMaxEnergyStored());
+        return toEnergyString(energy) + "/t";
+    }
+
+    public static String toEnergyStoredString(int energy, int capacity)
+    {
+        return toEnergyString(energy) + "/" + toEnergyString(capacity);
+    }
+
+    public static String toEnergyStoredString(IEnergyStorage storage)
+    {
+        return toEnergyStoredString(storage.getEnergyStored(), storage.getMaxEnergyStored());
     }
 
     public static int receiveWithoutLimit(IEnergyStorage storage, final int toReceive, boolean simulate)

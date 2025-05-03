@@ -1,35 +1,44 @@
 package liedge.limacore.client.gui;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 
 public abstract class FillBarWidget implements LimaRenderable
 {
     private final int x;
     private final int y;
-    private final UnmanagedSprite backgroundSprite;
+    private final int backgroundWidth;
+    private final int backgroundHeight;
+    private final int foregroundWidth;
+    private final int foregroundHeight;
+    private final TextureAtlasSprite backgroundSprite;
 
-    protected FillBarWidget(int x, int y, UnmanagedSprite backgroundSprite)
+    protected FillBarWidget(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
     {
         this.x = x;
         this.y = y;
+        this.backgroundWidth = backgroundWidth;
+        this.backgroundHeight = backgroundHeight;
+        this.foregroundWidth = foregroundWidth;
+        this.foregroundHeight = foregroundHeight;
         this.backgroundSprite = backgroundSprite;
     }
 
     protected abstract float getFillPercentage();
 
-    protected abstract UnmanagedSprite getForegroundSprite(float fillPercentage);
+    protected abstract TextureAtlasSprite getForegroundSprite(float fillPercentage);
 
     protected abstract void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float fillPercentage, float partialTicks);
 
     protected void renderHorizontalBar(GuiGraphics graphics, float fillPercentage)
     {
-        if (fillPercentage > 0) getForegroundSprite(fillPercentage).partialHorizontalBlit(graphics, getX() + 1, getY() + 1, Mth.clamp(fillPercentage, 0f, 1f));
+        if (fillPercentage > 0) LimaGuiUtil.partialHorizontalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), getForegroundSprite(fillPercentage));
     }
 
     protected void renderVerticalBar(GuiGraphics graphics, float fillPercentage)
     {
-        if (fillPercentage > 0) getForegroundSprite(fillPercentage).partialVerticalBlit(graphics, getX() + 1, getY() + 1, Mth.clamp(fillPercentage, 0f, 1f));
+        if (fillPercentage > 0) LimaGuiUtil.partialVerticalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), getForegroundSprite(fillPercentage));
     }
 
     @Override
@@ -47,27 +56,27 @@ public abstract class FillBarWidget implements LimaRenderable
     @Override
     public int getWidth()
     {
-        return backgroundSprite.width();
+        return backgroundWidth;
     }
 
     @Override
     public int getHeight()
     {
-        return backgroundSprite.height();
+        return backgroundHeight;
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
     {
-        backgroundSprite.singleBlit(graphics, getX(), getY());
+        graphics.blit(getX(), getY(), 0, backgroundWidth, backgroundHeight, backgroundSprite);
         renderForeground(graphics, mouseX, mouseY, getFillPercentage(), partialTicks);
     }
 
     public abstract static class HorizontalBar extends FillBarWidget
     {
-        protected HorizontalBar(int x, int y, UnmanagedSprite backgroundSprite)
+        protected HorizontalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
         {
-            super(x, y, backgroundSprite);
+            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight, backgroundSprite);
         }
 
         @Override
@@ -79,9 +88,9 @@ public abstract class FillBarWidget implements LimaRenderable
 
     public abstract static class VerticalBar extends FillBarWidget
     {
-        protected VerticalBar(int x, int y, UnmanagedSprite backgroundSprite)
+        protected VerticalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
         {
-            super(x, y, backgroundSprite);
+            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight, backgroundSprite);
         }
 
         @Override
