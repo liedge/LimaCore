@@ -69,34 +69,34 @@ public abstract class LimaSoundDefinitionsProvider extends SoundDefinitionsProvi
         return beginDefinition(holder.value());
     }
 
-    protected void add(Holder<SoundEvent> holder, SoundDefinition definition)
+    protected void addSound(Holder<SoundEvent> holder, SoundDefinition definition)
     {
         add(holder.value(), definition);
     }
 
-    protected void add(SoundEvent event, UnaryOperator<SoundDefinition> op)
+    protected void addSound(SoundEvent event, UnaryOperator<SoundDefinition> op)
     {
         add(event, op.apply(beginDefinition(event)));
     }
 
-    protected void add(Holder<SoundEvent> holder, UnaryOperator<SoundDefinition> op)
+    protected void addSound(Holder<SoundEvent> holder, UnaryOperator<SoundDefinition> op)
     {
-        add(holder.value(), op.apply(beginDefinition(holder)));
+        addSound(holder, op.apply(beginDefinition(holder)));
     }
 
     protected void addSingleDirectSound(Holder<SoundEvent> holder)
     {
-        add(holder.value(), beginDefinition(holder).with(beginSound(holder, SoundDefinition.SoundType.SOUND)));
+        addSound(holder, def -> def.with(beginSound(holder, SoundDefinition.SoundType.SOUND)));
     }
 
     protected void addSingleDirectSound(Holder<SoundEvent> holder, String soundFilePath)
     {
-        add(holder.value(), beginDefinition(holder).with(beginSound(soundFilePath, SoundDefinition.SoundType.SOUND)));
+        addSound(holder, def -> def.with(beginSound(soundFilePath, SoundDefinition.SoundType.SOUND)));
     }
 
     protected void addSingleEventSound(Holder<SoundEvent> holder, SoundEvent targetSound)
     {
-        add(holder, def -> def.with(beginSound(targetSound, SoundDefinition.SoundType.EVENT)));
+        addSound(holder, def -> def.with(beginSound(targetSound, SoundDefinition.SoundType.EVENT)));
     }
 
     protected void addSingleEventSound(Holder<SoundEvent> holder, Holder<SoundEvent> targetSoundHolder)

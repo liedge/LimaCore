@@ -1,7 +1,8 @@
 package liedge.limacore.client;
 
 import liedge.limacore.LimaCore;
-import liedge.limacore.client.model.SimpleEmissiveGeometry;
+import liedge.limacore.client.model.geometry.LimaLayerGeometry;
+import liedge.limacore.client.model.geometry.SimpleEmissiveGeometry;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -16,5 +17,6 @@ public final class LimaCoreClientSetup
     public static void registerGeometryLoaders(final ModelEvent.RegisterGeometryLoaders event)
     {
         SimpleEmissiveGeometry.LOADER.registerLoader(event);
+        LimaLayerGeometry.LOADER.registerLoader(event);
     }
 }

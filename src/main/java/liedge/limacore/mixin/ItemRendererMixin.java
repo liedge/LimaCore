@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import liedge.limacore.client.model.BakedItemLayer;
+import liedge.limacore.client.model.baked.BakedItemLayer;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -27,7 +27,7 @@ public abstract class ItemRendererMixin
     {
         if (!stack.isEmpty() && model instanceof BakedItemLayer layer)
         {
-            return !layer.addQuadsToBuffer(poseStack.last(), consumer, stack, itemColors, quads, light, overlay);
+            return !layer.customBufferQuadAddition(poseStack.last(), consumer, stack, itemColors, quads, light, overlay);
         }
 
         return true;

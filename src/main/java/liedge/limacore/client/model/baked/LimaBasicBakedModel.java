@@ -1,4 +1,4 @@
-package liedge.limacore.client.model;
+package liedge.limacore.client.model.baked;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.RenderTypeGroup;
-import net.neoforged.neoforge.client.model.IModelBuilder;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,29 +103,5 @@ public abstract class LimaBasicBakedModel implements BakedModel
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data)
     {
         return blockRenderTypes != null ? blockRenderTypes : BakedModel.super.getRenderTypes(state, rand, data);
-    }
-
-    public static abstract class AbstractBuilder<T extends AbstractBuilder<T>> implements IModelBuilder<T>
-    {
-        protected final boolean ambientOcclusion;
-        protected final boolean gui3d;
-        protected final boolean useBlockLight;
-        protected final TextureAtlasSprite particleIcon;
-        protected final ItemTransforms transforms;
-        protected final ItemOverrides overrides;
-        protected final boolean useCustomRenderer;
-        protected final RenderTypeGroup renderTypeGroup;
-
-        protected AbstractBuilder(boolean ambientOcclusion, boolean gui3d, boolean useBlockLight, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides, boolean useCustomRenderer, RenderTypeGroup renderTypeGroup)
-        {
-            this.ambientOcclusion = ambientOcclusion;
-            this.gui3d = gui3d;
-            this.useBlockLight = useBlockLight;
-            this.particleIcon = particleIcon;
-            this.transforms = transforms;
-            this.overrides = overrides;
-            this.useCustomRenderer = useCustomRenderer;
-            this.renderTypeGroup = renderTypeGroup;
-        }
     }
 }

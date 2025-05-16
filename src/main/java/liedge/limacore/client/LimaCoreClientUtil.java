@@ -1,19 +1,11 @@
 package liedge.limacore.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import liedge.limacore.lib.LimaColor;
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
@@ -31,7 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 public final class LimaCoreClientUtil
@@ -156,23 +147,6 @@ public final class LimaCoreClientUtil
         else
         {
             return false;
-        }
-    }
-
-    public static void setParticleColor(Particle particle, LimaColor color)
-    {
-        particle.setColor(color.red(), color.green(), color.blue());
-    }
-
-    // #region Baked model rendering helpers
-    public static void renderQuads(PoseStack poseStack, MultiBufferSource bufferSource, RenderType renderType, List<BakedQuad> quads, float red, float green, float blue, int packedLight)
-    {
-        PoseStack.Pose pose = poseStack.last();
-        VertexConsumer buffer = bufferSource.getBuffer(renderType);
-
-        for (BakedQuad quad : quads)
-        {
-            buffer.putBulkData(pose, quad, red, green, blue, 1f, packedLight, OverlayTexture.NO_OVERLAY);
         }
     }
     //#endregion

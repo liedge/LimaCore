@@ -1,4 +1,4 @@
-package liedge.limacore.client.model;
+package liedge.limacore.client.model.geometry;
 
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.ModelEvent;
