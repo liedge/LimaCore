@@ -4,15 +4,19 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+ import net.minecraft.core.Position;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +29,8 @@ import static liedge.limacore.util.LimaCoreUtil.castOrNull;
 
 public final class LimaBlockUtil
 {
+    private static final double DEFAULT_CHUNK_TRACE_DISTANCE = 8d;
+
     private LimaBlockUtil() {}
 
     private static IllegalArgumentException angleError(int angle)
@@ -79,7 +85,6 @@ public final class LimaBlockUtil
         return BlockPos.betweenClosedStream(Mth.floor(boundingBox.minX), Mth.floor(boundingBox.minY), Mth.floor(boundingBox.minZ), Mth.ceil(boundingBox.maxX), Mth.ceil(boundingBox.maxY), Mth.ceil(boundingBox.maxZ)).filter(level::hasChunkAt);
     }
 
-
     /**
      * Calls {@link LevelReader#getBlockEntity(BlockPos)} only if {@code level} and {@code blockPos} are both non-null,
      * and if the chunk is loaded.
@@ -123,6 +128,58 @@ public final class LimaBlockUtil
     public static @Nullable LevelChunk getSafeLevelChunk(@Nullable LevelReader level, ChunkPos chunkPos)
     {
         return getSafeLevelChunk(level, chunkPos.x, chunkPos.z);
+    }
+
+    /**
+     * Checks whether the chunk containing the given {@link Position} is currently loaded.
+     * @param level The level or level accessor object.
+     * @param point The coordinate to check, usually a {@link Vec3}.
+     * @return {@code true} if the chunk is loaded or {@code false} if not.
+     */
+    public static boolean hasChunkAt(LevelAccessor level, Position point)
+    {
+        int chunkX = SectionPos.blockToSectionCoord(point.x());
+        int chunkZ = SectionPos.blockToSectionCoord(point.z());
+
+        return level.hasChunk(chunkX, chunkZ);
+    }
+
+    /**
+     * Traces the ray from a provided origin point and vector path, stopping
+     * @param level The level or level accessor object.
+     * @param origin The origin of the ray trace.
+     * @param path The vector path of the ray.
+     * @return A new {@link Vec3} object containing the furthest reachable point along the ray.
+     */
+    public static Vec3 traceLoadedChunks(LevelAccessor level, Vec3 origin, Vec3 path, double stepDistance)
+    {
+        Vec3 end = origin.add(path);
+        double length = origin.distanceTo(end);
+        path = path.normalize().scale(stepDistance);
+
+        Vec3 lastValid = origin;
+        Vec3 current = lastValid;
+
+        boolean interrupted = false;
+        int maxSteps = (int) (length / stepDistance);
+        for (int i = 0; i <= maxSteps; i++)
+        {
+            if (!hasChunkAt(level, current))
+            {
+                interrupted = true;
+                break;
+            }
+
+            lastValid = current;
+            current = current.add(path);
+        }
+
+        return interrupted ? lastValid : end;
+    }
+
+    public static Vec3 traceLoadedChunks(LevelAccessor level, Vec3 origin, Vec3 path)
+    {
+        return traceLoadedChunks(level, origin, path, DEFAULT_CHUNK_TRACE_DISTANCE);
     }
 
     //#region Voxel shape functions

@@ -1,9 +1,6 @@
 name: Build and Publish Gradle Package
 
-on:
-  push:
-    tags:
-      - 'v*'
+on: [push]
 
 jobs:
   build:
