@@ -4,6 +4,7 @@ import liedge.limacore.lib.math.LimaRoundingMode;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
@@ -219,6 +220,11 @@ public final class LimaMathUtil
         return new Vec3(nx, ny, nz);
     }
 
+    public static Vec3 relativePointToRotations(Entity entity, double xOffset, double yOffset, double zOffset)
+    {
+        return relativePointToRotations(entity.getViewXRot(1f), entity.getViewYRot(1f), xOffset, yOffset, zOffset);
+    }
+
     public static Stream<Vec3> relativePointsToRotations(float xRot, float yRot, List<Vec3> list)
     {
         Vec3 dir = createMotionVector(xRot, yRot, 1f);
@@ -236,6 +242,11 @@ public final class LimaMathUtil
             double nz = (dir.z * v.z) + (vecX.z * v.x) + (-vecZ.z * v.y * cosY);
             return new Vec3(nx, ny, nz);
         });
+    }
+
+    public static Stream<Vec3> relativePointsToRotations(Entity entity, List<Vec3> list)
+    {
+        return relativePointsToRotations(entity.getViewXRot(1f), entity.getViewYRot(1f), list);
     }
 
     public static Vec3 createMotionVector(LivingEntity entity, double length)
