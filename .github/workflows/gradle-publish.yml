@@ -30,3 +30,10 @@ jobs:
       env:
         GITHUB_USERNAME: ${{ github.actor }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Keep only latest 4 versions
+      uses: actions/delete-package-versions@v5
+      with:
+        package-name: 'liedge.limacore-1.21'
+        package-type: 'maven'
+        min-versions-to-keep: 4
