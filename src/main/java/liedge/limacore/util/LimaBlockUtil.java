@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
- import net.minecraft.core.Position;
+import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -13,6 +13,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
@@ -183,6 +184,15 @@ public final class LimaBlockUtil
     }
 
     //#region Voxel shape functions
+
+    /**
+     * Utility helper for {@link Block#box(double, double, double, double, double, double)} to create a box voxel shape
+     * with x,y,z coordinates and sizes, rather than 2 sets of x,y,z coordinates.
+     */
+    public static VoxelShape dimensionBox(double x, double y, double z, double xSize, double ySize, double zSize)
+    {
+        return Block.box(x, y, z, x + xSize, y + ySize, z + zSize);
+    }
 
     /**
      * Gets an angle (in degrees) from a {@link Direction}. Maps north to 0, east to 90, south to 180 and west to 270.
