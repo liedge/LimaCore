@@ -1,19 +1,17 @@
 package liedge.limacore.util;
 
 import liedge.limacore.lib.function.Consumer3;
+import liedge.limacore.network.packet.ClientboundParticlePacket;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -26,62 +24,47 @@ public final class LimaNetworkUtil
     public static final int UNLIMITED_PARTICLE_DIST = 512;
 
     //#region Packet helpers
-    public static void sendSingleParticle(Level level, ParticleOptions options, @Nullable Player player, boolean overrideLimiter, double maxDistance, double x, double y, double z, float xSpeed, float ySpeed, float zSpeed)
+    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, Vec3 pos, Vec3 speed)
     {
         if (level instanceof ServerLevel serverLevel)
         {
-            ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(options, overrideLimiter, x, y, z, xSpeed, ySpeed, zSpeed, 1, 0);
-            for (ServerPlayer serverPlayer : serverLevel.players())
-            {
-                if (serverPlayer == player || serverPlayer.blockPosition().distToCenterSqr(x, y, z) < Mth.square(maxDistance))
-                    serverPlayer.connection.send(packet);
-            }
+            PacketDistributor.sendToPlayersNear(serverLevel, null, pos.x, pos.y, pos.z, maxDistance, new ClientboundParticlePacket(options, pos, speed));
         }
     }
 
-    public static void sendSingleParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, @Nullable Player player, boolean overrideLimiter, double maxDistance, double x, double y, double z, float xSpeed, float ySpeed, float zSpeed)
+    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, Vec3 pos, Vec3 speed)
     {
-        sendSingleParticle(level, typeSupplier.get(), player, overrideLimiter, maxDistance, x, y, z, xSpeed, ySpeed, zSpeed);
+        sendParticle(level, typeSupplier.get(), maxDistance, pos, speed);
     }
 
-    public static void sendSingleParticle(Level level, ParticleOptions options, @Nullable Player player, double maxDistance, double x, double y, double z, float xSpeed, float ySpeed, float zSpeed)
+    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, Vec3 pos)
     {
-        sendSingleParticle(level, options, player, options.getType().getOverrideLimiter(), maxDistance, x, y, z, xSpeed, ySpeed, zSpeed);
+        sendParticle(level, options, maxDistance, pos, Vec3.ZERO);
     }
 
-    public static void sendSingleParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, @Nullable Player player, double maxDistance, double x, double y, double z, float xSpeed, float ySpeed, float zSpeed)
+    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, Vec3 pos)
     {
-        sendSingleParticle(level, typeSupplier.get(), player, maxDistance, x, y, z, xSpeed, ySpeed, zSpeed);
+        sendParticle(level, typeSupplier.get(), maxDistance, pos);
     }
 
-    public static void sendSingleParticle(Level level, ParticleOptions options, @Nullable Player player, double maxDistance, double x, double y, double z)
+    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
     {
-        sendSingleParticle(level, options, player, maxDistance, x, y, z, 0f, 0f, 0f);
+        sendParticle(level, options, maxDistance, new Vec3(x, y, z), new Vec3(xSpeed, ySpeed, zSpeed));
     }
 
-    public static void sendSingleParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, @Nullable Player player, double maxDistance, double x, double y, double z)
+    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
     {
-        sendSingleParticle(level, typeSupplier.get(), player, maxDistance, x, y, z);
+        sendParticle(level, typeSupplier.get(), maxDistance, x, y, z, xSpeed, ySpeed, zSpeed);
     }
 
-    public static void sendSingleParticle(Level level, ParticleOptions options, @Nullable Player player, double maxDistance, Vec3 pos, Vec3 speed)
+    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, double x, double y, double z)
     {
-        sendSingleParticle(level, options, player, maxDistance, pos.x, pos.y, pos.z, (float) speed.x, (float) speed.y, (float) speed.z);
+        sendParticle(level, options, maxDistance, new Vec3(x, y, z));
     }
 
-    public static void sendSingleParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, @Nullable Player player, double maxDistance, Vec3 pos, Vec3 speed)
+    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, double x, double y, double z)
     {
-        sendSingleParticle(level, typeSupplier.get(), player, maxDistance, pos, speed);
-    }
-
-    public static void sendSingleParticle(Level level, ParticleOptions options, @Nullable Player player, double maxDistance, Vec3 pos)
-    {
-        sendSingleParticle(level, options, player, maxDistance, pos.x, pos.y, pos.z, 0f, 0f, 0f);
-    }
-
-    public static void sendSingleParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, @Nullable Player player, double maxDistance, Vec3 pos)
-    {
-        sendSingleParticle(level, typeSupplier.get(), player, maxDistance, pos);
+        sendParticle(level, typeSupplier.get(), maxDistance, x, y, z);
     }
     //#endregion
 
