@@ -191,10 +191,6 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN") as String
             }
         }
-
-        maven {
-            url "file://${project.projectDir}/repo"
-        }
     }
 }
 
