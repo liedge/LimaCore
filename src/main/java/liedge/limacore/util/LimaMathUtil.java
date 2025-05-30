@@ -87,7 +87,7 @@ public final class LimaMathUtil
     {
         if (start < 0 || start >= size || end > size)
         {
-            throw new IllegalArgumentException(String.format("Index range (%s,%s] out of bounds: (0,%s]", start, end, size));
+            throw new IllegalArgumentException(String.format("Index range [%s,%s) out of bounds: [0,%s)", start, end, size));
         }
         if (start > end)
         {

@@ -28,11 +28,6 @@ public interface LimaRecipeInput extends RecipeInput
         return createRanged(container, minSlot, minSlot + size);
     }
 
-    static LimaRecipeInput createWithSize(IItemHandlerModifiable container, int size)
-    {
-        return createWithSize(container, 0, size);
-    }
-
     static LimaRecipeInput createSingleSlot(IItemHandlerModifiable container, int slotIndex)
     {
         return createWithSize(container, slotIndex, 1);

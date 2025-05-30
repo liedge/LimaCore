@@ -3,10 +3,18 @@ package liedge.limacore.capability.itemhandler;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 
 public final class LimaItemHandlerUtil
 {
     private LimaItemHandlerUtil() {}
+
+    public static RangedWrapper sizedRangedWrapper(IItemHandlerModifiable source, int startSlot, int slotCount)
+    {
+        return new RangedWrapper(source, startSlot, startSlot + slotCount);
+    }
 
     public static int getNextEmptySlot(IItemHandler handler, boolean reverse)
     {
@@ -65,19 +73,29 @@ public final class LimaItemHandlerUtil
         return toInsert;
     }
 
-    public static void transferStackBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlot)
+    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlotStart, int sourceSlotEnd)
     {
-        if (source.getStackInSlot(sourceSlot).isEmpty()) return;
+        LimaMathUtil.validateOpenIndexRange(sourceSlotStart, sourceSlotEnd, source.getSlots());
 
-        for (int i = 0; i < destination.getSlots(); i++)
+        for (int i = sourceSlotStart; i < sourceSlotEnd; i++)
         {
-            ItemStack sourceItem = source.getStackInSlot(sourceSlot);
-            ItemStack inserted = destination.insertItem(i, sourceItem, true);
+            ItemStack sourceItem = source.getStackInSlot(i);
+            if (sourceItem.isEmpty()) continue;
+
+            ItemStack inserted = ItemHandlerHelper.insertItem(destination, sourceItem, false);
 
             int insertCount = sourceItem.getCount() - inserted.getCount();
-            if (insertCount > 0) destination.insertItem(i, source.extractItem(sourceSlot, insertCount, false), false);
-
-            if (source.getStackInSlot(sourceSlot).isEmpty() || inserted.isEmpty()) break;
+            if (insertCount > 0) source.extractItem(i, insertCount, false);
         }
+    }
+
+    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlot)
+    {
+        transferBetweenInventories(source, destination, sourceSlot, 1);
+    }
+
+    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination)
+    {
+        transferBetweenInventories(source, destination, 0, source.getSlots());
     }
 }
