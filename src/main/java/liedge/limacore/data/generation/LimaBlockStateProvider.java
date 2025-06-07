@@ -6,6 +6,7 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.neoforged.neoforge.client.model.generators.*;
@@ -65,14 +66,32 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         simpleBlockWithItem(holder.value(), model);
     }
 
-    protected void cubeAll(Holder<Block> holder, String texture)
+    public BlockModelBuilder cubeAll(Block block, ResourceLocation texture)
     {
-        simpleBlockWithItem(holder, models().cubeAll(getBlockName(holder), blockFolderLocation(texture)));
+        BlockModelBuilder builder = models().cubeAll(getBlockName(block), texture);
+        simpleBlockWithItem(block, builder);
+        return builder;
     }
 
-    protected void cubeAll(Holder<Block> holder)
+    public BlockModelBuilder cubeAll(Holder<Block> holder, ResourceLocation texture)
     {
-        cubeAll(holder, getBlockName(holder));
+        return cubeAll(holder.value(), texture);
+    }
+
+    public BlockModelBuilder cubeAll(Holder<Block> holder, String texture)
+    {
+        return cubeAll(holder, blockFolderLocation(texture));
+    }
+
+    @Override
+    public BlockModelBuilder cubeAll(Block block)
+    {
+        return cubeAll(block, blockFolderLocation(block));
+    }
+
+    public BlockModelBuilder cubeAll(Holder<Block> holder)
+    {
+        return cubeAll(holder.value());
     }
 
     protected void liquidBlock(Supplier<? extends LiquidBlock> block, Supplier<? extends LimaFluidType> fluid)
