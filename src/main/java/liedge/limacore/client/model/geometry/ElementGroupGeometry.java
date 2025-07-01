@@ -1,6 +1,7 @@
 package liedge.limacore.client.model.geometry;
 
 import com.google.gson.*;
+import com.mojang.math.Transformation;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -22,6 +23,7 @@ import net.minecraft.util.GsonHelper;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -55,6 +57,8 @@ public abstract class ElementGroupGeometry implements IUnbakedGeometry<ElementGr
         TextureAtlasSprite particleIcon = spriteGetter.apply(context.getMaterial("particle"));
         ResourceLocation hint = context.getRenderTypeHint();
         RenderTypeGroup modelRenderTypes = hint != null ? context.getRenderType(hint) : RenderTypeGroup.EMPTY;
+        Transformation rootTransform = context.getRootTransform();
+        if (!rootTransform.isIdentity()) modelState = UnbakedGeometryHelper.composeRootTransformIntoModelState(modelState, rootTransform);
 
         return bake(context, baker, spriteGetter, modelState, overrides, particleIcon, modelRenderTypes, elements, elementGroups);
     }
