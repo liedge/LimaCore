@@ -25,6 +25,7 @@ import java.util.Arrays;
 public record ModResources(String modid)
 {
     public static final ModResources COMMON_NAMESPACE = new ModResources("c");
+    public static final ModResources NEOFORGE = new ModResources("neoforge");
     public static final ModResources MC = new ModResources("minecraft");
 
     //#region Static helper methods
