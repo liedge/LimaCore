@@ -18,6 +18,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider implements LimaLootSubProviderExtensions
@@ -39,6 +40,11 @@ public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider impl
     protected void add(Holder<Block> holder, LootTable.Builder builder)
     {
         add(holder.value(), builder);
+    }
+
+    protected void add(Holder<Block> holder, Function<Block, LootTable.Builder> factory)
+    {
+        add(holder.value(), factory);
     }
 
     protected void dropSelf(Holder<Block> holder)

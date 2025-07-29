@@ -1,9 +1,6 @@
 package liedge.limacore.util;
 
-import net.minecraft.core.DefaultedRegistry;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -109,5 +106,16 @@ public final class LimaRegistryUtil
     public static String getBlockName(Holder<Block> holder)
     {
         return getNonNullRegistryId(holder).getPath();
+    }
+
+    public static <T> HolderSet<T> keyHolderSet(HolderGetter<T> holderGetter, ResourceKey<T> key)
+    {
+        return HolderSet.direct(holderGetter.getOrThrow(key));
+    }
+
+    @SafeVarargs
+    public static <T> HolderSet<T> keyHolderSet(HolderGetter<T> holderGetter, ResourceKey<T>... keys)
+    {
+        return HolderSet.direct(holderGetter::getOrThrow, keys);
     }
 }

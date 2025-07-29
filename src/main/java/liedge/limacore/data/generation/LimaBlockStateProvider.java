@@ -1,18 +1,14 @@
 package liedge.limacore.data.generation;
 
 import com.google.common.base.Preconditions;
-import liedge.limacore.block.LimaFluidType;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.neoforged.neoforge.client.model.generators.*;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-
-import java.util.function.Supplier;
 
 import static liedge.limacore.util.LimaRegistryUtil.getBlockName;
 import static liedge.limacore.util.LimaRegistryUtil.getItemName;
@@ -94,11 +90,11 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         return cubeAll(holder.value());
     }
 
-    protected void liquidBlock(Supplier<? extends LiquidBlock> block, Supplier<? extends LimaFluidType> fluid)
+    protected void liquidBlock(Holder<Block> holder)
     {
-        String name = getBlockName(block.get());
-        ModelFile model = models().getBuilder(name).texture("particle", fluid.get().getStillTexture()).renderType("translucent");
-        simpleBlock(block.get(), model);
+        String name = getBlockName(holder);
+        ModelFile model = getBlockBuilder(holder).texture("particle", blockFolderLocation(name + "_still")).renderType("translucent");
+        simpleBlock(holder, model);
     }
 
     protected int getRotationX(Direction side)
