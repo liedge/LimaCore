@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -30,18 +29,21 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     private final List<LimaRenderable> tooltipWidgets = new ObjectArrayList<>();
     protected final int labelColor;
     protected final int primaryWidth;
+    protected final int primaryHeight;
 
-    protected boolean alignInventoryLabelRight;
     protected int leftPadding;
     protected int rightPadding;
+    protected int topPadding;
+    protected int bottomPadding;
+
     protected int bottomPos;
     protected int rightPos;
 
-    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int primaryWidth, int height, int labelColor)
+    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int primaryWidth, int primaryHeight, int labelColor)
     {
         super(menu, inventory, title);
         this.primaryWidth = primaryWidth;
-        this.imageHeight = height;
+        this.primaryHeight = primaryHeight;
         this.labelColor = labelColor;
     }
 
@@ -49,12 +51,13 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     protected void init()
     {
         this.imageWidth = primaryWidth + leftPadding + rightPadding;
+        this.imageHeight = primaryHeight + topPadding + bottomPadding;
 
         this.leftPos = (this.width - this.imageWidth) / 2 + leftPadding;
-        this.topPos = (this.height - this.imageHeight) / 2;
+        this.topPos = (this.height - this.imageHeight) / 2 + topPadding;
 
         this.rightPos = this.leftPos + this.primaryWidth;
-        this.bottomPos = this.topPos + imageHeight;
+        this.bottomPos = this.topPos + this.primaryHeight;
 
         positionLabels();
         addWidgets();
@@ -116,20 +119,12 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
-    {
-        graphics.blit(getBgTexture(), leftPos, topPos, 0, 0, primaryWidth, imageHeight);
-    }
-
     protected void positionLabels()
     {
         titleLabelX = (primaryWidth - font.width(title)) / 2;
     }
 
     protected abstract void addWidgets();
-
-    public abstract ResourceLocation getBgTexture();
 
     public <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
     {

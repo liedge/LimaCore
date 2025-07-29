@@ -1,5 +1,6 @@
 package liedge.limacore.client.gui;
 
+import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import liedge.limacore.lib.LimaColor;
@@ -91,6 +92,39 @@ public final class LimaGuiUtil
         y += height - partialHeight;
 
         directBlit(graphics, sprite.atlasLocation(), x, y, x + width, y + partialHeight, 0, sprite.getU0(), sprite.getU1(), sprite.getV(1f - percentage), sprite.getV1());
+    }
+
+    public static void nineSliceBlit(GuiGraphics graphics, ResourceLocation textureLocation, int cornerSize, int x, int y, int width, int height, int textureWidth, int textureHeight)
+    {
+        final int minSize = (cornerSize * 2) + 1;
+        Preconditions.checkArgument(width >= minSize && height >= minSize, "Nine-slice dimensions too small");
+
+        if (width == textureWidth && height == textureHeight)
+        {
+            graphics.blit(textureLocation, x, y, 0f, 0f, width, height, textureWidth, textureHeight);
+            return;
+        }
+
+        // Draw corners
+        int uOffset = textureHeight - cornerSize;
+        int vOffset = textureWidth - cornerSize;
+        int cornerX2 = x + width - cornerSize;
+        int cornerY2 = y + height - cornerSize;
+        graphics.blit(textureLocation, x, y, 0, 0, cornerSize, cornerSize, textureWidth, textureHeight);
+        graphics.blit(textureLocation, cornerX2, y, uOffset, 0, cornerSize, cornerSize, textureWidth, textureHeight);
+        graphics.blit(textureLocation, x, cornerY2, 0, vOffset, cornerSize, cornerSize, textureWidth, textureHeight);
+        graphics.blit(textureLocation, cornerX2, cornerY2, uOffset, vOffset, cornerSize, cornerSize, textureWidth, textureHeight);
+
+        // Draw stretched borders sampled 1-px wide/high only
+        int borderWidth = width - cornerSize * 2;
+        graphics.blit(textureLocation, x + cornerSize, y, borderWidth, cornerSize, cornerSize, 0, 1, cornerSize, textureWidth, textureHeight);
+        graphics.blit(textureLocation, x + cornerSize, cornerY2, borderWidth, cornerSize, cornerSize, vOffset, 1, cornerSize, textureWidth, textureHeight);
+        int borderHeight = height - cornerSize * 2;
+        graphics.blit(textureLocation, x, y + cornerSize, cornerSize, borderHeight, 0, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(textureLocation, cornerX2, y + cornerSize, cornerSize, borderHeight, uOffset, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+
+        // Draw center sampled 1x1 only
+        graphics.blit(textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
     }
     //#endregion
 }

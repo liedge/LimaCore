@@ -1,7 +1,9 @@
 package liedge.limacore.client.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public abstract class FillBarWidget implements LimaRenderable
@@ -12,9 +14,8 @@ public abstract class FillBarWidget implements LimaRenderable
     private final int backgroundHeight;
     private final int foregroundWidth;
     private final int foregroundHeight;
-    private final TextureAtlasSprite backgroundSprite;
 
-    protected FillBarWidget(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
+    protected FillBarWidget(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight)
     {
         this.x = x;
         this.y = y;
@@ -22,23 +23,35 @@ public abstract class FillBarWidget implements LimaRenderable
         this.backgroundHeight = backgroundHeight;
         this.foregroundWidth = foregroundWidth;
         this.foregroundHeight = foregroundHeight;
-        this.backgroundSprite = backgroundSprite;
     }
 
     protected abstract float getFillPercentage();
 
-    protected abstract TextureAtlasSprite getForegroundSprite(float fillPercentage);
+    protected abstract ResourceLocation getBackgroundSprite();
 
-    protected abstract void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float fillPercentage, float partialTicks);
+    protected abstract ResourceLocation getForegroundSprite(float fillPercentage);
+
+    protected void renderBackground(GuiGraphics graphics)
+    {
+        graphics.blitSprite(getBackgroundSprite(), getX(), getY(), backgroundWidth, backgroundHeight);
+    }
 
     protected void renderHorizontalBar(GuiGraphics graphics, float fillPercentage)
     {
-        if (fillPercentage > 0) LimaGuiUtil.partialHorizontalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), getForegroundSprite(fillPercentage));
+        if (fillPercentage > 0)
+        {
+            TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(getForegroundSprite(fillPercentage));
+            LimaGuiUtil.partialHorizontalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), sprite);
+        }
     }
 
     protected void renderVerticalBar(GuiGraphics graphics, float fillPercentage)
     {
-        if (fillPercentage > 0) LimaGuiUtil.partialVerticalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), getForegroundSprite(fillPercentage));
+        if (fillPercentage > 0)
+        {
+            TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(getForegroundSprite(fillPercentage));
+            LimaGuiUtil.partialVerticalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), sprite);
+        }
     }
 
     @Override
@@ -65,38 +78,33 @@ public abstract class FillBarWidget implements LimaRenderable
         return backgroundHeight;
     }
 
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
-    {
-        graphics.blit(getX(), getY(), 0, backgroundWidth, backgroundHeight, backgroundSprite);
-        renderForeground(graphics, mouseX, mouseY, getFillPercentage(), partialTicks);
-    }
-
     public abstract static class HorizontalBar extends FillBarWidget
     {
-        protected HorizontalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
+        protected HorizontalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight)
         {
-            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight, backgroundSprite);
+            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight);
         }
 
         @Override
-        protected void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float fillPercentage, float partialTicks)
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
         {
-            renderHorizontalBar(graphics, fillPercentage);
+            renderBackground(graphics);
+            renderHorizontalBar(graphics, getFillPercentage());
         }
     }
 
     public abstract static class VerticalBar extends FillBarWidget
     {
-        protected VerticalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight, TextureAtlasSprite backgroundSprite)
+        protected VerticalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight)
         {
-            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight, backgroundSprite);
+            super(x, y, backgroundWidth, backgroundHeight, foregroundWidth, foregroundHeight);
         }
 
         @Override
-        protected void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float fillPercentage, float partialTicks)
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
         {
-            renderVerticalBar(graphics, fillPercentage);
+            renderBackground(graphics);
+            renderVerticalBar(graphics, getFillPercentage());
         }
     }
 }
