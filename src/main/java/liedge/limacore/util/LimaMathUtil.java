@@ -1,7 +1,6 @@
 package liedge.limacore.util;
 
 import liedge.limacore.lib.math.LimaRoundingMode;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -10,8 +9,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -29,11 +26,6 @@ public final class LimaMathUtil
     public static final int BILLION = 1_000_000_000;
 
     private static final Vec3 Y_UNIT_VEC = new Vec3(0, 1, 0);
-
-    // Formats
-    public static final DecimalFormat FORMAT_PERCENTAGE = new DecimalFormat("#%");
-    public static final DecimalFormat FORMAT_COMMA_INT = new DecimalFormat("#,###");
-    public static final DecimalFormat FORMAT_2_ROUND_FLOOR = Util.make(new DecimalFormat("#.##"), o -> o.setRoundingMode(RoundingMode.FLOOR));
 
     public static int parseHexadecimal(String value) throws NumberFormatException
     {

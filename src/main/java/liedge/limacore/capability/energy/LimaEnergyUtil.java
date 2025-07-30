@@ -1,6 +1,7 @@
 package liedge.limacore.capability.energy;
 
 import liedge.limacore.util.LimaMathUtil;
+import liedge.limacore.util.LimaTextUtil;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
@@ -40,15 +41,15 @@ public final class LimaEnergyUtil
     {
         if (energy >= BILLION)
         {
-            return FORMAT_2_ROUND_FLOOR.format(energy / (double) BILLION) + " GCE";
+            return LimaTextUtil.format2PlaceDecimal(energy / (double) BILLION) + " GCE";
         }
         else if (energy >= MILLION)
         {
-            return FORMAT_2_ROUND_FLOOR.format(energy / (double) MILLION) + " MCE";
+            return LimaTextUtil.format2PlaceDecimal(energy / (double) MILLION) + " MCE";
         }
         else if (energy >= 10_000) // Only abbreviate to kilo after 10k for greater precision/readability
         {
-            return FORMAT_2_ROUND_FLOOR.format(energy / (double) THOUSAND) + " kCE";
+            return LimaTextUtil.format2PlaceDecimal(energy / (double) THOUSAND) + " kCE";
         }
         else
         {
