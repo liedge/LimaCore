@@ -2,12 +2,10 @@ package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.LimaCore;
-import liedge.limacore.capability.energy.ItemEnergyProperties;
 import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -26,8 +24,9 @@ public final class LimaCoreDataComponents
     }
 
     // Standard data components
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemContainerContents>> ITEM_CONTAINER = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ITEM_CONTAINER, builder -> builder.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding());
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_CONTAINER, builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.varIntRange(0, Integer.MAX_VALUE)));
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemEnergyProperties>> ENERGY_PROPERTIES = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_PROPERTIES, builder -> builder.persistent(ItemEnergyProperties.CODEC).networkSynchronized(ItemEnergyProperties.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_CONTAINER, builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.NON_NEGATIVE_VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY_CAPACITY = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_CAPACITY, builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.NON_NEGATIVE_VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY_TRANSFER_RATE = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_TRANSFER_RATE, builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.NON_NEGATIVE_VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> ENERGY_USAGE = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_ENERGY_USAGE, builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(LimaStreamCodecs.NON_NEGATIVE_VAR_INT));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> OWNER = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_OWNER, builder -> builder.persistent(UUIDUtil.CODEC).cacheEncoding());
 }

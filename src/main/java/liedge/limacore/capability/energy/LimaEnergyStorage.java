@@ -3,7 +3,10 @@ package liedge.limacore.capability.energy;
 import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
+import net.minecraft.core.component.DataComponentMap;
+import net.neoforged.neoforge.common.MutableDataComponentHolder;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public abstract class LimaEnergyStorage implements IEnergyStorage
@@ -19,14 +22,18 @@ public abstract class LimaEnergyStorage implements IEnergyStorage
 
     protected abstract void onEnergyChanged();
 
-    public ItemEnergyProperties copyProperties(int energyUsage)
+    public void writeComponents(MutableDataComponentHolder dataHolder)
     {
-        return new ItemEnergyProperties(getMaxEnergyStored(), getTransferRate(), energyUsage);
+        dataHolder.set(LimaCoreDataComponents.ENERGY, getEnergyStored());
+        dataHolder.set(LimaCoreDataComponents.ENERGY_CAPACITY, getMaxEnergyStored());
+        dataHolder.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
     }
 
-    public ItemEnergyProperties copyProperties()
+    public void writeComponents(DataComponentMap.Builder builder)
     {
-        return copyProperties(0);
+        builder.set(LimaCoreDataComponents.ENERGY, getEnergyStored());
+        builder.set(LimaCoreDataComponents.ENERGY_CAPACITY, getMaxEnergyStored());
+        builder.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
     }
 
     public LimaDataWatcher<Integer> keepStoredEnergySynced()
