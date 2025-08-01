@@ -1,13 +1,26 @@
 package liedge.limacore.util;
 
-import com.google.common.base.Preconditions;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import liedge.limacore.data.LimaCoreCodecs;
+import liedge.limacore.network.LimaStreamCodecs;
+import liedge.limacore.recipe.ItemResult;
+import liedge.limacore.recipe.LimaCustomRecipe;
+import liedge.limacore.recipe.LimaRecipeSerializer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public final class LimaRecipesUtil
@@ -45,10 +58,20 @@ public final class LimaRecipesUtil
         return getSortedRecipesForType(level, typeSupplier.get(), primary, secondary);
     }
 
-    public static Ingredient getIngredientByIndex(Recipe<?> recipe, int index)
+    // Codec helper factories
+    public static <R extends LimaCustomRecipe<?>> LimaRecipeSerializer<R> simpleCustomSerializer(ResourceLocation id, BiFunction<List<SizedIngredient>, List<ItemResult>, R> factory, int maxIngredients, int maxResults)
     {
-        List<Ingredient> ingredients = recipe.getIngredients();
-        Preconditions.checkElementIndex(index, ingredients.size(), "Recipe ingredient");
-        return ingredients.get(index);
+        MapCodec<R> codec = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                LimaCoreCodecs.sizedIngredients(maxIngredients).forGetter(LimaCustomRecipe::getItemIngredients),
+                ItemResult.listMapCodec(maxResults).forGetter(LimaCustomRecipe::getItemResults))
+                .apply(instance, factory));
+        StreamCodec<RegistryFriendlyByteBuf, R> streamCodec = StreamCodec.composite(
+                LimaStreamCodecs.sizedIngredients(maxIngredients),
+                LimaCustomRecipe::getItemIngredients,
+                ItemResult.listStreamCodec(maxResults),
+                LimaCustomRecipe::getItemResults,
+                factory);
+
+        return new LimaRecipeSerializer<>(id, codec, streamCodec);
     }
 }

@@ -240,6 +240,16 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         addSlotsGrid(menuContainer(), startIndex, xPos, yPos, columns, rows, LimaItemHandlerMenuSlot::new);
     }
 
+    protected void addRecipeResultSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows, RecipeType<?> recipeType)
+    {
+        addSlotsGrid(menuContainer(), startIndex, xPos, yPos, columns, rows, (container, index, x, y) -> new RecipeResultMenuSlot(container, index, x, y, playerInventory.player, recipeType));
+    }
+
+    protected void addRecipeResultSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows, Holder<RecipeType<?>> recipeTypeHolder)
+    {
+        addRecipeResultSlotsGrid(startIndex, xPos, yPos, columns, rows, recipeTypeHolder.value());
+    }
+
     protected void addRecipeResultSlot(int slotIndex, int xPos, int yPos, RecipeType<?> recipeType)
     {
         addSlot(new RecipeResultMenuSlot(menuContainer(), slotIndex, xPos, yPos, playerInventory.player, recipeType));

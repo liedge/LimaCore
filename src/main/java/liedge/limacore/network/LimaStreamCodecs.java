@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.util.LimaCoreUtil;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.StringTag;
@@ -22,7 +21,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
@@ -171,14 +169,14 @@ public final class LimaStreamCodecs
     //#endregion
 
     //#region Stream codec factories
-    public static StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> ingredientsStreamCodec(int minInclusive, int maxInclusive)
-    {
-        return Ingredient.CONTENTS_STREAM_CODEC.apply(asClampedCollection(NonNullList::createWithCapacity, minInclusive, maxInclusive));
-    }
-
-    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredientsStreamCodec(int minInclusive, int maxInclusive)
+    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
         return SizedIngredient.STREAM_CODEC.apply(asClampedCollection(ObjectArrayList::new, minInclusive, maxInclusive));
+    }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int maxIngredients)
+    {
+        return sizedIngredients(1, maxIngredients);
     }
 
     public static <T, U extends T> StreamCodec<RegistryFriendlyByteBuf, U> classCastRegistryStreamCodec(ResourceKey<? extends Registry<T>> registryKey, Class<U> valueClass)

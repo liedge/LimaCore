@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.advancement.LimaAdvancementUtil;
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.recipe.LimaSizedIngredientRecipe;
+import liedge.limacore.recipe.LimaCustomRecipe;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.advancements.*;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
@@ -15,7 +15,6 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -108,7 +107,7 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
 
     public String getGroupOrBlank()
     {
-        return Objects.requireNonNullElse(getGroup(), LimaSizedIngredientRecipe.EMPTY_GROUP);
+        return Objects.requireNonNullElse(getGroup(), LimaCustomRecipe.EMPTY_GROUP);
     }
 
     protected String makeTypePrefix(Recipe<?> recipe)
@@ -124,11 +123,6 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     protected String defaultFolderPrefix(R recipe, ResourceLocation recipeId)
     {
         return makeSerializerPrefix(recipe);
-    }
-
-    protected String getDefaultStackName(ItemStack stack)
-    {
-        return LimaRegistryUtil.getItemName(stack.getItem());
     }
 
     protected @Nullable AdvancementHolder buildAdvancement(Advancement.Builder builder, ResourceLocation id, Map<String, Criterion<?>> criteria)

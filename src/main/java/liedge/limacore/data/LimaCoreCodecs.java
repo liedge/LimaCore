@@ -14,10 +14,10 @@ import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.util.LimaCoreUtil;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
@@ -112,6 +112,12 @@ public final class LimaCoreCodecs
      */
     public static final Codec<Vector3f> VECTOR3F_16X = ExtraCodecs.VECTOR3F.xmap(vec -> vec.mul(0.0625f), vec -> vec.mul(16));
 
+    public static final MapCodec<ItemStack> ITEM_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+            Codec.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
+            DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch))
+            .apply(instance, ItemStack::new));
+
     public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaMathUtil::unitVecForAxis);
 
     public static final MapCodec<AxisAngle4f> UNIT_AXIS_ANGLE4F = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -119,6 +125,33 @@ public final class LimaCoreCodecs
             AXIS_VECTOR.fieldOf("axis").forGetter(o -> new Vector3f(o.x, o.y, o.z))).apply(instance, AxisAngle4f::new));
 
     public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
+
+    public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
+    {
+        return baseCodec.validate(num ->
+        {
+            if (num.compareTo(minExclusive) > 0 && num.compareTo(maxInclusive) <= 0)
+                return DataResult.success(num);
+            else
+                return DataResult.error(() -> String.format("Value %s outside of valid range (%s,%s]", num, minExclusive, maxInclusive));
+        });
+    }
+
+    public static <N extends Number & Comparable<N>> Codec<N> openEndNumberRange(Codec<N> baseCodec, N minInclusive, N maxExclusive)
+    {
+        return baseCodec.validate(num ->
+        {
+            if (num.compareTo(minInclusive) >= 0 && num.compareTo(maxExclusive) < 0)
+                return DataResult.success(num);
+            else
+                return DataResult.error(() -> String.format("Value %s outside of valid range [%s,%s)", num, minInclusive, maxExclusive));
+        });
+    }
+
+    public static Codec<Float> floatOpenStartRange(float minExclusive, float maxInclusive)
+    {
+        return openStartNumberRange(Codec.FLOAT, minExclusive, maxInclusive);
+    }
 
     public static <E extends Enum<E>> Codec<Set<E>> enumSetCodec(Codec<E> enumElementCodec)
     {
@@ -167,14 +200,14 @@ public final class LimaCoreCodecs
         return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(Either::unwrap, value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
     }
 
-    public static MapCodec<NonNullList<Ingredient>> ingredientsMapCodec(int minInclusive, int maxInclusive)
-    {
-        return Ingredient.CODEC_NONEMPTY.listOf(minInclusive, maxInclusive).xmap(NonNullList::copyOf, Function.identity()).fieldOf("ingredients");
-    }
-
-    public static MapCodec<List<SizedIngredient>> sizedIngredientsMapCodec(int minInclusive, int maxInclusive)
+    public static MapCodec<List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
         return SizedIngredient.FLAT_CODEC.listOf(minInclusive, maxInclusive).xmap(Function.identity(), Function.identity()).fieldOf("ingredients");
+    }
+
+    public static MapCodec<List<SizedIngredient>> sizedIngredients(int maxIngredients)
+    {
+        return sizedIngredients(1, maxIngredients);
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)

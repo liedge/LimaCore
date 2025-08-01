@@ -5,6 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Map;
@@ -91,6 +92,11 @@ public final class LimaRegistryUtil
     public static String getItemName(Item item)
     {
         return getItemId(item).getPath();
+    }
+
+    public static String getItemName(ItemStack stack)
+    {
+        return getItemName(stack.getItem());
     }
 
     public static String getItemName(Holder<Item> holder)

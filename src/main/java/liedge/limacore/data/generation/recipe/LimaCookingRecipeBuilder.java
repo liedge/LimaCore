@@ -5,23 +5,17 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
 
-import java.util.Objects;
-
-public class LimaCookingRecipeBuilder extends LimaIngredientsRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
+public class LimaCookingRecipeBuilder extends StandardRecipeBuilder<AbstractCookingRecipe, LimaCookingRecipeBuilder>
 {
-    private final ItemStack result;
     private final int cookingTime;
     private final AbstractCookingRecipe.Factory<?> factory;
-    private Ingredient ingredient;
     private float experience;
     private CookingBookCategory category = CookingBookCategory.MISC;
 
     public LimaCookingRecipeBuilder(ModResources resources, ItemStack result, int cookingTime, AbstractCookingRecipe.Factory<?> factory)
     {
-        super(resources);
-        this.result = result;
+        super(resources, result);
         this.cookingTime = cookingTime;
         this.factory = factory;
     }
@@ -32,29 +26,16 @@ public class LimaCookingRecipeBuilder extends LimaIngredientsRecipeBuilder<Abstr
         return this;
     }
 
-    public LimaCookingRecipeBuilder cookCategory(CookingBookCategory category)
+    public LimaCookingRecipeBuilder bookCategory(CookingBookCategory category)
     {
         this.category = category;
         return this;
     }
 
     @Override
-    public LimaCookingRecipeBuilder input(Ingredient ingredient)
-    {
-        Preconditions.checkState(this.ingredient == null, "Cooking recipe already has an ingredient.");
-        this.ingredient = ingredient;
-        return this;
-    }
-
-    @Override
     protected AbstractCookingRecipe buildRecipe()
     {
-        return factory.create(getGroupOrBlank(), category, Objects.requireNonNull(ingredient, "No ingredient for cooking recipe."), result, experience, cookingTime);
-    }
-
-    @Override
-    protected String getDefaultRecipeName()
-    {
-        return getDefaultStackName(result);
+        Preconditions.checkState(ingredients.size() == 1, "Cooking recipe must have exactly 1 ingredient.");
+        return factory.create(getGroupOrBlank(), category, ingredients.getFirst(), result, experience, cookingTime);
     }
 }

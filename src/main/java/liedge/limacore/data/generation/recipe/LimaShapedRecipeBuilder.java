@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -21,6 +22,7 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     private final List<String> rows = new ObjectArrayList<>();
     private final Char2ObjectMap<Ingredient> ingredients = new Char2ObjectOpenHashMap<>();
     private final ItemStack resultItem;
+    private CraftingBookCategory category = CraftingBookCategory.MISC;
 
     private boolean showNotification = true;
 
@@ -68,6 +70,12 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
         return this;
     }
 
+    public LimaShapedRecipeBuilder bookCategory(CraftingBookCategory category)
+    {
+        this.category = category;
+        return this;
+    }
+
     @Override
     protected String defaultFolderPrefix(ShapedRecipe recipe, ResourceLocation recipeId)
     {
@@ -78,12 +86,12 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     protected ShapedRecipe buildRecipe()
     {
         ShapedRecipePattern pattern = ShapedRecipePattern.of(ingredients, rows);
-        return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, resultItem, showNotification);
+        return new ShapedRecipe(getGroupOrBlank(), category, pattern, resultItem, showNotification);
     }
 
     @Override
     protected String getDefaultRecipeName()
     {
-        return getDefaultStackName(resultItem);
+        return LimaRegistryUtil.getItemName(resultItem);
     }
 }
