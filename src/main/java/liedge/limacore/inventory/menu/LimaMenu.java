@@ -11,7 +11,6 @@ import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreUtil;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,9 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
@@ -47,9 +44,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     private boolean firstTick = true;
 
     protected int inventoryStart;
-    protected int inventoryEnd;
     protected int hotbarStart;
-    protected int hotbarEnd;
 
     protected LimaMenu(LimaMenuType<CTX, ?> type, int containerId, Inventory inventory, CTX menuContext)
     {
@@ -165,8 +160,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
-    protected abstract IItemHandlerModifiable menuContainer();
-
     //#region Quick move functions
     protected abstract boolean quickMoveInternal(int index, ItemStack stack);
 
@@ -193,12 +186,12 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected boolean quickMoveToInventory(ItemStack stack, boolean reverse)
     {
-        return moveItemStackTo(stack, inventoryStart, inventoryEnd, reverse);
+        return moveItemStackTo(stack, inventoryStart, inventoryStart + 27, reverse);
     }
 
     protected boolean quickMoveToHotbar(ItemStack stack, boolean reverse)
     {
-        return moveItemStackTo(stack, hotbarStart, hotbarEnd, reverse);
+        return moveItemStackTo(stack, hotbarStart, hotbarStart + 9, reverse);
     }
 
     protected boolean quickMoveToAllInventory(ItemStack stack, boolean reverse)
@@ -214,16 +207,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
     //#endregion
 
-    protected void addSlot(int slotIndex, int xPos, int yPos)
-    {
-        addSlot(new LimaItemHandlerMenuSlot(menuContainer(), slotIndex, xPos, yPos));
-    }
-
-    protected void addSlot(int slotIndex, int xPos, int yPos, boolean allowInsert)
-    {
-        addSlot(new LimaItemHandlerMenuSlot(menuContainer(), slotIndex, xPos, yPos, allowInsert));
-    }
-
     protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
     {
         for (int y = 0; y < rows; y++)
@@ -235,44 +218,10 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
-    protected void addSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows)
-    {
-        addSlotsGrid(menuContainer(), startIndex, xPos, yPos, columns, rows, LimaItemHandlerMenuSlot::new);
-    }
-
-    protected void addRecipeResultSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows, RecipeType<?> recipeType)
-    {
-        addSlotsGrid(menuContainer(), startIndex, xPos, yPos, columns, rows, (container, index, x, y) -> new RecipeResultMenuSlot(container, index, x, y, playerInventory.player, recipeType));
-    }
-
-    protected void addRecipeResultSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows, Holder<RecipeType<?>> recipeTypeHolder)
-    {
-        addRecipeResultSlotsGrid(startIndex, xPos, yPos, columns, rows, recipeTypeHolder.value());
-    }
-
-    protected void addRecipeResultSlot(int slotIndex, int xPos, int yPos, RecipeType<?> recipeType)
-    {
-        addSlot(new RecipeResultMenuSlot(menuContainer(), slotIndex, xPos, yPos, playerInventory.player, recipeType));
-    }
-
-    protected void addRecipeResultSlot(int slotIndex, int xPos, int yPos, Holder<RecipeType<?>> recipeTypeHolder)
-    {
-        addRecipeResultSlot(slotIndex, xPos, yPos, recipeTypeHolder.value());
-    }
-
     protected void addPlayerInventory(int xPos, int yPos, MenuSlotFactory<Container> factory)
     {
         inventoryStart = slots.size();
-
-        for (int y = 0; y < 3; y++)
-        {
-            for (int x = 0; x < 9; x++)
-            {
-                addSlot(factory.createSlot(playerInventory, 9 + y * 9 + x, xPos + x * 18, yPos + y * 18));
-            }
-        }
-
-        inventoryEnd = slots.size();
+        addSlotsGrid(playerInventory, 9, xPos, yPos, 9, 3, factory);
     }
 
     protected void addPlayerInventory(int xPos, int yPos)
@@ -283,13 +232,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     protected void addPlayerHotbar(int xPos, int yPos, MenuSlotFactory<Container> factory)
     {
         hotbarStart = slots.size();
-
-        for (int x = 0; x < 9; x++)
-        {
-            addSlot(factory.createSlot(playerInventory, x, xPos + x * 18, yPos));
-        }
-
-        hotbarEnd = slots.size();
+        addSlotsGrid(playerInventory, 0, xPos, yPos, 9, 1, factory);
     }
 
     protected void addPlayerHotbar(int xPos, int yPos)

@@ -2,66 +2,81 @@ package liedge.limacore.capability.itemhandler;
 
 import liedge.limacore.blockentity.IOAccess;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
-public class ItemHandlerIOWrapper implements IItemHandler
+public interface ItemHandlerIOWrapper extends IItemHandlerModifiable
 {
-    private final LimaItemHandlerBase parent;
-    private final IOAccess ioAccess;
-
-    public ItemHandlerIOWrapper(LimaItemHandlerBase parent, IOAccess ioAccess)
+    static ItemHandlerIOWrapper of(IItemHandlerModifiable handler, IOAccess access)
     {
-        this.parent = parent;
-        this.ioAccess = ioAccess;
+        return new SimpleWrapper(handler, access);
+    }
+
+    IItemHandlerModifiable source();
+
+    boolean allowInput(int slot);
+
+    boolean allowOutput(int slot);
+
+    @Override
+    default int getSlots()
+    {
+        return source().getSlots();
     }
 
     @Override
-    public int getSlots()
+    default void setStackInSlot(int slot, ItemStack stack)
     {
-        return parent.getSlots();
+        source().setStackInSlot(slot, stack);
     }
 
     @Override
-    public ItemStack getStackInSlot(int slot)
+    default ItemStack getStackInSlot(int slot)
     {
-        return parent.getStackInSlot(slot);
+        return source().getStackInSlot(slot);
     }
 
     @Override
-    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
+    default ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
     {
-        if (parent.getSlotIOAccess(slot).allowsInput() && ioAccess.allowsInput())
-        {
-            return parent.insertItem(slot, stack, simulate);
-        }
+        if (allowInput(slot))
+            return source().insertItem(slot, stack, simulate);
         else
-        {
             return stack;
-        }
     }
 
     @Override
-    public ItemStack extractItem(int slot, int amount, boolean simulate)
+    default ItemStack extractItem(int slot, int amount, boolean simulate)
     {
-        if (parent.getSlotIOAccess(slot).allowsOutput() && ioAccess.allowsOutput())
-        {
-            return parent.extractItem(slot, amount, simulate);
-        }
+        if (allowOutput(slot))
+            return source().extractItem(slot, amount, simulate);
         else
-        {
             return ItemStack.EMPTY;
+    }
+
+    @Override
+    default int getSlotLimit(int slot)
+    {
+        return source().getSlotLimit(slot);
+    }
+
+    @Override
+    default boolean isItemValid(int slot, ItemStack stack)
+    {
+        return source().isItemValid(slot, stack);
+    }
+
+    record SimpleWrapper(IItemHandlerModifiable source, IOAccess access) implements ItemHandlerIOWrapper
+    {
+        @Override
+        public boolean allowInput(int slot)
+        {
+            return access.allowsInput();
         }
-    }
 
-    @Override
-    public int getSlotLimit(int slot)
-    {
-        return parent.getSlotLimit(slot);
-    }
-
-    @Override
-    public boolean isItemValid(int slot, ItemStack stack)
-    {
-        return parent.isItemValid(slot, stack);
+        @Override
+        public boolean allowOutput(int slot)
+        {
+            return access.allowsOutput();
+        }
     }
 }

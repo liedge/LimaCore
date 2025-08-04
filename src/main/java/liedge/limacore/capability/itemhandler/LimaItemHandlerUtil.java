@@ -1,11 +1,14 @@
 package liedge.limacore.capability.itemhandler;
 
+import liedge.limacore.util.LimaItemUtil;
 import liedge.limacore.util.LimaMathUtil;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.RangedWrapper;
+
+import java.util.function.Predicate;
 
 public final class LimaItemHandlerUtil
 {
@@ -71,6 +74,25 @@ public final class LimaItemHandlerUtil
         }
 
         return toInsert;
+    }
+
+    public static void transferItemsBetween(IItemHandler source, IItemHandler destination, Predicate<ItemStack> predicate)
+    {
+        for (int i = 0; i < source.getSlots(); i++)
+        {
+            ItemStack sourceItem = source.getStackInSlot(i);
+            if (sourceItem.isEmpty() || !predicate.test(sourceItem)) continue;
+
+            ItemStack inserted = ItemHandlerHelper.insertItem(destination, sourceItem, false);
+
+            int insertCount = sourceItem.getCount() - inserted.getCount();
+            if (insertCount > 0) source.extractItem(i, insertCount, false);
+        }
+    }
+
+    public static void transferItemsBetween(IItemHandler source, IItemHandler destination)
+    {
+        transferItemsBetween(source, destination, LimaItemUtil.ALWAYS_TRUE);
     }
 
     public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlotStart, int sourceSlotEnd)

@@ -19,15 +19,11 @@ public interface EnergyHolderBlockEntity extends LimaBlockEntityAccess
         setChanged();
     }
 
-    IOAccess getEnergyIOForSide(Direction side);
+    IOAccess getSideIOForEnergy(@Nullable Direction side);
 
     default @Nullable IEnergyStorage createEnergyIOWrapper(@Nullable Direction side)
     {
-        if (side != null)
-        {
-            return new EnergyStorageIOWrapper(getEnergyStorage(), getEnergyIOForSide(side));
-        }
-
-        return null;
+        IOAccess blockAccessLevel = getSideIOForEnergy(side);
+        return blockAccessLevel.allowsConnection() ? new EnergyStorageIOWrapper(getEnergyStorage(), blockAccessLevel) : null;
     }
 }
