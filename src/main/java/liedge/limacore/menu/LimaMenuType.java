@@ -1,38 +1,48 @@
-package liedge.limacore.inventory.menu;
+package liedge.limacore.menu;
 
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaRegistryUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuType<M> implements Translatable
+public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuType<M>
 {
-    protected final ResourceLocation registryId;
+    public static Translatable defaultMenuTitle(ResourceLocation id)
+    {
+        return Translatable.standalone(ModResources.prefixedIdLangKey("container", id));
+    }
+
     private final Class<CTX> contextClass;
     private final MenuFactory<CTX, M> factory;
-    private final String descriptionId;
+    private final @Nullable Translatable defaultTitle;
 
-    public LimaMenuType(ResourceLocation registryId, Class<CTX> contextClass, MenuFactory<CTX, M> factory)
+    protected LimaMenuType(Class<CTX> contextClass, MenuFactory<CTX, M> factory, @Nullable Translatable defaultTitle)
     {
         super((containerId, inv) -> {
             throw new UnsupportedOperationException("Parameterless menu creation not supported. Use createMenu or tryCreateMenu");
         }, FeatureFlags.DEFAULT_FLAGS);
 
-        this.registryId = registryId;
         this.contextClass = contextClass;
         this.factory = factory;
-        this.descriptionId = ModResources.prefixedIdLangKey("container", registryId);
+        this.defaultTitle = defaultTitle;
     }
 
     public Class<CTX> getContextClass()
     {
         return contextClass;
+    }
+
+    public @Nullable Translatable getDefaultTitle()
+    {
+        return defaultTitle;
     }
 
     public void tryEncodeContext(Object uncheckedContext, RegistryFriendlyByteBuf net)
@@ -47,11 +57,6 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
 
     public abstract boolean canPlayerKeepUsing(CTX menuContext, Player player);
 
-    public MutableComponent getMenuTitle(Object uncheckedContext)
-    {
-        return translate();
-    }
-
     public M createMenu(int containerId, Inventory inventory, CTX menuContext)
     {
         return factory.createMenu(this, containerId, inventory, menuContext);
@@ -64,7 +69,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
 
     protected CTX checkContext(Object uncheckedContext)
     {
-        return LimaCoreUtil.castOrThrow(contextClass, uncheckedContext, () -> new IllegalArgumentException("Invalid context class type '" + uncheckedContext.getClass().getSimpleName() + "' for menu type " + registryId.toString()));
+        return LimaCoreUtil.castOrThrow(contextClass, uncheckedContext, () -> new IllegalArgumentException(String.format("Invalid context type '%s' for menu type '%s'", uncheckedContext.getClass().getSimpleName(), LimaRegistryUtil.getNonNullRegistryId(this, BuiltInRegistries.MENU))));
     }
 
     @Override
@@ -78,12 +83,6 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
     {
         CTX menuContext = decodeContext(net, inventory);
         return factory.createMenu(this, containerId, inventory, menuContext);
-    }
-
-    @Override
-    public String descriptionId()
-    {
-        return descriptionId;
     }
 
     @FunctionalInterface

@@ -1,5 +1,7 @@
 package liedge.limacore.blockentity;
 
+import liedge.limacore.lib.Translatable;
+import liedge.limacore.menu.BlockEntityMenuType;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundBlockEntityDataWatcherPacket;
 import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
@@ -11,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -44,6 +47,12 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     {
         if (level == null || level.getBlockEntity(worldPosition) != this) return false;
         return player.distanceToSqr((double) worldPosition.getX() + 0.5d, (double) worldPosition.getY() + 0.5d, (double) worldPosition.getZ() + 0.5d) <= 64;
+    }
+
+    public Component getMenuTitle(BlockEntityMenuType<?, ?> menuType)
+    {
+        Translatable defaultTitle = menuType.getDefaultTitle();
+        return defaultTitle != null ? defaultTitle.translate() : getBlockState().getBlock().getName();
     }
 
     @Override

@@ -3,6 +3,7 @@ package liedge.limacore.data.generation;
 import liedge.limacore.advancement.LimaAdvancementUtil;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
+import liedge.limacore.menu.LimaMenuType;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
@@ -21,6 +22,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -91,6 +93,11 @@ public abstract class LimaLanguageProvider extends LanguageProvider
     protected void fluidType(Supplier<? extends FluidType> supplier, String fluidValue)
     {
         add(supplier.get().getDescriptionId(), fluidValue);
+    }
+
+    protected void menuTitle(Supplier<? extends LimaMenuType<?, ?>> supplier, String value)
+    {
+        add(Objects.requireNonNull(supplier.get().getDefaultTitle(), "Menu does not have a default title"), value);
     }
 
     protected void potion(Supplier<? extends PotionItem> item, String potionValue)

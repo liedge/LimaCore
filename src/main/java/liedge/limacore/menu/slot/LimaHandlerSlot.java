@@ -1,24 +1,24 @@
-package liedge.limacore.inventory.menu;
+package liedge.limacore.menu.slot;
 
 import liedge.limacore.capability.itemhandler.LimaItemHandler;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class LimaItemHandlerMenuSlot extends SlotItemHandler
+public class LimaHandlerSlot extends SlotItemHandler
 {
     protected final IItemHandlerModifiable itemHandler;
 
     private final boolean allowInsert;
 
-    public LimaItemHandlerMenuSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, boolean allowInsert)
+    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, boolean allowInsert)
     {
         super(itemHandler, slotIndex, xPos, yPos);
         this.itemHandler = itemHandler;
         this.allowInsert = allowInsert;
     }
 
-    public LimaItemHandlerMenuSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos)
+    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos)
     {
         this(itemHandler, slotIndex, xPos, yPos, true);
     }

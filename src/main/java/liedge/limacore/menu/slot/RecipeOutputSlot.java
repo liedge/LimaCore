@@ -1,4 +1,4 @@
-package liedge.limacore.inventory.menu;
+package liedge.limacore.menu.slot;
 
 import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.server.level.ServerPlayer;
@@ -7,14 +7,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 
-public class RecipeResultMenuSlot extends LimaItemHandlerMenuSlot
+public class RecipeOutputSlot extends LimaHandlerSlot
 {
     private final Player player;
     private final RecipeType<?> recipeType;
 
     private int removeCount = 0;
 
-    public RecipeResultMenuSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, Player player, RecipeType<?> recipeType)
+    public RecipeOutputSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, Player player, RecipeType<?> recipeType)
     {
         super(itemHandler, slotIndex, xPos, yPos, false);
         this.player = player;

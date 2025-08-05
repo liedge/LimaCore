@@ -2,7 +2,7 @@ package liedge.limacore.client.gui;
 
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import liedge.limacore.inventory.menu.LimaMenu;
+import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;

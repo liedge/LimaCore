@@ -62,6 +62,11 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
         simpleBlockWithItem(holder.value(), model);
     }
 
+    protected void simpleBlockWithItem(Holder<Block> holder)
+    {
+        simpleBlockWithItem(holder, existingModel(blockFolderLocation(holder)));
+    }
+
     public BlockModelBuilder cubeAll(Block block, ResourceLocation texture)
     {
         BlockModelBuilder builder = models().cubeAll(getBlockName(block), texture);

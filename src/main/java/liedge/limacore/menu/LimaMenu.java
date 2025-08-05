@@ -1,9 +1,10 @@
-package liedge.limacore.inventory.menu;
+package liedge.limacore.menu;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import liedge.limacore.LimaCore;
+import liedge.limacore.menu.slot.LimaHandlerSlot;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
@@ -99,7 +100,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             else
             {
                 slot.setChanged();
-                if (slot instanceof LimaItemHandlerMenuSlot limaSlot) limaSlot.setBaseContainerChanged();
+                if (slot instanceof LimaHandlerSlot limaSlot) limaSlot.setBaseContainerChanged();
             }
         }
 
@@ -177,7 +178,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
         while (reverse ? i >= startInclusive : i < endExclusive)
         {
-            if (slots.get(i) instanceof LimaItemHandlerMenuSlot handlerSlot) handlerSlot.setBaseContainerChanged();
+            if (slots.get(i) instanceof LimaHandlerSlot handlerSlot) handlerSlot.setBaseContainerChanged();
             i += step;
         }
 

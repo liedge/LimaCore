@@ -2,7 +2,7 @@ package liedge.limacore.block;
 
 import liedge.limacore.blockentity.LimaBlockEntity;
 import liedge.limacore.blockentity.LimaBlockEntityType;
-import liedge.limacore.inventory.menu.LimaMenuProvider;
+import liedge.limacore.menu.LimaMenuProvider;
 import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -58,7 +58,8 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     @Override
     public @Nullable LimaMenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos)
     {
-        return LimaBlockUtil.getSafeBlockEntity(level, pos, LimaMenuProvider.class);
+        LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
+        return blockEntity != null ? blockEntity.getType().createMenuProvider(blockEntity) : null;
     }
 
     @Override

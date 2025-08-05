@@ -1,4 +1,4 @@
 @AllNotNull
-package liedge.limacore.inventory.menu;
+package liedge.limacore.menu.slot;
 
 import liedge.limacore.AllNotNull;

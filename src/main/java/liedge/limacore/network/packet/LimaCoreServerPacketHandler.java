@@ -1,6 +1,6 @@
 package liedge.limacore.network.packet;
 
-import liedge.limacore.inventory.menu.LimaMenu;
+import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.server.level.ServerPlayer;
