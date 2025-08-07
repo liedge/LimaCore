@@ -13,18 +13,13 @@ public final class LimaEnergyUtil
 
     public static int transferEnergyBetween(IEnergyStorage source, IEnergyStorage destination, int maxTransfer, boolean simulate)
     {
-        int simulatedExtract = source.extractEnergy(maxTransfer, true);
-        int simulatedInsert = destination.receiveEnergy(simulatedExtract, true);
+        int extracted = source.extractEnergy(maxTransfer, true);
+        int accepted = destination.receiveEnergy(extracted, true);
 
-        int actualTransfer = Math.min(simulatedExtract, simulatedInsert);
+        if (simulate) return accepted;
 
-        if (!simulate)
-        {
-            source.extractEnergy(actualTransfer, false);
-            destination.receiveEnergy(actualTransfer, false);
-        }
-
-        return actualTransfer;
+        accepted = source.extractEnergy(accepted, false);
+        return destination.receiveEnergy(accepted, false);
     }
 
     public static float getFillPercentage(IEnergyStorage storage)

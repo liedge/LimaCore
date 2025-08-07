@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -45,6 +46,7 @@ public final class LimaCoreNetworkSerializers
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<ResourceLocation>>> OPTIONAL_RESOURCE_LOCATION = SERIALIZERS.register("optional_rl", id -> NetworkSerializer.create(id, ResourceLocation.STREAM_CODEC.apply(LimaStreamCodecs.asOptional())));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<BlockPos>> BLOCK_POS = SERIALIZERS.register("block_pos", id -> NetworkSerializer.create(id, BlockPos.STREAM_CODEC));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemStack>> ITEM_STACK = SERIALIZERS.register("item_stack", id -> NetworkSerializer.create(id, ItemStack.OPTIONAL_STREAM_CODEC));
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<FluidStack>> FLUID_STACK = SERIALIZERS.register("fluid_stack", id -> NetworkSerializer.create(id, FluidStack.OPTIONAL_STREAM_CODEC));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Direction>> DIRECTION = SERIALIZERS.register("direction", id -> NetworkSerializer.create(id, Direction.STREAM_CODEC));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<RelativeHorizontalSide>> RELATIVE_SIDE = SERIALIZERS.register("relative_side", id -> NetworkSerializer.create(id, RelativeHorizontalSide.STREAM_CODEC));
 

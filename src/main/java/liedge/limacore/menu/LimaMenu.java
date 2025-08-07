@@ -3,7 +3,10 @@ package liedge.limacore.menu;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
+import liedge.limacore.capability.fluid.LimaFluidHandler;
+import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.menu.slot.LimaHandlerSlot;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
@@ -12,7 +15,13 @@ import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreUtil;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +29,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
@@ -35,15 +49,16 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     public static final int DEFAULT_HOTBAR_Y = 142;
     public static final int DEFAULT_INV_HOTBAR_OFFSET = 58;
 
-    // Commonly used menu properties
+    // Base menu properties
     private final LimaMenuType<CTX, ?> type;
-    private final List<LimaDataWatcher<?>> dataWatchers;
-    private final Int2ObjectMap<EventHandler<?>> buttonEventHandlers;
     protected final Inventory playerInventory;
     protected final CTX menuContext;
-    private final Level level;
-    private boolean firstTick = true;
+    private final List<LimaDataWatcher<?>> dataWatchers;
+    private final Int2ObjectMap<EventHandler<?>> buttonEventHandlers;
+    protected final List<LimaFluidSlot> fluidSlots;
 
+    // Convenience menu properties
+    private boolean firstTick = true;
     protected int inventoryStart;
     protected int hotbarStart;
 
@@ -54,8 +69,8 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         this.type = type;
         this.menuContext = menuContext;
         this.playerInventory = inventory;
-        this.level = playerInventory.player.level();
         this.dataWatchers = createDataWatchers();
+        this.fluidSlots = new ObjectArrayList<>();
 
         EventHandlerBuilder handlerBuilder = new EventHandlerBuilder();
         defineButtonEventHandlers(handlerBuilder);
@@ -130,12 +145,70 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     public Level level()
     {
-        return level;
+        return playerInventory.player.level();
+    }
+
+    public List<LimaFluidSlot> getFluidSlots()
+    {
+        return fluidSlots;
+    }
+
+    public void fluidSlotClicked(ServerPlayer sender, int slotIndex, LimaFluidSlot.ClickAction action)
+    {
+        if (getCarried().getCapability(Capabilities.FluidHandler.ITEM) instanceof IFluidHandlerItem itemFluids)
+        {
+            LimaFluidSlot slot = getFluidSlots().get(slotIndex);
+            LimaFluidHandler menuFluids = slot.fluidHandler();
+            int capacity = slot.getCapacity();
+
+            if (action == LimaFluidSlot.ClickAction.FILL)
+            {
+                FluidStack sourceFluid = itemFluids.drain(capacity, IFluidHandler.FluidAction.SIMULATE);
+                int accepted = menuFluids.fillTank(slot.tank(), sourceFluid, IFluidHandler.FluidAction.SIMULATE, true);
+                if (accepted == 0) return;
+
+                sourceFluid = itemFluids.drain(accepted, IFluidHandler.FluidAction.EXECUTE);
+                accepted = menuFluids.fillTank(slot.tank(), sourceFluid, IFluidHandler.FluidAction.EXECUTE, true);
+
+                if (accepted > 0)
+                {
+                    sendSoundToPlayer(sender, SoundEvents.BUCKET_EMPTY, 1f, 1f);
+                    setCarried(itemFluids.getContainer());
+                }
+            }
+            else
+            {
+                FluidStack sourceFluid = menuFluids.drainTank(slot.tank(), capacity, IFluidHandler.FluidAction.SIMULATE, true);
+                int accepted = itemFluids.fill(sourceFluid, IFluidHandler.FluidAction.SIMULATE);
+                if (accepted == 0) return;
+
+                sourceFluid = menuFluids.drainTank(slot.tank(), accepted, IFluidHandler.FluidAction.EXECUTE, true);
+                accepted = itemFluids.fill(sourceFluid, IFluidHandler.FluidAction.EXECUTE);
+
+                if (accepted > 0)
+                {
+                    sendSoundToPlayer(sender, SoundEvents.BUCKET_FILL, 1f, 1f);
+                    setCarried(itemFluids.getContainer());
+                }
+            }
+        }
     }
 
     public ServerPlayer getServerUser()
     {
         return LimaCoreUtil.castOrThrow(ServerPlayer.class, playerInventory.player, "Attempted to access server menu user on client.");
+    }
+
+    public void sendSoundToPlayer(ServerPlayer player, Holder<SoundEvent> sound, float volume, float pitch)
+    {
+        Vec3 pos = player.position();
+        ClientboundSoundPacket packet = new ClientboundSoundPacket(sound, SoundSource.PLAYERS, pos.x, pos.y, pos.z, volume, pitch, player.getRandom().nextLong());
+        player.connection.send(packet);
+    }
+
+    public void sendSoundToPlayer(ServerPlayer player, SoundEvent sound, float volume, float pitch)
+    {
+        sendSoundToPlayer(player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), volume, pitch);
     }
 
     @SuppressWarnings("unchecked")
@@ -252,28 +325,15 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         addPlayerInventoryAndHotbar(DEFAULT_INV_X, DEFAULT_INV_Y);
     }
 
-    protected Slot lockedSlot(Container container, int index, int x, int y)
+    protected void addFluidSlot(LimaFluidHandler handler, int tank, int x, int y, boolean allowInsert)
     {
-        return new Slot(container, index, x, y)
-        {
-            @Override
-            public boolean mayPlace(ItemStack stack)
-            {
-                return false;
-            }
+        int index = fluidSlots.size();
+        fluidSlots.add(new LimaFluidSlot(handler, index, tank, x, y, allowInsert));
+    }
 
-            @Override
-            public boolean mayPickup(Player player)
-            {
-                return false;
-            }
-
-            @Override
-            public ItemStack remove(int amount)
-            {
-                return ItemStack.EMPTY;
-            }
-        };
+    protected void addFluidSlot(LimaFluidHandler handler, int tank, int x, int y)
+    {
+        addFluidSlot(handler, tank, x, y, true);
     }
 
     @FunctionalInterface

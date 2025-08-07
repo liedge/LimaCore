@@ -13,6 +13,7 @@ public final class LimaCorePackets
         registrar.playToClient(ClientboundParticlePacket.TYPE, ClientboundParticlePacket.STREAM_CODEC, LimaCoreClientPacketHandler::handleParticlePacket);
 
         registrar.playToServer(ServerboundCustomMenuButtonPacket.TYPE, ServerboundCustomMenuButtonPacket.STREAM_CODEC, serverPacketHandler(LimaCoreServerPacketHandler::handleCustomMenuButtonPacket));
+        registrar.playToServer(ServerboundFluidSlotClickPacket.TYPE, ServerboundFluidSlotClickPacket.STREAM_CODEC, serverPacketHandler(LimaCoreServerPacketHandler::handleFluidSlotClick));
         registrar.playToServer(ServerboundBlockEntityDataRequestPacket.TYPE, ServerboundBlockEntityDataRequestPacket.STREAM_CODEC, serverPacketHandler(LimaCoreServerPacketHandler::handleBlockDataRequestPacket));
     }
 }

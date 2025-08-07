@@ -23,4 +23,12 @@ final class LimaCoreServerPacketHandler
             menu.handleCustomButtonData(sender, packet.buttonId(), packet.serializer(), packet.data());
         }
     }
+
+    public static void handleFluidSlotClick(ServerboundFluidSlotClickPacket packet, IPayloadContext context, ServerPlayer sender)
+    {
+        if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == packet.containerId())
+        {
+            menu.fluidSlotClicked(sender, packet.slotIndex(), packet.action());
+        }
+    }
 }

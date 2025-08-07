@@ -4,15 +4,24 @@ import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import liedge.limacore.lib.LimaColor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix4f;
 
 public final class LimaGuiUtil
 {
     private LimaGuiUtil() {}
+
+    public static final int FONT_HALF_LINE_HEIGHT = 5;
 
     public static boolean isMouseWithinXYBounds(double mouseX, double mouseY, int x1, int y1, int x2, int y2)
     {
@@ -22,6 +31,16 @@ public final class LimaGuiUtil
     public static boolean isMouseWithinArea(double mouseX, double mouseY, int x, int y, int width, int height)
     {
         return isMouseWithinXYBounds(mouseX, mouseY, x, y, x + width, y + height);
+    }
+
+    public static int halfTextWidth(String text)
+    {
+        return Math.ceilDiv(Minecraft.getInstance().font.width(text), 2);
+    }
+
+    public static int halfTextWidth(FormattedText text)
+    {
+        return Math.ceilDiv(Minecraft.getInstance().font.width(text), 2);
     }
 
     //#region Blit Helpers
@@ -125,6 +144,47 @@ public final class LimaGuiUtil
 
         // Draw center sampled 1x1 only
         graphics.blit(textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
+    }
+
+    public static void nineSliceNoBottomBlit(GuiGraphics graphics, ResourceLocation textureLocation, int cornerSize, int x, int y, int width, int height, int textureWidth, int textureHeight)
+    {
+        Preconditions.checkArgument(width >= (cornerSize * 2) + 1 && height >= cornerSize + 1, "Nine-slice dimensions too small");
+
+        // Draw corners
+        int uOffset = textureHeight - cornerSize;
+        int cornerX2 = x + width - cornerSize;
+        graphics.blit(textureLocation, x, y, 0, 0, cornerSize, cornerSize, textureWidth, textureHeight);
+        graphics.blit(textureLocation, cornerX2, y, uOffset, 0, cornerSize, cornerSize, textureWidth, textureHeight);
+
+        // Draw only top and side borders. Side borders are 1x corner size longer than normal nine-slice
+        int borderWidth = width - cornerSize * 2;
+        graphics.blit(textureLocation, x + cornerSize, y, borderWidth, cornerSize, cornerSize, 0, 1, cornerSize, textureWidth, textureHeight);
+        int borderHeight = height - cornerSize;
+        graphics.blit(textureLocation, x, y + cornerSize, cornerSize, borderHeight, 0, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(textureLocation, cornerX2, y + cornerSize, cornerSize, borderHeight, uOffset, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+
+        // Draw center sampled 1x1 only
+        graphics.blit(textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
+    }
+
+    @SuppressWarnings("ConstantValue")
+    public static void blitTintedFluidSprite(GuiGraphics graphics, FluidStack stack, int x, int y)
+    {
+        IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
+        ResourceLocation stillSpriteLoc = clientFluid.getStillTexture(stack);
+
+        if (stillSpriteLoc != null)
+        {
+            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(stillSpriteLoc);
+            if (sprite.atlasLocation() != MissingTextureAtlasSprite.getLocation())
+            {
+                int tint = clientFluid.getTintColor(stack);
+                float red = FastColor.ARGB32.red(tint) / 255f;
+                float green = FastColor.ARGB32.green(tint) / 255f;
+                float blue = FastColor.ARGB32.blue(tint) / 255f;
+                graphics.blit(x, y, 0, 16, 16, sprite, red, green, blue, 1f);
+            }
+        }
     }
     //#endregion
 }
