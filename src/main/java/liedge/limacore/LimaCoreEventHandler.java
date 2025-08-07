@@ -19,7 +19,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = LimaCore.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = LimaCore.MODID)
 public final class LimaCoreEventHandler
 {
     private LimaCoreEventHandler() {}
