@@ -164,6 +164,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             if (action == LimaFluidSlot.ClickAction.FILL)
             {
                 FluidStack sourceFluid = itemFluids.drain(capacity, IFluidHandler.FluidAction.SIMULATE);
+                if (!slot.mayPlace(sourceFluid)) return;
                 int accepted = menuFluids.fillTank(slot.tank(), sourceFluid, IFluidHandler.FluidAction.SIMULATE, true);
                 if (accepted == 0) return;
 
