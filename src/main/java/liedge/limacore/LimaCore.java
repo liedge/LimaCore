@@ -2,8 +2,8 @@ package liedge.limacore;
 
 import com.mojang.logging.LogUtils;
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.network.packet.LimaCorePackets;
-import liedge.limacore.registry.*;
+import liedge.limacore.network.packet.*;
+import liedge.limacore.registry.LimaCoreRegistries;
 import liedge.limacore.registry.game.*;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.EntityType;
@@ -15,8 +15,12 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.slf4j.Logger;
+
+import static liedge.limacore.util.LimaNetworkUtil.registerPlayToClient;
+import static liedge.limacore.util.LimaNetworkUtil.registerPlayToServer;
 
 @Mod(LimaCore.MODID)
 public class LimaCore
@@ -43,7 +47,17 @@ public class LimaCore
         @SubscribeEvent
         private void registerPayloadHandlers(final RegisterPayloadHandlersEvent event)
         {
-            LimaCorePackets.registerPacketHandlers(event.registrar(MODID).versioned("1.0.0"));
+            PayloadRegistrar registrar = event.registrar(MODID);
+
+            // Clientbound Packets
+            registerPlayToClient(registrar, ClientboundBlockEntityDataWatcherPacket.TYPE, ClientboundBlockEntityDataWatcherPacket.STREAM_CODEC);
+            registerPlayToClient(registrar, ClientboundMenuDataWatcherPacket.TYPE, ClientboundMenuDataWatcherPacket.STREAM_CODEC);
+            registerPlayToClient(registrar, ClientboundParticlePacket.TYPE, ClientboundParticlePacket.STREAM_CODEC);
+
+            // Serverbound Packets
+            registerPlayToServer(registrar, ServerboundCustomMenuButtonPacket.TYPE, ServerboundCustomMenuButtonPacket.STREAM_CODEC);
+            registerPlayToServer(registrar, ServerboundFluidSlotClickPacket.TYPE, ServerboundFluidSlotClickPacket.STREAM_CODEC);
+            registerPlayToServer(registrar, ServerboundBlockEntityDataRequestPacket.TYPE, ServerboundBlockEntityDataRequestPacket.STREAM_CODEC);
         }
 
         @SubscribeEvent

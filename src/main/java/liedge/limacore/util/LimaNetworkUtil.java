@@ -1,17 +1,19 @@
 package liedge.limacore.util;
 
-import liedge.limacore.lib.function.Consumer3;
+import liedge.limacore.network.ClientboundPayload;
+import liedge.limacore.network.ServerboundPayload;
 import liedge.limacore.network.packet.ClientboundParticlePacket;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.handling.IPayloadHandler;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.function.Supplier;
 
@@ -68,8 +70,17 @@ public final class LimaNetworkUtil
     }
     //#endregion
 
-    public static <T extends CustomPacketPayload> IPayloadHandler<T> serverPacketHandler(Consumer3<T, IPayloadContext, ServerPlayer> function)
+    public static <T extends ClientboundPayload> void registerPlayToClient(PayloadRegistrar registrar, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
     {
-        return (payload, context) -> function.accept(payload, context, LimaCoreUtil.castOrThrow(ServerPlayer.class, context.player(), "Cannot accept server packet without sender."));
+        registrar.playToClient(type, streamCodec, ClientboundPayload::handleClient);
+    }
+
+    public static <T extends ServerboundPayload> void registerPlayToServer(PayloadRegistrar registrar, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    {
+        registrar.playToServer(type, streamCodec, (payload, context) ->
+        {
+            ServerPlayer sender = LimaCoreUtil.castOrThrow(ServerPlayer.class, context.player(), "Received server packet without sender.");
+            payload.handleServer(sender, context);
+        });
     }
 }

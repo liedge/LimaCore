@@ -5,7 +5,6 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.Nullable;
 
 final class LimaCoreClientPacketHandler
@@ -17,17 +16,17 @@ final class LimaCoreClientPacketHandler
         if (holder != null) holder.receiveDataPacket(index, data);
     }
 
-    public static <T> void handleMenuDataWatcherPacket(ClientboundMenuDataWatcherPacket<T> packet, IPayloadContext context)
+    static <T> void handleMenuDataWatcherPacket(ClientboundMenuDataWatcherPacket<T> packet)
     {
         handleDataWatcherPacket(LimaCoreClientUtil.getClientPlayerMenu(packet.getContainerId(), DataWatcherHolder.class), packet.getIndex(), packet.getData());
     }
 
-    public static <T> void handleBlockDataWatcherPacket(ClientboundBlockEntityDataWatcherPacket<T> packet, IPayloadContext context)
+    static <T> void handleBlockDataWatcherPacket(ClientboundBlockEntityDataWatcherPacket<T> packet)
     {
         handleDataWatcherPacket(LimaCoreClientUtil.getClientSafeBlockEntity(packet.getPos(), DataWatcherHolder.class), packet.getIndex(), packet.getData());
     }
 
-    public static void handleParticlePacket(ClientboundParticlePacket packet, IPayloadContext context)
+    static void handleParticlePacket(ClientboundParticlePacket packet)
     {
         if (Minecraft.getInstance().level != null)
         {

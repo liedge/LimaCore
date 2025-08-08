@@ -1,6 +1,7 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.LimaCore;
+import liedge.limacore.network.ClientboundPayload;
 import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -8,6 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * A simplified version of the MC {@link net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket}. Uses
@@ -16,10 +18,10 @@ import net.minecraft.world.phys.Vec3;
  * @param pos The position of the particle.
  * @param speed The speed of the particle.
  */
-public record ClientboundParticlePacket(ParticleOptions data, Vec3 pos, Vec3 speed) implements CustomPacketPayload
+public record ClientboundParticlePacket(ParticleOptions data, Vec3 pos, Vec3 speed) implements ClientboundPayload
 {
-    static final Type<ClientboundParticlePacket> TYPE = LimaCore.RESOURCES.packetType("particle");
-    static final StreamCodec<RegistryFriendlyByteBuf, ClientboundParticlePacket> STREAM_CODEC = StreamCodec.composite(
+    public static final Type<ClientboundParticlePacket> TYPE = LimaCore.RESOURCES.packetType("particle");
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundParticlePacket> STREAM_CODEC = StreamCodec.composite(
             ParticleTypes.STREAM_CODEC, ClientboundParticlePacket::data,
             LimaStreamCodecs.VEC3D, ClientboundParticlePacket::pos,
             LimaStreamCodecs.VEC3D, ClientboundParticlePacket::speed,
@@ -38,6 +40,12 @@ public record ClientboundParticlePacket(ParticleOptions data, Vec3 pos, Vec3 spe
     public ClientboundParticlePacket(ParticleOptions data, double x, double y, double z)
     {
         this(data, new Vec3(x, y, z));
+    }
+
+    @Override
+    public void handleClient(IPayloadContext context)
+    {
+        LimaCoreClientPacketHandler.handleParticlePacket(this);
     }
 
     @Override

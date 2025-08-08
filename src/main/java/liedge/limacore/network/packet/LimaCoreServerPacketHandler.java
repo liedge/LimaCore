@@ -4,19 +4,18 @@ import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-final class LimaCoreServerPacketHandler
+public final class LimaCoreServerPacketHandler
 {
     private LimaCoreServerPacketHandler() {}
 
-    public static void handleBlockDataRequestPacket(ServerboundBlockEntityDataRequestPacket packet, IPayloadContext context, ServerPlayer sender)
+    static void handleBlockDataRequestPacket(ServerboundBlockEntityDataRequestPacket packet, ServerPlayer sender)
     {
         DataWatcherHolder holder = LimaBlockUtil.getSafeBlockEntity(sender.level(), packet.blockPos(), DataWatcherHolder.class);
         if (holder != null) holder.forceSyncDataWatchers();
     }
 
-    public static <T> void handleCustomMenuButtonPacket(ServerboundCustomMenuButtonPacket<T> packet, IPayloadContext context, ServerPlayer sender)
+    static <T> void handleCustomMenuButtonPacket(ServerboundCustomMenuButtonPacket<T> packet, ServerPlayer sender)
     {
         if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == packet.containerId())
         {
@@ -24,7 +23,7 @@ final class LimaCoreServerPacketHandler
         }
     }
 
-    public static void handleFluidSlotClick(ServerboundFluidSlotClickPacket packet, IPayloadContext context, ServerPlayer sender)
+    static void handleFluidSlotClick(ServerboundFluidSlotClickPacket packet, ServerPlayer sender)
     {
         if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == packet.containerId())
         {

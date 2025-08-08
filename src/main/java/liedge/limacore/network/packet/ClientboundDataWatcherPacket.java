@@ -1,12 +1,12 @@
 package liedge.limacore.network.packet;
 
+import liedge.limacore.network.ClientboundPayload;
 import liedge.limacore.network.NetworkSerializer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import static liedge.limacore.network.NetworkSerializer.REGISTRY_STREAM_CODEC;
 
-public abstract class ClientboundDataWatcherPacket<T> implements CustomPacketPayload
+public abstract class ClientboundDataWatcherPacket<T> implements ClientboundPayload
 {
     private final int index;
     private final NetworkSerializer<T> serializer;
