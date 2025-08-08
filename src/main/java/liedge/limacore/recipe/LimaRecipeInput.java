@@ -1,56 +1,148 @@
 package liedge.limacore.recipe;
 
+import liedge.limacore.capability.fluid.LimaFluidHandler;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeInput;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.wrapper.RangedWrapper;
+
+import java.util.List;
 
 public interface LimaRecipeInput extends RecipeInput
 {
-    static LimaRecipeInput create(IItemHandler container)
+    static LimaRecipeInput of(IItemHandler itemContainer)
     {
-        return new SimpleInput(container);
+        return new ItemsOnly(itemContainer);
     }
 
-    static LimaRecipeInput createRanged(IItemHandlerModifiable container, int minSlot, int maxSlotExclusive)
+    static LimaRecipeInput of(LimaFluidHandler fluidContainer)
     {
-        return new SimpleInput(new RangedWrapper(container, minSlot, maxSlotExclusive));
+        return new FluidsOnly(fluidContainer);
     }
 
-    static LimaRecipeInput createRanged(IItemHandlerModifiable container, int maxSlotExclusive)
+    static LimaRecipeInput of(IItemHandler itemContainer, LimaFluidHandler fluidContainer)
     {
-        return createRanged(container, 0, maxSlotExclusive);
+        return new ItemsAndFluids(itemContainer, fluidContainer);
     }
 
-    static LimaRecipeInput createWithSize(IItemHandlerModifiable container, int minSlot, int size)
+    ItemStack extractItem(int slot, int count, boolean simulate);
+
+    FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action);
+
+    FluidStack getFluid(int tank);
+
+    int tanks();
+
+    default boolean isTanksEmpty()
     {
-        return createRanged(container, minSlot, minSlot + size);
+        for (int i = 0; i < tanks(); i++)
+        {
+            if (!getFluid(i).isEmpty()) return false;
+        }
+
+        return true;
     }
 
-    static LimaRecipeInput createSingleSlot(IItemHandlerModifiable container, int slotIndex)
+    default boolean checkItemInputSize(List<SizedIngredient> itemIngredients)
     {
-        return createWithSize(container, slotIndex, 1);
+        return itemIngredients.isEmpty() || (itemIngredients.size() <= size() && !isEmpty());
     }
 
-    IItemHandler container();
-
-    default ItemStack extractFromContainer(int index, int count, boolean simulate)
+    default boolean checkFluidInputSize(List<SizedFluidIngredient> fluidIngredients)
     {
-        return container().extractItem(index, count, simulate);
+        return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !isTanksEmpty());
     }
 
-    @Override
-    default ItemStack getItem(int index)
+    interface ItemContainerSource extends LimaRecipeInput
     {
-        return container().getStackInSlot(index);
+        IItemHandler itemContainer();
+
+        @Override
+        default ItemStack extractItem(int slot, int count, boolean simulate)
+        {
+            return itemContainer().extractItem(slot, count, simulate);
+        }
+
+        @Override
+        default ItemStack getItem(int index)
+        {
+            return itemContainer().getStackInSlot(index);
+        }
+
+        @Override
+        default int size()
+        {
+            return itemContainer().getSlots();
+        }
     }
 
-    @Override
-    default int size()
+    interface FluidContainerSource extends LimaRecipeInput
     {
-        return container().getSlots();
+        LimaFluidHandler fluidContainer();
+
+        @Override
+        default FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
+        {
+            return fluidContainer().drainTank(tank, amount, action, true);
+        }
+
+        @Override
+        default FluidStack getFluid(int tank)
+        {
+            return fluidContainer().getFluidInTank(tank);
+        }
+
+        @Override
+        default int tanks()
+        {
+            return fluidContainer().getTanks();
+        }
     }
 
-    record SimpleInput(IItemHandler container) implements LimaRecipeInput {}
+    record ItemsOnly(IItemHandler itemContainer) implements ItemContainerSource
+    {
+        @Override
+        public FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
+        {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack getFluid(int tank)
+        {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public int tanks()
+        {
+            return 0;
+        }
+    }
+
+    record FluidsOnly(LimaFluidHandler fluidContainer) implements FluidContainerSource
+    {
+        @Override
+        public ItemStack extractItem(int slot, int count, boolean simulate)
+        {
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public ItemStack getItem(int index)
+        {
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
+    }
+
+    record ItemsAndFluids(IItemHandler itemContainer, LimaFluidHandler fluidContainer) implements ItemContainerSource, FluidContainerSource {}
 }

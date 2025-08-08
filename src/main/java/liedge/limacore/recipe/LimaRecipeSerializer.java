@@ -12,6 +12,11 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
  */
 public record LimaRecipeSerializer<R extends Recipe<?>>(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec) implements RecipeSerializer<R>
 {
+    public static <R extends Recipe<?>> LimaRecipeSerializer<R> of(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec)
+    {
+        return new LimaRecipeSerializer<>(id, codec, streamCodec);
+    }
+
     @Override
     public boolean equals(Object obj)
     {

@@ -23,6 +23,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.Collection;
@@ -171,12 +173,22 @@ public final class LimaStreamCodecs
     //#region Stream codec factories
     public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
-        return SizedIngredient.STREAM_CODEC.apply(asClampedCollection(ObjectArrayList::new, minInclusive, maxInclusive));
+        return SizedIngredient.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int maxIngredients)
     {
         return sizedIngredients(1, maxIngredients);
+    }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
+    {
+        return SizedFluidIngredient.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
+    }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
+    {
+        return FluidStack.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
     }
 
     public static <T, U extends T> StreamCodec<RegistryFriendlyByteBuf, U> classCastRegistryStreamCodec(ResourceKey<? extends Registry<T>> registryKey, Class<U> valueClass)

@@ -12,6 +12,10 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.List;
 
@@ -22,20 +26,34 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     // Ingredients
     private final List<SizedIngredient> itemIngredients;
+    private final List<SizedFluidIngredient> fluidIngredients;
 
     // Results
     private final List<ItemResult> itemResults;
+    private final List<FluidStack> fluidResults;
+
+    protected LimaCustomRecipe(List<SizedIngredient> itemIngredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults)
+    {
+        this.itemIngredients = itemIngredients;
+        this.fluidIngredients = fluidIngredients;
+        this.itemResults = itemResults;
+        this.fluidResults = fluidResults;
+    }
 
     protected LimaCustomRecipe(List<SizedIngredient> itemIngredients, List<ItemResult> itemResults)
     {
-        this.itemIngredients = itemIngredients;
-        this.itemResults = itemResults;
+        this(itemIngredients, List.of(), itemResults, List.of());
     }
 
-    // Item ingredient functions
+    //#region Ingredient functions
     public List<SizedIngredient> getItemIngredients()
     {
         return itemIngredients;
+    }
+
+    public List<SizedFluidIngredient> getFluidIngredients()
+    {
+        return fluidIngredients;
     }
 
     public SizedIngredient getItemIngredient(int index)
@@ -44,30 +62,34 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return itemIngredients.get(index);
     }
 
-    public int getItemIngredientCount(int index)
+    public SizedFluidIngredient getFluidIngredient(int index)
     {
-        return getItemIngredient(index).count();
+        Preconditions.checkElementIndex(index, fluidIngredients.size(), "Fluid Ingredient");
+        return fluidIngredients.get(index);
     }
+    //#endregion
 
-    // Item result functions
+    //#region Result functions
     public List<ItemResult> getItemResults()
     {
         return itemResults;
-    }
-
-    /**
-     * Convenience method to return the {@link ItemResult} from the results list, for use in single output recipes.
-     * @return The first result
-     */
-    public ItemResult getFirstResult()
-    {
-        return itemResults.getFirst();
     }
 
     public ItemResult getItemResult(int index)
     {
         Preconditions.checkElementIndex(index, itemResults.size(), "Item Result");
         return itemResults.get(index);
+    }
+
+    /**
+     * Convenience accessor for the first {@link ItemResult} of this recipe. For use in single output
+     * recipes.
+     * @return The first item result.
+     */
+    public ItemResult getFirstItemResult()
+    {
+        Preconditions.checkState(!itemResults.isEmpty(), "Recipe has no item results.");
+        return itemResults.getFirst();
     }
 
     public List<ItemStack> generateItemResults(T input, HolderLookup.Provider registries, RandomSource random)
@@ -80,28 +102,38 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return itemResults.stream().map(ItemResult::item).collect(LimaStreamsUtil.toObjectList());
     }
 
-    public boolean consumeIngredientsStrictSlots(T input, boolean requireEmptySpaces, boolean simulate)
+    public List<FluidStack> getFluidResults()
     {
-        for (int i = 0; i < input.size(); i++)
-        {
-            if (i < itemIngredients.size())
-            {
-                SizedIngredient sizedIngredient = itemIngredients.get(i);
-                int count = sizedIngredient.count();
-                ItemStack extracted = input.extractFromContainer(i, count, simulate);
-                if (!sizedIngredient.test(extracted)) return false;
-            }
-            else if (requireEmptySpaces)
-            {
-                if (!input.getItem(i).isEmpty()) return false;
-            }
-        }
-
-        return true;
+        return fluidResults;
     }
 
-    public boolean consumeIngredientsLenientSlots(T input, boolean simulate)
+    public FluidStack getFluidResult(int index)
     {
+        Preconditions.checkElementIndex(index, fluidResults.size(), "Fluid results");
+        return fluidResults.get(index);
+    }
+
+    /**
+     * Convenience accessor for the first {@link FluidStack} of this recipe's fluid results. For use in single output
+     * recipes.
+     * @return The first fluid result.
+     */
+    public FluidStack getFirstFluidResult()
+    {
+        Preconditions.checkState(!fluidResults.isEmpty(), "Recipe has no fluid results.");
+        return fluidResults.getFirst();
+    }
+
+    public List<FluidStack> generateFluidResults(T input, HolderLookup.Provider registries)
+    {
+        return fluidResults.stream().map(FluidStack::copy).collect(LimaStreamsUtil.toObjectList());
+    }
+    //#endregion
+
+    public boolean consumeItemIngredients(T input, boolean simulate)
+    {
+        if (!input.checkItemInputSize(itemIngredients)) return false;
+
         for (SizedIngredient sizedIngredient : itemIngredients)
         {
             int remaining = sizedIngredient.count();
@@ -111,7 +143,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
             {
                 if (root.test(input.getItem(i)))
                 {
-                    ItemStack extracted = input.extractFromContainer(i, remaining, simulate);
+                    ItemStack extracted = input.extractItem(i, remaining, simulate);
                     remaining -= extracted.getCount();
 
                     if (remaining == 0) break;
@@ -124,18 +156,34 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return true;
     }
 
-    @Deprecated
-    @Override
-    public NonNullList<Ingredient> getIngredients()
+    public boolean consumeFluidIngredients(T input, IFluidHandler.FluidAction action)
     {
-        return Recipe.super.getIngredients();
+        if (!input.checkFluidInputSize(fluidIngredients)) return false;
+
+        for (SizedFluidIngredient fluidIngredient : fluidIngredients)
+        {
+            int remaining = fluidIngredient.amount();
+            FluidIngredient root = fluidIngredient.ingredient();
+
+            for (int i = 0; i < input.tanks(); i++)
+            {
+                if (root.test(input.getFluid(i)))
+                {
+                    FluidStack extracted = input.extractFluid(i, remaining, action);
+                    remaining -= extracted.getAmount();
+
+                    if (remaining == 0) break;
+                }
+            }
+
+            if (remaining > 0) return false;
+        }
+
+        return true;
     }
 
     @Override
-    public boolean matches(T input, Level level)
-    {
-        return consumeIngredientsStrictSlots(input, false, true);
-    }
+    public abstract boolean matches(T input, Level level);
 
     @Override
     public boolean isSpecial()
@@ -146,7 +194,19 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     @Override
     public boolean isIncomplete()
     {
+        // Seems like only the client recipe book uses this?
         return itemIngredients.isEmpty() || itemIngredients.stream().map(SizedIngredient::ingredient).anyMatch(Ingredient::hasNoItems);
+    }
+
+    /**
+     * @deprecated Use {@link LimaCustomRecipe#getItemIngredients()} for the recipe's item ingredients and {@link LimaCustomRecipe#getFluidIngredients()}
+     * for the fluid ingredients.
+     */
+    @Deprecated
+    @Override
+    public NonNullList<Ingredient> getIngredients()
+    {
+        return Recipe.super.getIngredients();
     }
 
     /**

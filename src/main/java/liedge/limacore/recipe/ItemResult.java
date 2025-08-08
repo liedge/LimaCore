@@ -3,7 +3,6 @@ package liedge.limacore.recipe;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.data.LimaCoreCodecs;
 import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -29,7 +28,7 @@ public record ItemResult(ItemStack item, float chance)
 
     public static MapCodec<List<ItemResult>> listMapCodec(int min, int max)
     {
-        return CODEC.listOf(min, max).fieldOf("item_results");
+        return LimaCoreCodecs.smartSizedListField(CODEC, "item_results", min, max);
     }
 
     public static MapCodec<List<ItemResult>> listMapCodec(int max)
@@ -39,7 +38,7 @@ public record ItemResult(ItemStack item, float chance)
 
     public static StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> listStreamCodec(int min, int max)
     {
-        return STREAM_CODEC.apply(LimaStreamCodecs.asClampedCollection(ObjectArrayList::new, min, max));
+        return STREAM_CODEC.apply(LimaStreamCodecs.asClampedList(min, max));
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> listStreamCodec(int max)

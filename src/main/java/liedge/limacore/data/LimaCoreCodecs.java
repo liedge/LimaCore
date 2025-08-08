@@ -1,5 +1,6 @@
 package liedge.limacore.data;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
@@ -20,6 +21,8 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
@@ -200,14 +203,33 @@ public final class LimaCoreCodecs
         return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(Either::unwrap, value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
     }
 
+    public static <E> MapCodec<List<E>> smartSizedListField(Codec<E> elementCodec, String fieldName, int minInclusive, int maxInclusive)
+    {
+        Preconditions.checkArgument(minInclusive >= 0, "Minimum size must be non-negative.");
+        Preconditions.checkArgument(maxInclusive >= minInclusive, "Maximum size must be greater than or equal to minimum size.");
+
+        Codec<List<E>> listCodec = elementCodec.listOf(minInclusive, maxInclusive);
+        return minInclusive == 0 ? listCodec.optionalFieldOf(fieldName, List.of()) : listCodec.fieldOf(fieldName);
+    }
+
     public static MapCodec<List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
-        return SizedIngredient.FLAT_CODEC.listOf(minInclusive, maxInclusive).xmap(Function.identity(), Function.identity()).fieldOf("ingredients");
+        return smartSizedListField(SizedIngredient.FLAT_CODEC, "ingredients", minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<SizedIngredient>> sizedIngredients(int maxIngredients)
     {
         return sizedIngredients(1, maxIngredients);
+    }
+
+    public static MapCodec<List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
+    {
+        return smartSizedListField(SizedFluidIngredient.FLAT_CODEC, "fluid_ingredients", minInclusive, maxInclusive);
+    }
+
+    public static MapCodec<List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
+    {
+        return smartSizedListField(FluidStack.CODEC, "fluid_results", minInclusive, maxInclusive);
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)
