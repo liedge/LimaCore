@@ -14,33 +14,33 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-public record EnchantmentLevelSubPredicate(Holder<Enchantment> enchantment, int minLevel, int maxLevel) implements EntitySubPredicate
+public record EnchantmentLevelEntityPredicate(Holder<Enchantment> enchantment, int minLevel, int maxLevel) implements EntitySubPredicate
 {
     private static final Codec<Integer> LEVELS_CODEC = Codec.intRange(1, 255);
-    public static final MapCodec<EnchantmentLevelSubPredicate> CODEC = RecordCodecBuilder.<EnchantmentLevelSubPredicate>mapCodec(instance -> instance.group(
-            Enchantment.CODEC.fieldOf("enchantment").forGetter(EnchantmentLevelSubPredicate::enchantment),
-            LEVELS_CODEC.optionalFieldOf("min_level", 1).forGetter(EnchantmentLevelSubPredicate::minLevel),
-            LEVELS_CODEC.optionalFieldOf("max_level", 255).forGetter(EnchantmentLevelSubPredicate::maxLevel))
-            .apply(instance, EnchantmentLevelSubPredicate::new))
+    public static final MapCodec<EnchantmentLevelEntityPredicate> CODEC = RecordCodecBuilder.<EnchantmentLevelEntityPredicate>mapCodec(instance -> instance.group(
+            Enchantment.CODEC.fieldOf("enchantment").forGetter(EnchantmentLevelEntityPredicate::enchantment),
+            LEVELS_CODEC.optionalFieldOf("min_level", 1).forGetter(EnchantmentLevelEntityPredicate::minLevel),
+            LEVELS_CODEC.optionalFieldOf("max_level", 255).forGetter(EnchantmentLevelEntityPredicate::maxLevel))
+            .apply(instance, EnchantmentLevelEntityPredicate::new))
             .validate(predicate -> {
                 if (predicate.minLevel > predicate.maxLevel) return DataResult.error(() -> "Enchantment sub-predicate minimum level can't be higher than max level. Min: " + predicate.minLevel + ", max: " + predicate.maxLevel);
                 return DataResult.success(predicate);
             });
 
-    public static EnchantmentLevelSubPredicate atLeast(Holder<Enchantment> enchantment, int minLevel)
+    public static EnchantmentLevelEntityPredicate atLeast(Holder<Enchantment> enchantment, int minLevel)
     {
-        return new EnchantmentLevelSubPredicate(enchantment, minLevel, 255);
+        return new EnchantmentLevelEntityPredicate(enchantment, minLevel, 255);
     }
 
-    public static EnchantmentLevelSubPredicate atMost(Holder<Enchantment> enchantment, int maxLevel)
+    public static EnchantmentLevelEntityPredicate atMost(Holder<Enchantment> enchantment, int maxLevel)
     {
-        return new EnchantmentLevelSubPredicate(enchantment, 1, maxLevel);
+        return new EnchantmentLevelEntityPredicate(enchantment, 1, maxLevel);
     }
 
     @Override
     public MapCodec<? extends EntitySubPredicate> codec()
     {
-        return LimaCoreLootRegistries.ENCHANTMENT_LEVEL_SUB_PREDICATE.get();
+        return LimaCoreLootRegistries.ENCHANTMENT_LEVEL_ENTITY_PREDICATE.get();
     }
 
     @Override

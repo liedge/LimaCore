@@ -14,7 +14,7 @@ public record MathOpsNumberProvider(NumberProvider first, NumberProvider second,
     public static final MapCodec<MathOpsNumberProvider> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             NumberProviders.CODEC.fieldOf("first").forGetter(MathOpsNumberProvider::first),
             NumberProviders.CODEC.fieldOf("second").forGetter(MathOpsNumberProvider::second),
-            MathOperation.CODEC.fieldOf("op").forGetter(MathOpsNumberProvider::operation))
+            MathOperation.SINGLE_OP_CODEC.fieldOf("op").forGetter(MathOpsNumberProvider::operation))
             .apply(instance, MathOpsNumberProvider::new));
 
     public static NumberProvider of(NumberProvider first, NumberProvider second, MathOperation operation)

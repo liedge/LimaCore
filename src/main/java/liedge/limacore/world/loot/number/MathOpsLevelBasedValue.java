@@ -11,7 +11,7 @@ public record MathOpsLevelBasedValue(LevelBasedValue first, LevelBasedValue seco
     public static final MapCodec<MathOpsLevelBasedValue> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             LevelBasedValue.CODEC.fieldOf("first").forGetter(MathOpsLevelBasedValue::first),
             LevelBasedValue.CODEC.fieldOf("second").forGetter(MathOpsLevelBasedValue::second),
-            MathOperation.CODEC.fieldOf("op").forGetter(MathOpsLevelBasedValue::operation))
+            MathOperation.SINGLE_OP_CODEC.fieldOf("op").forGetter(MathOpsLevelBasedValue::operation))
             .apply(instance, MathOpsLevelBasedValue::new));
 
     @Override

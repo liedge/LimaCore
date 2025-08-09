@@ -1,6 +1,6 @@
 package liedge.limacore.util;
 
-import liedge.limacore.world.loot.EnchantmentLevelSubPredicate;
+import liedge.limacore.world.loot.EnchantmentLevelEntityPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
@@ -80,7 +80,7 @@ public final class LimaLootUtil
         return ValueCheckCondition.hasValue(linearEnchantmentLevel(), validLevels);
     }
 
-    public static LootItemCondition.Builder entityEnchantmentLevels(LootContext.EntityTarget entityTarget, EnchantmentLevelSubPredicate predicate)
+    public static LootItemCondition.Builder entityEnchantmentLevels(LootContext.EntityTarget entityTarget, EnchantmentLevelEntityPredicate predicate)
     {
         return LootItemEntityPropertyCondition.hasProperties(entityTarget, EntityPredicate.Builder.entity().subPredicate(predicate));
     }

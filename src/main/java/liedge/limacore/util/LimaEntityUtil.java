@@ -1,9 +1,12 @@
 package liedge.limacore.util;
 
+import liedge.limacore.lib.MobHostility;
 import net.minecraft.core.Holder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Targeting;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -56,9 +59,15 @@ public final class LimaEntityUtil
         return entity != null ? entity.getId() : 0;
     }
 
-    public static boolean isEntityHostile(Entity entity)
+    public static MobHostility getEntityHostility(Entity target, @Nullable LivingEntity attacker)
     {
-        return entity instanceof Enemy || !entity.getType().getCategory().isFriendly();
+        return switch (target)
+        {
+            case Enemy enemy -> MobHostility.HOSTILE;
+            case NeutralMob neutralMob -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL;
+            case Targeting targetingEntity -> attacker != null && targetingEntity.getTarget() == attacker ? MobHostility.HOSTILE : MobHostility.PASSIVE;
+            default -> MobHostility.PASSIVE;
+        };
     }
 
     public static void customKnockbackEntity(LivingEntity entity, boolean ignoreResist, double strength, double ratioX, double ratioZ)

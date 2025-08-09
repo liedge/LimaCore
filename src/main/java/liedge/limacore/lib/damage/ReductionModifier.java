@@ -8,7 +8,7 @@ public record ReductionModifier(float amount, MathOperation operation, DamageRed
 {
     public static final Codec<ReductionModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.FLOAT.fieldOf("amount").forGetter(ReductionModifier::amount),
-            MathOperation.CODEC.fieldOf("op").forGetter(ReductionModifier::operation),
+            MathOperation.SINGLE_OP_CODEC.fieldOf("op").forGetter(ReductionModifier::operation),
             DamageReductionType.CODEC.fieldOf("type").forGetter(ReductionModifier::reductionType))
             .apply(instance, ReductionModifier::new));
 }

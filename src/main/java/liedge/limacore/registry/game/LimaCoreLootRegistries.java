@@ -42,10 +42,11 @@ public final class LimaCoreLootRegistries
     }
 
     // Entity sub predicate types
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<HostileEntitySubPredicate>> HOSTILE_ENTITY_SUB_PREDICATE = ENTITY_SUB_PREDICATES.register("hostile_entity", () -> HostileEntitySubPredicate.CODEC);
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<EnchantmentLevelSubPredicate>> ENCHANTMENT_LEVEL_SUB_PREDICATE = ENTITY_SUB_PREDICATES.register("enchantment_level", () -> EnchantmentLevelSubPredicate.CODEC);
+    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<HostilityEntityPredicate>> HOSTILITY_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("hostility", () -> HostilityEntityPredicate.CODEC);
+    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<EnchantmentLevelEntityPredicate>> ENCHANTMENT_LEVEL_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("enchantment_level", () -> EnchantmentLevelEntityPredicate.CODEC);
 
     // Conditions
+    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> HOSTILITY_CONDITION = CONDITIONS.register("hostility", () -> new LootItemConditionType(EntityHostilityLootCondition.CODEC));
 
     // Functions
     public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<SaveBlockEntityFunction>> SAVE_BLOCK_ENTITY = FUNCTIONS.register("save_block_entity", () -> new LootItemFunctionType<>(SaveBlockEntityFunction.CODEC));
@@ -62,6 +63,7 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<MathOpsLevelBasedValue>> MATH_OPS_LEVEL_BASED_VALUE = LBV_CODECS.register("math_ops", () -> MathOpsLevelBasedValue.CODEC);
 
     // Loot number types
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> DISTANCE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("distance", () -> new LootNumberProviderType(DistanceNumberProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ROUNDING_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("rounding", () -> new LootNumberProviderType(RoundingNumberProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> TARGETED_ATTRIBUTE_VALUE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("targeted_attribute_value", () -> new LootNumberProviderType(TargetedAttributeValueProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> TARGETED_ENCHANTMENT_LEVEL_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("targeted_enchantment_level", () -> new LootNumberProviderType(TargetedEnchantmentLevelProvider.CODEC));
