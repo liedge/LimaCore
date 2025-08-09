@@ -1,20 +1,20 @@
-package liedge.limacore.capability.itemhandler;
+package liedge.limacore.blockentity;
 
 import liedge.limacore.data.LimaEnumCodec;
 import net.minecraft.util.StringRepresentable;
 
-public enum BlockInventoryType implements StringRepresentable
+public enum BlockContentsType implements StringRepresentable
 {
     GENERAL("general"),
     AUXILIARY("aux"),
     INPUT("input"),
     OUTPUT("output");
 
-    public static final LimaEnumCodec<BlockInventoryType> CODEC = LimaEnumCodec.create(BlockInventoryType.class);
+    public static final LimaEnumCodec<BlockContentsType> CODEC = LimaEnumCodec.create(BlockContentsType.class);
 
     private final String name;
 
-    BlockInventoryType(String name)
+    BlockContentsType(String name)
     {
         this.name = name;
     }

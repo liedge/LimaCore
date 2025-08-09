@@ -1,6 +1,5 @@
 package liedge.limacore.capability.fluid;
 
-import liedge.limacore.blockentity.IOAccess;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
@@ -12,8 +11,6 @@ public interface LimaFluidHandler extends IFluidHandler
 {
     LimaFluidTank getFluidTank(int tank) throws IndexOutOfBoundsException;
 
-    IOAccess getFluidTankIO(int tank);
-
     int fillTank(int tank, FluidStack resource, FluidAction action, boolean ignoreLimit);
 
     FluidStack drainTank(int tank, FluidStack resource, FluidAction action, boolean ignoreLimit);
@@ -24,35 +21,39 @@ public interface LimaFluidHandler extends IFluidHandler
 
     FluidStack drainFromAny(FluidStack resource, FluidAction action, boolean ignoreLimit);
 
-    FluidStack drainFromAny(int maxDrain, FluidAction action, boolean ignoreLimit);
+    int fillFirst(FluidStack resource, FluidAction action, boolean ignoreLimit);
+
+    FluidStack drainFromFirst(FluidStack resource, FluidAction action, boolean ignoreLimit);
+
+    FluidStack drainFromFirst(int maxDrain, FluidAction action, boolean ignoreLimit);
 
     /**
-     * @deprecated For capability support only. Call {@link LimaFluidHandler#drainFromAny(int, FluidAction, boolean)} instead.
+     * @deprecated For capability support only.
      */
     @Deprecated
     @Override
     default int fill(FluidStack resource, FluidAction action)
     {
-        return fillAny(resource, action, false);
+        return fillFirst(resource, action, false);
     }
 
     /**
-     * @deprecated For capability support only. Call {@link LimaFluidHandler#drainFromAny(FluidStack, FluidAction, boolean)} instead.
+     * @deprecated For capability support only.
      */
     @Deprecated
     @Override
     default FluidStack drain(FluidStack resource, FluidAction action)
     {
-        return drainFromAny(resource, action, false);
+        return drainFromFirst(resource, action, false);
     }
 
     /**
-     * @deprecated For capability support only. Call {@link LimaFluidHandler#drainFromAny(int, FluidAction, boolean)} instead.
+     * @deprecated For capability support only.
      */
     @Deprecated
     @Override
     default FluidStack drain(int maxDrain, FluidAction action)
     {
-        return drainFromAny(maxDrain, action, false);
+        return drainFromFirst(maxDrain, action, false);
     }
 }

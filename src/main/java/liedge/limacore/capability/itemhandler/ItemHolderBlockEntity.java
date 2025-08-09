@@ -2,6 +2,7 @@ package liedge.limacore.capability.itemhandler;
 
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
+import liedge.limacore.blockentity.BlockContentsType;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -13,51 +14,49 @@ import org.jetbrains.annotations.Nullable;
 public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 {
     /**
-     * Tries to retrieve the {@link LimaBlockEntityItemHandler} associated with the given {@link BlockInventoryType}. Block inventory
-     * types are arbitrary inventory classification is handled by the implementing class. Do not assume guaranteed access
-     * to any particular type.
-     * @param inventoryType The inventory type of the item handler.
+     * Tries to retrieve the {@link LimaBlockEntityItemHandler} associated with the given {@link BlockContentsType}.
+     * @param contentsType The contents type of the item handler.
      * @return The item handler for the given type, or {@code null} if none exists.
-     * @apiNote Unless absolutely necessary, use {@link ItemHolderBlockEntity#getItemHandlerOrThrow(BlockInventoryType)} (BlockInventoryType)} for
+     * @apiNote Unless absolutely necessary, use {@link ItemHolderBlockEntity#getItemHandlerOrThrow(BlockContentsType)} for
      * proper access enforcement.
      */
-    @Nullable LimaBlockEntityItemHandler getItemHandler(BlockInventoryType inventoryType);
+    @Nullable LimaBlockEntityItemHandler getItemHandler(BlockContentsType contentsType);
 
     /**
-     * Retrieves the {@link LimaBlockEntityItemHandler} associated with the given {@link BlockInventoryType}, or throws
+     * Retrieves the {@link LimaBlockEntityItemHandler} associated with the given {@link BlockContentsType}, or throws
      * an exception if none exists.
-     * @param inventoryType The inventory type of item handler.
+     * @param contentsType The contents type of item handler.
      * @return The item handler for the given type
      * @throws IllegalArgumentException If the block entity does not support the given type.
      */
-    default LimaBlockEntityItemHandler getItemHandlerOrThrow(BlockInventoryType inventoryType)
+    default LimaBlockEntityItemHandler getItemHandlerOrThrow(BlockContentsType contentsType)
     {
-        LimaBlockEntityItemHandler handler = getItemHandler(inventoryType);
+        LimaBlockEntityItemHandler handler = getItemHandler(contentsType);
         if (handler != null)
             return handler;
         else
-            throw new IllegalArgumentException("Block entity does not support inventory type: " + inventoryType.getSerializedName());
+            throw new IllegalArgumentException("Block entity does not support item contents type " + contentsType.getSerializedName());
     }
 
     /**
      * Checks if an {@link ItemStack} is valid for a specific slot in the specified item handler.
      * Called by {@link LimaBlockEntityItemHandler#isItemValid(int, ItemStack)} using its handler index.
-     * @param inventoryType The inventory type of the item handler calling this function.
+     * @param contentsType The contents type of the item handler calling this function.
      * @param slot The item handler slot to be checked
      * @param stack The item stack to be checked
      * @return If the item is valid.
      */
     @ApiStatus.OverrideOnly
-    boolean isItemValid(BlockInventoryType inventoryType, int slot, ItemStack stack);
+    boolean isItemValid(BlockContentsType contentsType, int slot, ItemStack stack);
 
     /**
      * Called by {@link LimaBlockEntityItemHandler#onContentsChanged(int)} whenever a slot's contents are modified.
      * Default implementation marks the block entity as changed.
-     * @param inventoryType The inventory type of the handler that changed.
+     * @param contentsType The contents type of the handler that changed.
      * @param slot The slot of the item handler that changed.
      */
     @ApiStatus.OverrideOnly
-    default void onItemSlotChanged(BlockInventoryType inventoryType, int slot)
+    default void onItemSlotChanged(BlockContentsType contentsType, int slot)
     {
         setChanged();
     }
@@ -74,14 +73,14 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
      * Gets the {@link IOAccess} permission at the slot level for an individual item handler. The default implementation
      * provides all-purpose defaults. This method is only used for wrappers created by
      * {@link LimaBlockEntityItemHandler#createIOWrapper(IOAccess)}.
-     * @param type The inventory type of the item handler.
+     * @param contentsType The contents type of the item handler.
      * @param slot The slot index.
      * @return The slot's IO permission level.
      */
     @ApiStatus.OverrideOnly
-    default IOAccess getItemHandlerSlotIO(BlockInventoryType type, int slot)
+    default IOAccess getItemHandlerSlotIO(BlockContentsType contentsType, int slot)
     {
-        return switch (type)
+        return switch (contentsType)
         {
             case GENERAL -> IOAccess.INPUT_AND_OUTPUT;
             case AUXILIARY -> IOAccess.DISABLED;
@@ -92,10 +91,10 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 
     /**
      * Called by {@link LimaBlockEntityItemHandler#onLoad()} whenever it is loaded, using its handler index.
-     * @param inventoryType The item handler's inventory type.
+     * @param contentsType The item handler's contents type.
      */
     @ApiStatus.OverrideOnly
-    default void onItemHandlerLoaded(BlockInventoryType inventoryType) {}
+    default void onItemHandlerLoaded(BlockContentsType contentsType) {}
 
     // Capability helper objects
 
@@ -114,9 +113,14 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
         return switch (blockAccessLevel)
         {
             case DISABLED -> null;
-            case INPUT_ONLY -> getItemHandlerOrThrow(BlockInventoryType.INPUT).createIOWrapper(blockAccessLevel);
-            case OUTPUT_ONLY -> getItemHandlerOrThrow(BlockInventoryType.OUTPUT).createIOWrapper(blockAccessLevel);
-            case INPUT_AND_OUTPUT -> new CombinedInvWrapper(getItemHandlerOrThrow(BlockInventoryType.INPUT).createIOWrapper(blockAccessLevel), getItemHandlerOrThrow(BlockInventoryType.OUTPUT).createIOWrapper(blockAccessLevel));
+            case INPUT_ONLY -> itemWrapper(BlockContentsType.INPUT, blockAccessLevel);
+            case OUTPUT_ONLY -> itemWrapper(BlockContentsType.OUTPUT, blockAccessLevel);
+            case INPUT_AND_OUTPUT -> new CombinedInvWrapper(itemWrapper(BlockContentsType.INPUT, blockAccessLevel), itemWrapper(BlockContentsType.OUTPUT, blockAccessLevel));
         };
+    }
+
+    private ItemHandlerIOWrapper itemWrapper(BlockContentsType contentsType, IOAccess blockAccessLevel)
+    {
+        return getItemHandlerOrThrow(contentsType).createIOWrapper(blockAccessLevel);
     }
 }

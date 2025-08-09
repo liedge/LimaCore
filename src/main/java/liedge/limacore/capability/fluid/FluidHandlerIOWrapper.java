@@ -4,92 +4,57 @@ import liedge.limacore.blockentity.IOAccess;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
-public class FluidHandlerIOWrapper implements IFluidHandler
+public interface FluidHandlerIOWrapper extends IFluidHandler
 {
-    private final LimaFluidHandler source;
-    private final IOAccess ioAccess;
-
-    public FluidHandlerIOWrapper(LimaFluidHandler source, IOAccess ioAccess)
+    static FluidHandlerIOWrapper of(IFluidHandler handler, IOAccess access)
     {
-        this.source = source;
-        this.ioAccess = ioAccess;
+        return new SimpleWrapper(handler, access);
+    }
+
+    IFluidHandler fluidHandler();
+
+    @Override
+    default int getTanks()
+    {
+        return fluidHandler().getTanks();
     }
 
     @Override
-    public int getTanks()
+    default FluidStack getFluidInTank(int tank)
     {
-        return source.getTanks();
+        return fluidHandler().getFluidInTank(tank);
     }
 
     @Override
-    public FluidStack getFluidInTank(int tank)
+    default int getTankCapacity(int tank)
     {
-        return source.getFluidInTank(tank);
+        return fluidHandler().getTankCapacity(tank);
     }
 
     @Override
-    public int getTankCapacity(int tank)
+    default boolean isFluidValid(int tank, FluidStack stack)
     {
-        return source.getTankCapacity(tank);
+        return fluidHandler().isFluidValid(tank, stack);
     }
 
-    @Override
-    public boolean isFluidValid(int tank, FluidStack stack)
+    record SimpleWrapper(IFluidHandler fluidHandler, IOAccess access) implements FluidHandlerIOWrapper
     {
-        return source.isFluidValid(tank, stack);
-    }
-
-    @Override
-    public int fill(FluidStack resource, FluidAction action)
-    {
-        if (ioAccess.allowsInput())
+        @Override
+        public int fill(FluidStack resource, FluidAction action)
         {
-            for (int i = 0; i < getTanks(); i++)
-            {
-                if (source.getFluidTankIO(i).allowsInput())
-                {
-                    int filled = source.fillTank(i, resource, action, false);
-                    if (filled > 0) return filled;
-                }
-            }
+            return access.allowsInput() ? fluidHandler.fill(resource, action) : 0;
         }
 
-        return 0;
-    }
-
-    @Override
-    public FluidStack drain(FluidStack resource, FluidAction action)
-    {
-        if (ioAccess.allowsOutput())
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action)
         {
-            for (int i = 0; i < getTanks(); i++)
-            {
-                if (source.getFluidTankIO(i).allowsOutput())
-                {
-                    FluidStack drained = source.drainTank(i, resource, action, false);
-                    if (!drained.isEmpty()) return drained;
-                }
-            }
+            return access.allowsOutput() ? fluidHandler.drain(resource, action) : FluidStack.EMPTY;
         }
 
-        return FluidStack.EMPTY;
-    }
-
-    @Override
-    public FluidStack drain(int maxDrain, FluidAction action)
-    {
-        if (ioAccess.allowsOutput())
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action)
         {
-            for (int i = 0; i < getTanks(); i++)
-            {
-                if (source.getFluidTankIO(i).allowsOutput())
-                {
-                    FluidStack drained = source.drainTank(i, maxDrain, action, false);
-                    if (!drained.isEmpty()) return drained;
-                }
-            }
+            return access.allowsOutput() ? fluidHandler.drain(maxDrain, action) : FluidStack.EMPTY;
         }
-
-        return FluidStack.EMPTY;
     }
 }

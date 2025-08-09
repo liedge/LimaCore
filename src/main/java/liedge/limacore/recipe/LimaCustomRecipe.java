@@ -2,6 +2,7 @@ package liedge.limacore.recipe;
 
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
@@ -23,6 +24,16 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 {
     public static final String EMPTY_GROUP = "";
     public static final MapCodec<String> GROUP_MAP_CODEC = Codec.STRING.optionalFieldOf("group", EMPTY_GROUP);
+
+    public static <R extends LimaCustomRecipe<?>> DataResult<R> checkNotEmpty(R recipe)
+    {
+        if (recipe.getItemIngredients().isEmpty() && recipe.getFluidIngredients().isEmpty())
+            return DataResult.error(() -> "Recipe has no item or fluid ingredients.");
+        else if (recipe.getItemResults().isEmpty() && recipe.getFluidResults().isEmpty())
+            return DataResult.error(() -> "Recipe has no item or fluid output results.");
+        else
+            return DataResult.success(recipe);
+    }
 
     // Ingredients
     private final List<SizedIngredient> itemIngredients;
@@ -183,7 +194,10 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     @Override
-    public abstract boolean matches(T input, Level level);
+    public boolean matches(T input, Level level)
+    {
+        return consumeItemIngredients(input, true) && consumeFluidIngredients(input, IFluidHandler.FluidAction.SIMULATE);
+    }
 
     @Override
     public boolean isSpecial()

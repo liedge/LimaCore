@@ -11,7 +11,7 @@ public interface ItemHandlerIOWrapper extends IItemHandlerModifiable
         return new SimpleWrapper(handler, access);
     }
 
-    IItemHandlerModifiable source();
+    IItemHandlerModifiable itemHandler();
 
     boolean allowInput(int slot);
 
@@ -20,26 +20,26 @@ public interface ItemHandlerIOWrapper extends IItemHandlerModifiable
     @Override
     default int getSlots()
     {
-        return source().getSlots();
+        return itemHandler().getSlots();
     }
 
     @Override
     default void setStackInSlot(int slot, ItemStack stack)
     {
-        source().setStackInSlot(slot, stack);
+        itemHandler().setStackInSlot(slot, stack);
     }
 
     @Override
     default ItemStack getStackInSlot(int slot)
     {
-        return source().getStackInSlot(slot);
+        return itemHandler().getStackInSlot(slot);
     }
 
     @Override
     default ItemStack insertItem(int slot, ItemStack stack, boolean simulate)
     {
         if (allowInput(slot))
-            return source().insertItem(slot, stack, simulate);
+            return itemHandler().insertItem(slot, stack, simulate);
         else
             return stack;
     }
@@ -48,7 +48,7 @@ public interface ItemHandlerIOWrapper extends IItemHandlerModifiable
     default ItemStack extractItem(int slot, int amount, boolean simulate)
     {
         if (allowOutput(slot))
-            return source().extractItem(slot, amount, simulate);
+            return itemHandler().extractItem(slot, amount, simulate);
         else
             return ItemStack.EMPTY;
     }
@@ -56,16 +56,16 @@ public interface ItemHandlerIOWrapper extends IItemHandlerModifiable
     @Override
     default int getSlotLimit(int slot)
     {
-        return source().getSlotLimit(slot);
+        return itemHandler().getSlotLimit(slot);
     }
 
     @Override
     default boolean isItemValid(int slot, ItemStack stack)
     {
-        return source().isItemValid(slot, stack);
+        return itemHandler().isItemValid(slot, stack);
     }
 
-    record SimpleWrapper(IItemHandlerModifiable source, IOAccess access) implements ItemHandlerIOWrapper
+    record SimpleWrapper(IItemHandlerModifiable itemHandler, IOAccess access) implements ItemHandlerIOWrapper
     {
         @Override
         public boolean allowInput(int slot)

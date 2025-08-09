@@ -61,10 +61,10 @@ public final class LimaRecipesUtil
     // Codec helper factories
     public static <R extends LimaCustomRecipe<?>> LimaRecipeSerializer<R> simpleCustomSerializer(ResourceLocation id, BiFunction<List<SizedIngredient>, List<ItemResult>, R> factory, int maxIngredients, int maxResults)
     {
-        MapCodec<R> codec = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        MapCodec<R> codec = RecordCodecBuilder.<R>mapCodec(instance -> instance.group(
                 LimaCoreCodecs.sizedIngredients(maxIngredients).forGetter(LimaCustomRecipe::getItemIngredients),
                 ItemResult.listMapCodec(maxResults).forGetter(LimaCustomRecipe::getItemResults))
-                .apply(instance, factory));
+                .apply(instance, factory)).validate(LimaCustomRecipe::checkNotEmpty);
         StreamCodec<RegistryFriendlyByteBuf, R> streamCodec = StreamCodec.composite(
                 LimaStreamCodecs.sizedIngredients(maxIngredients),
                 LimaCustomRecipe::getItemIngredients,

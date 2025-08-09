@@ -282,15 +282,20 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
     //#endregion
 
-    protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
+    protected void runSlotsGrid(int startIndex, int xPos, int yPos, int columns, int rows, SlotPosConsumer consumer)
     {
         for (int y = 0; y < rows; y++)
         {
             for (int x = 0; x < columns; x++)
             {
-                addSlot(factory.createSlot(container, startIndex + (columns * y + x), xPos + x * 18, yPos + y * 18));
+                consumer.accept(startIndex + (columns * y + x), xPos + x * 18, yPos + y * 18);
             }
         }
+    }
+
+    protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
+    {
+        runSlotsGrid(startIndex, xPos, yPos, columns, rows, (i, sx, sy) -> addSlot(factory.createSlot(container, i, sx, sy)));
     }
 
     protected void addPlayerInventory(int xPos, int yPos, MenuSlotFactory<Container> factory)
@@ -335,6 +340,22 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     protected void addFluidSlot(LimaFluidHandler handler, int tank, int x, int y)
     {
         addFluidSlot(handler, tank, x, y, true);
+    }
+
+    protected void addFluidSlotsGrid(LimaFluidHandler handler, int tankStart, int xPos, int yPos, int columns, int rows, boolean allowInsert)
+    {
+        runSlotsGrid(tankStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(handler, i, sx, sy, allowInsert));
+    }
+
+    protected void addFluidSlotsGrid(LimaFluidHandler handler, int tankStart, int xPos, int yPos, int columns, int rows)
+    {
+        runSlotsGrid(tankStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(handler, i, sx, sy, true));
+    }
+
+    @FunctionalInterface
+    public interface SlotPosConsumer
+    {
+        void accept(int index, int x, int y);
     }
 
     @FunctionalInterface

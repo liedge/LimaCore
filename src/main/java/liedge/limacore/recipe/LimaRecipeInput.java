@@ -8,11 +8,24 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public interface LimaRecipeInput extends RecipeInput
 {
+    static LimaRecipeInput create(@Nullable IItemHandler itemContainer, @Nullable LimaFluidHandler fluidContainer)
+    {
+        return switch (Objects.isNull(itemContainer) + "," + Objects.isNull(fluidContainer))
+        {
+            case "false,false" -> of(itemContainer, fluidContainer);
+            case "false,true" -> of(itemContainer);
+            case "true,false" -> of(fluidContainer);
+            default -> EmptyInput.INSTANCE;
+        };
+    }
+
     static LimaRecipeInput of(IItemHandler itemContainer)
     {
         return new ItemsOnly(itemContainer);
@@ -54,6 +67,49 @@ public interface LimaRecipeInput extends RecipeInput
     default boolean checkFluidInputSize(List<SizedFluidIngredient> fluidIngredients)
     {
         return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !isTanksEmpty());
+    }
+
+    final class EmptyInput implements LimaRecipeInput
+    {
+        private static final EmptyInput INSTANCE = new EmptyInput();
+
+        private EmptyInput() {}
+
+        @Override
+        public ItemStack extractItem(int slot, int count, boolean simulate)
+        {
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
+        {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack getFluid(int tank)
+        {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public int tanks()
+        {
+            return 0;
+        }
+
+        @Override
+        public ItemStack getItem(int index)
+        {
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
     }
 
     interface ItemContainerSource extends LimaRecipeInput

@@ -3,6 +3,7 @@ package liedge.limacore.capability.itemhandler;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.blockentity.IOAccess;
+import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.util.LimaNbtUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -18,13 +19,13 @@ import java.util.List;
 public class LimaBlockEntityItemHandler extends ItemStackHandler implements LimaItemHandler
 {
     private final ItemHolderBlockEntity blockEntity;
-    private final BlockInventoryType inventoryType;
+    private final BlockContentsType contentsType;
 
-    public LimaBlockEntityItemHandler(ItemHolderBlockEntity blockEntity, int size, BlockInventoryType inventoryType)
+    public LimaBlockEntityItemHandler(ItemHolderBlockEntity blockEntity, int size, BlockContentsType contentsType)
     {
         super(size);
         this.blockEntity = blockEntity;
-        this.inventoryType = inventoryType;
+        this.contentsType = contentsType;
     }
 
     public ItemHandlerIOWrapper createIOWrapper(IOAccess blockAccessLevel)
@@ -117,19 +118,19 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
     @Override
     public boolean isItemValid(int slot, ItemStack stack)
     {
-        return blockEntity.isItemValid(inventoryType, slot, stack);
+        return blockEntity.isItemValid(contentsType, slot, stack);
     }
 
     @Override
     public void onContentsChanged(int slot)
     {
-        blockEntity.onItemSlotChanged(inventoryType, slot);
+        blockEntity.onItemSlotChanged(contentsType, slot);
     }
 
     @Override
     protected void onLoad()
     {
-        blockEntity.onItemHandlerLoaded(inventoryType);
+        blockEntity.onItemHandlerLoaded(contentsType);
     }
 
     @Override
@@ -154,18 +155,18 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
         onLoad();
     }
 
-    private record IOWrapper(LimaBlockEntityItemHandler source, IOAccess blockAccessLevel) implements ItemHandlerIOWrapper
+    private record IOWrapper(LimaBlockEntityItemHandler itemHandler, IOAccess blockAccessLevel) implements ItemHandlerIOWrapper
     {
         @Override
         public boolean allowInput(int slot)
         {
-            return blockAccessLevel.allowsInput() && source.blockEntity.getItemHandlerSlotIO(source.inventoryType, slot).allowsInput();
+            return blockAccessLevel.allowsInput() && itemHandler.blockEntity.getItemHandlerSlotIO(itemHandler.contentsType, slot).allowsInput();
         }
 
         @Override
         public boolean allowOutput(int slot)
         {
-            return blockAccessLevel.allowsOutput() && source.blockEntity.getItemHandlerSlotIO(source.inventoryType, slot).allowsOutput();
+            return blockAccessLevel.allowsOutput() && itemHandler.blockEntity.getItemHandlerSlotIO(itemHandler.contentsType, slot).allowsOutput();
         }
     }
 }
