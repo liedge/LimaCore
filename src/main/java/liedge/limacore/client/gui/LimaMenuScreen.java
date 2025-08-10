@@ -1,6 +1,5 @@
 package liedge.limacore.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
@@ -251,22 +250,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                     int slotY = fluidSlot.y();
                     FluidStack stack = fluidSlot.getFluid();
 
-                    if (!stack.isEmpty())
-                    {
-                        LimaGuiUtil.blitTintedFluidSprite(graphics, stack, slotX, slotY);
-
-                        PoseStack poseStack = graphics.pose();
-                        poseStack.pushPose();
-
-                        String amountText = LimaFluidUtil.formatCompactFluidAmount(stack.getAmount());
-                        int textWidth = LimaGuiUtil.halfTextWidth(amountText);
-                        poseStack.translate(slotX + 16 - textWidth, slotY + 11, 5);
-                        poseStack.scale(0.5f, 0.5f, 1f);
-
-                        graphics.drawString(Minecraft.getInstance().font, amountText, 0, 0, -1, true);
-
-                        poseStack.popPose();
-                    }
+                    if (!stack.isEmpty()) LimaGuiUtil.renderFluidWithAmount(graphics, stack, slotX, slotY);
 
                     if (limaScreen.isHovering(slotX, slotY, 16, 16, mouseX, mouseY))
                     {

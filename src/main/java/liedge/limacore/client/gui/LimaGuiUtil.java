@@ -3,6 +3,7 @@ package liedge.limacore.client.gui;
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import liedge.limacore.capability.fluid.LimaFluidUtil;
 import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -167,12 +168,12 @@ public final class LimaGuiUtil
         graphics.blit(textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
     }
 
-    @SuppressWarnings("ConstantValue")
-    public static void blitTintedFluidSprite(GuiGraphics graphics, FluidStack stack, int x, int y)
+    public static void renderFluid(GuiGraphics graphics, FluidStack stack, int x, int y)
     {
         IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
         ResourceLocation stillSpriteLoc = clientFluid.getStillTexture(stack);
 
+        //noinspection ConstantValue
         if (stillSpriteLoc != null)
         {
             TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(stillSpriteLoc);
@@ -184,6 +185,26 @@ public final class LimaGuiUtil
                 float blue = FastColor.ARGB32.blue(tint) / 255f;
                 graphics.blit(x, y, 0, 16, 16, sprite, red, green, blue, 1f);
             }
+        }
+    }
+
+    public static void renderFluidWithAmount(GuiGraphics graphics, FluidStack stack, int x, int y)
+    {
+        if (!stack.isEmpty())
+        {
+            LimaGuiUtil.renderFluid(graphics, stack, x, y);
+
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
+
+            String amountText = LimaFluidUtil.formatCompactFluidAmount(stack.getAmount());
+            int textWidth = LimaGuiUtil.halfTextWidth(amountText);
+            poseStack.translate(x + 16 - textWidth, y + 16 - FONT_HALF_LINE_HEIGHT, 2); // Slight z-offset
+            poseStack.scale(0.5f, 0.5f, 1f);
+
+            graphics.drawString(Minecraft.getInstance().font, amountText, 0, 0, -1, true);
+
+            poseStack.popPose();
         }
     }
     //#endregion
