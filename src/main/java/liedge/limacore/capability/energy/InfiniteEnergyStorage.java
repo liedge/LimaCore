@@ -55,9 +55,6 @@ public final class InfiniteEnergyStorage extends LimaEnergyStorage
     }
 
     @Override
-    protected void onEnergyChanged() {}
-
-    @Override
     public boolean canReceive()
     {
         return false;

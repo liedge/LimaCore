@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.util.LimaNbtUtil;
+import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -31,6 +32,12 @@ public class LimaBlockEntityItemHandler extends ItemStackHandler implements Lima
     public ItemHandlerIOWrapper createIOWrapper(IOAccess blockAccessLevel)
     {
         return new IOWrapper(this, blockAccessLevel);
+    }
+
+    public ItemStackHandler copyHandler()
+    {
+        NonNullList<ItemStack> copiedStacks = stacks.stream().map(ItemStack::copy).collect(LimaStreamsUtil.toNonNullList());
+        return new ItemStackHandler(copiedStacks);
     }
 
     /**

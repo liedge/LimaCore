@@ -14,7 +14,7 @@ public interface EnergyHolderBlockEntity extends LimaBlockEntityAccess
 
     LimaEnergyStorage getEnergyStorage();
 
-    default void onEnergyChanged()
+    default void onEnergyChanged(int previousEnergy)
     {
         setChanged();
     }

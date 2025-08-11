@@ -21,16 +21,11 @@ public class LimaBlockEntityEnergyStorage extends LimaEnergyStorage implements I
     }
 
     @Override
-    protected void onEnergyChanged()
-    {
-        energyHolder.onEnergyChanged();
-    }
-
-    @Override
     public void setEnergyStored(int energy)
     {
+        int oldEnergy = this.energy;
         this.energy = Math.max(energy, 0);
-        onEnergyChanged();
+        energyHolder.onEnergyChanged(oldEnergy);
     }
 
     @Override

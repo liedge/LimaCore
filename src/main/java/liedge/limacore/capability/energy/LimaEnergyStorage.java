@@ -20,8 +20,6 @@ public abstract class LimaEnergyStorage implements IEnergyStorage
         setTransferRate(transferRate);
     }
 
-    protected abstract void onEnergyChanged();
-
     public void writeComponents(MutableDataComponentHolder dataHolder)
     {
         dataHolder.set(LimaCoreDataComponents.ENERGY, getEnergyStored());
