@@ -49,7 +49,18 @@ public interface LimaRecipeInput extends RecipeInput
 
     int tanks();
 
-    default boolean isTanksEmpty()
+    @Override
+    default boolean isEmpty()
+    {
+        return areItemsEmpty() && areFluidsEmpty();
+    }
+
+    default boolean areItemsEmpty()
+    {
+        return RecipeInput.super.isEmpty();
+    }
+
+    default boolean areFluidsEmpty()
     {
         for (int i = 0; i < tanks(); i++)
         {
@@ -66,7 +77,7 @@ public interface LimaRecipeInput extends RecipeInput
 
     default boolean checkFluidInputSize(List<SizedFluidIngredient> fluidIngredients)
     {
-        return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !isTanksEmpty());
+        return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !areFluidsEmpty());
     }
 
     final class EmptyInput implements LimaRecipeInput
