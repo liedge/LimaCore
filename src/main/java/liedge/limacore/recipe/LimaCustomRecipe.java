@@ -141,53 +141,107 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
     //#endregion
 
-    public boolean consumeItemIngredients(T input, boolean simulate)
+    public void consumeItemIngredients(T input)
     {
-        if (!input.checkItemInputSize(itemIngredients)) return false;
-
         for (SizedIngredient sizedIngredient : itemIngredients)
         {
             int remaining = sizedIngredient.count();
             Ingredient root = sizedIngredient.ingredient();
 
-            for (int i = 0; i < input.size(); i++)
+            for (int slot = 0; slot < input.size(); slot++)
             {
-                if (root.test(input.getItem(i)))
+                if (root.test(input.getItem(slot)))
                 {
-                    ItemStack extracted = input.extractItem(i, remaining, simulate);
+                    ItemStack extracted = input.extractItem(slot, remaining, false);
                     remaining -= extracted.getCount();
 
                     if (remaining == 0) break;
                 }
             }
-
-            if (remaining > 0) return false;
         }
-
-        return true;
     }
 
-    public boolean consumeFluidIngredients(T input, IFluidHandler.FluidAction action)
+    public void consumeFluidIngredients(T input)
     {
-        if (!input.checkFluidInputSize(fluidIngredients)) return false;
-
-        for (SizedFluidIngredient fluidIngredient : fluidIngredients)
+        for (SizedFluidIngredient sizedIngredient : fluidIngredients)
         {
-            int remaining = fluidIngredient.amount();
-            FluidIngredient root = fluidIngredient.ingredient();
+            int remaining = sizedIngredient.amount();
+            FluidIngredient root = sizedIngredient.ingredient();
 
-            for (int i = 0; i < input.tanks(); i++)
+            for (int tank = 0; tank < input.tanks(); tank++)
             {
-                if (root.test(input.getFluid(i)))
+                if (root.test(input.getFluid(tank)))
                 {
-                    FluidStack extracted = input.extractFluid(i, remaining, action);
+                    FluidStack extracted = input.extractFluid(tank, remaining, IFluidHandler.FluidAction.EXECUTE);
                     remaining -= extracted.getAmount();
 
                     if (remaining == 0) break;
                 }
             }
+        }
+    }
 
-            if (remaining > 0) return false;
+    private boolean checkItemInputs(T input)
+    {
+        if (!input.checkItemInputSize(itemIngredients)) return false;
+
+        int[] removalTracker = new int[input.size()];
+
+        for (SizedIngredient sizedIngredient : itemIngredients)
+        {
+            int stillNeeded = sizedIngredient.count();
+            Ingredient root = sizedIngredient.ingredient();
+
+            for (int slot = 0; slot < input.size(); slot++)
+            {
+                if (root.test(input.getItem(slot)))
+                {
+                    int toExtract = Math.max(0, stillNeeded - removalTracker[slot]);
+                    if (toExtract > 0)
+                    {
+                        ItemStack extracted = input.extractItem(slot, toExtract, true);
+                        stillNeeded -= extracted.getCount();
+                        removalTracker[slot] += extracted.getCount();
+
+                        if (stillNeeded == 0) break;
+                    }
+                }
+            }
+
+            if (stillNeeded > 0) return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkFluidInputs(T input)
+    {
+        if (!input.checkFluidInputSize(fluidIngredients)) return false;
+
+        int[] removalTracker = new int[input.tanks()];
+
+        for (SizedFluidIngredient sizedIngredient : fluidIngredients)
+        {
+            int stillNeeded = sizedIngredient.amount();
+            FluidIngredient root = sizedIngredient.ingredient();
+
+            for (int tank = 0; tank < input.tanks(); tank++)
+            {
+                if (root.test(input.getFluid(tank)))
+                {
+                    int toDrain = Math.max(0, stillNeeded - removalTracker[tank]);
+                    if (toDrain > 0)
+                    {
+                        FluidStack extracted = input.extractFluid(tank, toDrain, IFluidHandler.FluidAction.SIMULATE);
+                        stillNeeded -= extracted.getAmount();
+                        removalTracker[tank] += extracted.getAmount();
+
+                        if (stillNeeded == 0) break;
+                    }
+                }
+            }
+
+            if (stillNeeded > 0) return false;
         }
 
         return true;
@@ -196,7 +250,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     @Override
     public boolean matches(T input, Level level)
     {
-        return consumeItemIngredients(input, true) && consumeFluidIngredients(input, IFluidHandler.FluidAction.SIMULATE);
+        return checkItemInputs(input) && checkFluidInputs(input);
     }
 
     @Override
