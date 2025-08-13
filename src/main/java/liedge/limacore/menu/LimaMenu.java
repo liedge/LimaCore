@@ -236,24 +236,84 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     //#region Quick move functions
-    protected abstract boolean quickMoveInternal(int index, ItemStack stack);
-
-    protected boolean quickMoveToContainerSlot(ItemStack stack, int slot)
+    protected boolean quickMoveInternal(int index, ItemStack stack)
     {
-        return quickMoveToContainerSlots(stack, slot, slot + 1, false);
+        if (index < inventoryStart && slots.get(index) instanceof LimaHandlerSlot limaSlot)
+        {
+            // Transfer from container slots to inventory.
+            return quickMoveToAllInventory(stack, limaSlot.reverseQuickTransfer());
+        }
+        else if (index >= inventoryStart)
+        {
+            // Transfer from inventory to container, filtration handled automatically by slots themselves
+            return quickMoveToContainer(stack);
+        }
+        else
+        {
+            return false; // No op for invalid edge cases.
+        }
     }
 
-    protected boolean quickMoveToContainerSlots(ItemStack stack, int startInclusive, int endExclusive, boolean reverse)
+    protected boolean quickMoveToContainer(ItemStack stack)
     {
-        boolean result = moveItemStackTo(stack, startInclusive, endExclusive, reverse);
+        boolean result = false;
 
-        int i = reverse ? endExclusive - 1 : startInclusive;
-        final int step = reverse ? -1 : 1;
-
-        while (reverse ? i >= startInclusive : i < endExclusive)
+        // First try to fill existing slots
+        if (stack.isStackable())
         {
-            if (slots.get(i) instanceof LimaHandlerSlot handlerSlot) handlerSlot.setBaseContainerChanged();
-            i += step;
+            for (int i = 0; i < inventoryStart; i++)
+            {
+                if (slots.get(i) instanceof LimaHandlerSlot limaSlot)
+                {
+                    if (!limaSlot.canQuickTransfer(stack)) continue;
+
+                    ItemStack slotStack = limaSlot.getItem();
+                    if (ItemStack.isSameItemSameComponents(stack, slotStack))
+                    {
+                        int n = slotStack.getCount() + stack.getCount();
+                        int maxStackSize = limaSlot.getMaxStackSize(slotStack);
+
+                        if (n <= maxStackSize)
+                        {
+                            stack.setCount(0);
+                            slotStack.setCount(n);
+                            limaSlot.setChanged();
+                            limaSlot.setBaseContainerChanged();
+                            result = true;
+                        }
+                        else if (slotStack.getCount() < maxStackSize)
+                        {
+                            stack.shrink(maxStackSize - slotStack.getCount());
+                            slotStack.setCount(maxStackSize);
+                            limaSlot.setChanged();
+                            limaSlot.setBaseContainerChanged();
+                            result = true;
+                        }
+                    }
+                }
+
+                if (stack.isEmpty()) break;
+            }
+        }
+
+        // Insert remaining stack (if any) into the next empty slot
+        if (!stack.isEmpty())
+        {
+            for (int i = 0; i < inventoryStart; i++)
+            {
+                if (slots.get(i) instanceof LimaHandlerSlot limaSlot)
+                {
+                    if (limaSlot.getItem().isEmpty() && limaSlot.mayPlace(stack) && limaSlot.canQuickTransfer(stack))
+                    {
+                        int maxStackSize = limaSlot.getMaxStackSize(stack);
+                        limaSlot.setByPlayer(stack.split(Math.min(stack.getCount(), maxStackSize)));
+                        limaSlot.setChanged();
+                        limaSlot.setBaseContainerChanged();
+                        result = true;
+                        break;
+                    }
+                }
+            }
         }
 
         return result;
@@ -271,13 +331,13 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected boolean quickMoveToAllInventory(ItemStack stack, boolean reverse)
     {
-        if (quickMoveToInventory(stack, reverse))
+        if (reverse)
         {
-            return true;
+            return quickMoveToHotbar(stack, true) || quickMoveToInventory(stack, true);
         }
         else
         {
-            return quickMoveToHotbar(stack, reverse);
+            return quickMoveToInventory(stack, false) || quickMoveToHotbar(stack, false);
         }
     }
     //#endregion

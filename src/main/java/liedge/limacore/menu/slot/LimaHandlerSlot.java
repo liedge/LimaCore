@@ -1,60 +1,48 @@
 package liedge.limacore.menu.slot;
 
 import liedge.limacore.capability.itemhandler.LimaItemHandler;
+import liedge.limacore.util.LimaItemUtil;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
+import java.util.function.Predicate;
+
 public class LimaHandlerSlot extends SlotItemHandler
 {
-    protected final IItemHandlerModifiable itemHandler;
-
     private final boolean allowInsert;
+    private final Predicate<ItemStack> quickTransferPredicate;
 
-    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, boolean allowInsert)
+    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int handlerIndex, int xPos, int yPos, boolean allowInsert, Predicate<ItemStack> quickTransferPredicate)
     {
-        super(itemHandler, slotIndex, xPos, yPos);
-        this.itemHandler = itemHandler;
+        super(itemHandler, handlerIndex, xPos, yPos);
         this.allowInsert = allowInsert;
+        this.quickTransferPredicate = quickTransferPredicate;
     }
 
-    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos)
+    public LimaHandlerSlot(IItemHandlerModifiable itemHandler, int handlerIndex, int xPos, int yPos)
     {
-        this(itemHandler, slotIndex, xPos, yPos, true);
+        this(itemHandler, handlerIndex, xPos, yPos, true, LimaItemUtil.ALWAYS_TRUE);
     }
 
-    @Override
-    public int getMaxStackSize()
+    public boolean reverseQuickTransfer()
     {
-        return itemHandler.getSlotLimit(index);
+        return false;
     }
 
-    @Override
-    public int getMaxStackSize(ItemStack stack)
+    public boolean canQuickTransfer(ItemStack stack)
     {
-        return Math.min(getMaxStackSize(), stack.getMaxStackSize());
+        return quickTransferPredicate.test(stack);
     }
 
     @Override
     public boolean mayPlace(ItemStack stack)
     {
-        return allowInsert && itemHandler.isItemValid(index, stack);
-    }
-
-    @Override
-    public IItemHandlerModifiable getItemHandler()
-    {
-        return itemHandler;
-    }
-
-    @Override
-    public void setByPlayer(ItemStack stack)
-    {
-        super.setByPlayer(stack);
+        return allowInsert && getItemHandler().isItemValid(index, stack);
     }
 
     public void setBaseContainerChanged()
     {
-        if (itemHandler instanceof LimaItemHandler limaHandler) limaHandler.onContentsChanged(index);
+        if (getItemHandler() instanceof LimaItemHandler limaHandler) limaHandler.onContentsChanged(index);
     }
 }

@@ -16,6 +16,7 @@ public final class LimaItemUtil
     private LimaItemUtil() {}
 
     public static final Predicate<ItemStack> ALWAYS_TRUE = stack -> true;
+    public static final Predicate<ItemStack> ALWAYS_FALSE = stack -> false;
 
     public static boolean areItemsMergeCompatible(ItemStack existing, ItemStack other)
     {

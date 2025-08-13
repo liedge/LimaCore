@@ -1,6 +1,7 @@
 package liedge.limacore.menu.slot;
 
 import liedge.limacore.registry.game.LimaCoreTriggerTypes;
+import liedge.limacore.util.LimaItemUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,9 +17,15 @@ public class RecipeOutputSlot extends LimaHandlerSlot
 
     public RecipeOutputSlot(IItemHandlerModifiable itemHandler, int slotIndex, int xPos, int yPos, Player player, RecipeType<?> recipeType)
     {
-        super(itemHandler, slotIndex, xPos, yPos, false);
+        super(itemHandler, slotIndex, xPos, yPos, false, LimaItemUtil.ALWAYS_FALSE);
         this.player = player;
         this.recipeType = recipeType;
+    }
+
+    @Override
+    public boolean reverseQuickTransfer()
+    {
+        return true;
     }
 
     @Override
