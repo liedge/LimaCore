@@ -2,6 +2,9 @@ package liedge.limacore.client.model.baked;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.Minecraft;
@@ -27,8 +30,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class BakedItemLayer extends BakedModelWrapper<BakedModel>
+public final class BakedItemLayer extends BakedModelWrapper<BakedModel>
 {
+    public static BakedItemLayer.Builder builder(String name)
+    {
+        return new Builder(name);
+    }
+
     private final List<BakedQuad> quads;
     private final List<BakedModel> self;
     private final RenderType renderType;
@@ -138,5 +146,38 @@ public class BakedItemLayer extends BakedModelWrapper<BakedModel>
     public boolean isCustomRenderer()
     {
         return false;
+    }
+
+    public static final class Builder
+    {
+        private final String name;
+        private final ObjectList<BakedQuad> quads;
+        private RenderTypeGroup renderTypeGroup = RenderTypeGroup.EMPTY;
+
+        private Builder(String name)
+        {
+            this.name = name;
+            this.quads = new ObjectArrayList<>();
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public void addQuad(BakedQuad quad)
+        {
+            quads.add(quad);
+        }
+
+        public void setRenderTypes(RenderTypeGroup renderTypes)
+        {
+            this.renderTypeGroup = renderTypes;
+        }
+
+        public BakedItemLayer build(ItemLayerBakedModel parent)
+        {
+            return new BakedItemLayer(parent, ObjectLists.unmodifiable(quads), renderTypeGroup);
+        }
     }
 }
