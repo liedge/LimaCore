@@ -21,7 +21,7 @@ import java.util.function.BiFunction;
 
 public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
 {
-    public static <R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> LimaCustomRecipeBuilder<R, B> simpleBuilder(ModResources resources, RecipeConstructor<R> factory)
+    public static <R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> LimaCustomRecipeBuilder<R, B> simpleBuilder(ModResources resources, LimaCustomRecipe.RecipeFactory<R> factory)
     {
         return new SimpleBuilder<>(resources, factory);
     }
@@ -153,14 +153,19 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     @Override
     protected String getDefaultRecipeName()
     {
-        return LimaRegistryUtil.getItemName(itemResults.getFirst().item());
+        if (!itemResults.isEmpty())
+            return LimaRegistryUtil.getItemName(itemResults.getFirst().item());
+        else if (!fluidResults.isEmpty())
+            return LimaRegistryUtil.getFluidName(fluidResults.getFirst());
+        else
+            throw new IllegalStateException("Default recipe name cannot be determined without any item or fluid results.");
     }
 
     private static class SimpleBuilder<R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> extends LimaCustomRecipeBuilder<R, B>
     {
-        private final RecipeConstructor<R> factory;
+        private final LimaCustomRecipe.RecipeFactory<R> factory;
 
-        private SimpleBuilder(ModResources modResources, RecipeConstructor<R> factory)
+        private SimpleBuilder(ModResources modResources, LimaCustomRecipe.RecipeFactory<R> factory)
         {
             super(modResources);
             this.factory = factory;
@@ -171,11 +176,5 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         {
             return factory.create(itemIngredients, fluidIngredients, itemResults, fluidResults);
         }
-    }
-
-    @FunctionalInterface
-    public interface RecipeConstructor<R extends LimaCustomRecipe<?>>
-    {
-        R create(List<SizedIngredient> itemIngredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults);
     }
 }

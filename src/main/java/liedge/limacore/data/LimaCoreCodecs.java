@@ -47,6 +47,11 @@ public final class LimaCoreCodecs
 
     private LimaCoreCodecs() {}
 
+    // Map codec common keys
+    public static final String INGREDIENTS_KEY = "ingredients";
+    public static final String FLUID_INGREDIENTS_KEY = "fluid_ingredients";
+    public static final String FLUID_RESULTS_KEY = "fluid_results";
+
     /**
      * Float codec for decoding into radians for code use and encoding into degrees for readability.
      */
@@ -128,6 +133,9 @@ public final class LimaCoreCodecs
             AXIS_VECTOR.fieldOf("axis").forGetter(o -> new Vector3f(o.x, o.y, o.z))).apply(instance, AxisAngle4f::new));
 
     public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
+    public static final MapCodec<List<SizedIngredient>> ITEM_INGREDIENTS_UNIT = EmptyFieldMapCodec.emptyListField(INGREDIENTS_KEY);
+    public static final MapCodec<List<SizedFluidIngredient>> FLUID_INGREDIENTS_UNIT = EmptyFieldMapCodec.emptyListField(FLUID_INGREDIENTS_KEY);
+    public static final MapCodec<List<FluidStack>> FLUID_RESULTS_UNIT = EmptyFieldMapCodec.emptyListField(FLUID_RESULTS_KEY);
 
     public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
     {
@@ -214,22 +222,17 @@ public final class LimaCoreCodecs
 
     public static MapCodec<List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(SizedIngredient.FLAT_CODEC, "ingredients", minInclusive, maxInclusive);
-    }
-
-    public static MapCodec<List<SizedIngredient>> sizedIngredients(int maxIngredients)
-    {
-        return sizedIngredients(1, maxIngredients);
+        return smartSizedListField(SizedIngredient.FLAT_CODEC, INGREDIENTS_KEY, minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(SizedFluidIngredient.FLAT_CODEC, "fluid_ingredients", minInclusive, maxInclusive);
+        return smartSizedListField(SizedFluidIngredient.FLAT_CODEC, FLUID_INGREDIENTS_KEY, minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(FluidStack.CODEC, "fluid_results", minInclusive, maxInclusive);
+        return smartSizedListField(FluidStack.CODEC, FLUID_RESULTS_KEY, minInclusive, maxInclusive);
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)

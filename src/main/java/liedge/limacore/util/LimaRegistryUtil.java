@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.Map;
 import java.util.Objects;
@@ -110,6 +112,21 @@ public final class LimaRegistryUtil
     }
 
     public static String getBlockName(Holder<Block> holder)
+    {
+        return getNonNullRegistryId(holder).getPath();
+    }
+
+    public static String getFluidName(FluidStack fluid)
+    {
+        return getFluidName(fluid.getFluidHolder());
+    }
+
+    public static String getFluidName(Fluid fluid)
+    {
+        return getNonNullRegistryId(fluid, BuiltInRegistries.FLUID).getPath();
+    }
+
+    public static String getFluidName(Holder<Fluid> holder)
     {
         return getNonNullRegistryId(holder).getPath();
     }

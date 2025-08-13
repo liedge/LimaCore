@@ -2,6 +2,7 @@ package liedge.limacore.lib;
 
 import liedge.limacore.data.TransientDataComponentType;
 import liedge.limacore.registry.LimaDeferredBlocksWithItems;
+import liedge.limacore.registry.LimaDeferredRecipeSerializers;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -121,6 +122,11 @@ public record ModResources(String modid)
     public DeferredRegister.DataComponents deferredDataComponents()
     {
         return deferredDataComponents(Registries.DATA_COMPONENT_TYPE);
+    }
+
+    public LimaDeferredRecipeSerializers deferredRecipeSerializers()
+    {
+        return LimaDeferredRecipeSerializers.create(modid);
     }
 
     public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)

@@ -1,6 +1,7 @@
 package liedge.limacore.recipe;
 
 import com.google.common.base.Preconditions;
+import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -306,5 +307,17 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     public boolean canCraftInDimensions(int width, int height)
     {
         return false;
+    }
+
+    @FunctionalInterface
+    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<SizedIngredient>, List<SizedFluidIngredient>, List<ItemResult>, List<FluidStack>, R>
+    {
+        R create(List<SizedIngredient> itemIngredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults);
+
+        @Override
+        default R apply(List<SizedIngredient> ingredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidStacks)
+        {
+            return create(ingredients, fluidIngredients, itemResults, fluidStacks);
+        }
     }
 }
