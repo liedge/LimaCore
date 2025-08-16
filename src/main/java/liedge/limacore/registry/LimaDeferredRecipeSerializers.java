@@ -23,6 +23,6 @@ public class LimaDeferredRecipeSerializers extends DeferredRegister<RecipeSerial
 
     public <R extends LimaCustomRecipe<?>> DeferredHolder<RecipeSerializer<?>, LimaRecipeSerializer<R>> registerSerializer(String name, LimaCustomRecipe.RecipeFactory<R> factory, UnaryOperator<LimaRecipeSerializer.Builder<R>> builderOp)
     {
-        return register(name, id -> builderOp.apply(LimaRecipeSerializer.builder()).build(id, factory));
+        return register(name, id -> builderOp.apply(LimaRecipeSerializer.builder(factory)).build(id));
     }
 }

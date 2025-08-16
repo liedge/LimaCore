@@ -29,7 +29,7 @@ public final class LimaFluidUtil
         return LimaTextUtil.formatWholeNumber(stored) + '/' + LimaTextUtil.formatWholeNumber(capacity) + ' ' + MILLIBUCKET_UNIT;
     }
 
-    public static int transferFluidsBetween(IFluidHandler source, IFluidHandler destination, int maxTransfer, IFluidHandler.FluidAction action)
+    public static int transferFluidsFromGeneralTank(IFluidHandler source, IFluidHandler destination, int maxTransfer, IFluidHandler.FluidAction action)
     {
         FluidStack sourceFluid = source.drain(maxTransfer, IFluidHandler.FluidAction.SIMULATE);
         int accepted = destination.fill(sourceFluid, IFluidHandler.FluidAction.SIMULATE);
@@ -40,5 +40,22 @@ public final class LimaFluidUtil
         accepted = destination.fill(sourceFluid, IFluidHandler.FluidAction.EXECUTE);
 
         return accepted;
+    }
+
+    public static int transferFluidsFromLimaTank(LimaFluidHandler source, IFluidHandler destination, int maxTransfer, IFluidHandler.FluidAction action)
+    {
+        for (int tank = 0; tank < source.getTanks(); tank++)
+        {
+            FluidStack sourceFluid = source.drainTank(tank, maxTransfer, IFluidHandler.FluidAction.SIMULATE, false);
+            int accepted = destination.fill(sourceFluid, IFluidHandler.FluidAction.SIMULATE);
+            if (accepted == 0) continue;
+
+            if (action.simulate()) return accepted;
+
+            sourceFluid = source.drainTank(tank, maxTransfer, IFluidHandler.FluidAction.EXECUTE, false);
+            return destination.fill(sourceFluid, IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        return 0;
     }
 }

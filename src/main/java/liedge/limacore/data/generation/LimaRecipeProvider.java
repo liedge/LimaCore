@@ -3,6 +3,7 @@ package liedge.limacore.data.generation;
 import liedge.limacore.data.generation.recipe.LimaCookingRecipeBuilder;
 import liedge.limacore.data.generation.recipe.LimaShapedRecipeBuilder;
 import liedge.limacore.data.generation.recipe.LimaShapelessRecipeBuilder;
+import liedge.limacore.data.generation.recipe.LimaStonecuttingRecipeBuilder;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -60,6 +61,21 @@ public abstract class LimaRecipeProvider extends RecipeProvider
     protected LimaShapelessRecipeBuilder shapeless(ItemLike item)
     {
         return shapeless(stackOf(item));
+    }
+
+    protected LimaStonecuttingRecipeBuilder stonecutting(ItemStack result)
+    {
+        return new LimaStonecuttingRecipeBuilder(modResources, result);
+    }
+
+    protected LimaStonecuttingRecipeBuilder stonecutting(ItemLike item, int count)
+    {
+        return stonecutting(stackOf(item, count));
+    }
+
+    protected LimaStonecuttingRecipeBuilder stonecutting(ItemLike item)
+    {
+        return stonecutting(stackOf(item));
     }
 
     protected LimaCookingRecipeBuilder smelting(ItemStack result)

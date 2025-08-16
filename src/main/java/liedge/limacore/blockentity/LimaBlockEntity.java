@@ -146,6 +146,8 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         if (this instanceof OwnableBlockEntity ownable) ownable.setOwner(player);
     }
 
+    public void onRemovedFromLevel(Level level, BlockPos pos, BlockState oldState, BlockState newState) {}
+
     /**
      * Called by {@link liedge.limacore.block.LimaEntityBlock} in {@link liedge.limacore.block.LimaEntityBlock#onBlockStateChange(LevelReader, BlockPos, BlockState, BlockState)}
      * when the block state is updated. In other words, the old state and the new state is still the same block, only state properties have changed.

@@ -125,6 +125,11 @@ public final class LimaCoreCodecs
             Codec.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
             DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch))
             .apply(instance, ItemStack::new));
+    public static final MapCodec<FluidStack> FLUID_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            FluidStack.FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
+            ExtraCodecs.POSITIVE_INT.fieldOf("amount").forGetter(FluidStack::getAmount),
+            DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(FluidStack::getComponentsPatch))
+            .apply(instance, FluidStack::new));
 
     public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaMathUtil::unitVecForAxis);
 

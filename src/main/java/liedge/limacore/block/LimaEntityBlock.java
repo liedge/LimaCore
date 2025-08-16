@@ -4,7 +4,11 @@ import liedge.limacore.blockentity.LimaBlockEntity;
 import liedge.limacore.blockentity.LimaBlockEntityType;
 import liedge.limacore.menu.LimaMenuProvider;
 import liedge.limacore.util.LimaBlockUtil;
+import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +28,8 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class LimaEntityBlock extends Block implements EntityBlock
 {
+    private LimaBlockEntityType<?> blockEntityType;
+
     protected LimaEntityBlock(Properties properties)
     {
         super(properties);
@@ -58,8 +64,7 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     @Override
     public @Nullable LimaMenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos)
     {
-        LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
-        return blockEntity != null ? blockEntity.getType().createMenuProvider(blockEntity) : null;
+        return blockEntityMenuProvider(level, pos);
     }
 
     @Override
@@ -106,6 +111,18 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         }
     }
 
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston)
+    {
+        // TODO: This will be replaced by native method.
+        if (state.hasBlockEntity() && !state.is(newState.getBlock()))
+        {
+            LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
+            if (blockEntity != null) blockEntity.onRemovedFromLevel(level, pos, state, newState);
+            level.removeBlockEntity(pos);
+        }
+    }
+
     // Override here to avoid needing warning suppression in subclasses
     @SuppressWarnings("deprecation")
     @Override
@@ -114,7 +131,30 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         return RenderShape.MODEL;
     }
 
-    public abstract @Nullable LimaBlockEntityType<?> getBlockEntityType(BlockState state);
+    /**
+     * Gets the {@link LimaBlockEntityType} that should be created for the given {@link BlockState}. By default,
+     * this function ignores state and tries to find a type matching this block's registry ID.
+     * @param state The block state
+     * @return The block entity type, or null if the block should not create a BE.
+     * @throws IllegalStateException If no {@link LimaBlockEntityType} was found in the block entity type registry.
+     */
+    public @Nullable LimaBlockEntityType<?> getBlockEntityType(BlockState state)
+    {
+        if (blockEntityType == null)
+        {
+            ResourceLocation id = LimaRegistryUtil.getBlockId(this);
+            blockEntityType = LimaCoreUtil.castOrThrow(LimaBlockEntityType.class, LimaRegistryUtil.getNonNullRegistryValue(id, BuiltInRegistries.BLOCK_ENTITY_TYPE),
+                    () -> new IllegalStateException("No valid block entity type matches block id '" + id + "'"));
+        }
+
+        return blockEntityType;
+    }
+
+    protected @Nullable LimaMenuProvider blockEntityMenuProvider(Level level, BlockPos pos)
+    {
+        LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
+        return blockEntity != null ? blockEntity.getType().createMenuProvider(blockEntity) : null;
+    }
 
     protected InteractionResult tryOpenMenu(BlockState state, Level level, BlockPos pos, Player player)
     {

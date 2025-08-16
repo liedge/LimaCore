@@ -9,10 +9,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -94,9 +91,9 @@ public final class LimaBlockUtil
      * @return The result of {@link LevelReader#getBlockEntity(BlockPos)}, or null if either {@code level} or {@code blockPos} are null.
     */
     @SuppressWarnings("deprecation")
-    public static @Nullable BlockEntity getSafeBlockEntity(@Nullable LevelReader level, @Nullable BlockPos blockPos)
+    public static @Nullable BlockEntity getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos)
     {
-        if (level != null && blockPos != null && level.hasChunkAt(blockPos))
+        if (level != null && level.hasChunkAt(blockPos))
         {
             return level.getBlockEntity(blockPos);
         }
@@ -111,6 +108,11 @@ public final class LimaBlockUtil
     public static <BE> @Nullable BE getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos, Class<BE> beClass)
     {
         return castOrNull(beClass, getSafeBlockEntity(level, blockPos));
+    }
+
+    public static <BE> @Nullable BE getBlockEntity(@Nullable BlockGetter level, BlockPos pos, Class<BE> beClass)
+    {
+        return level != null ? castOrNull(beClass, level.getBlockEntity(pos)) : null;
     }
 
     @SuppressWarnings("deprecation")

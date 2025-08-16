@@ -15,6 +15,8 @@ import static liedge.limacore.util.LimaRegistryUtil.getItemName;
 
 public abstract class LimaBlockStateProvider extends BlockStateProvider implements ModelProviderExtensions
 {
+    public static final int DEFAULT_Y_ANGLE_OFFSET = 180;
+
     private final ModResources resources;
     private final ExistingFileHelper helper;
 
@@ -55,6 +57,16 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
     protected void simpleBlockItem(Holder<Block> holder, ModelFile model)
     {
         simpleBlockItem(holder.value(), model);
+    }
+
+    protected void simpleBlockItem(Block block)
+    {
+        simpleBlockItem(block, existingModel(blockFolderLocation(block)));
+    }
+
+    protected void simpleBlockItem(Holder<Block> holder)
+    {
+        simpleBlockItem(holder.value());
     }
 
     protected void simpleBlockWithItem(Holder<Block> holder, ModelFile model)
@@ -112,6 +124,11 @@ public abstract class LimaBlockStateProvider extends BlockStateProvider implemen
     {
         Preconditions.checkArgument(side.getAxis().isHorizontal(), "Direction must be horizontal for y rotation calculation");
         return ((int)side.toYRot() + angleOffset) % 360;
+    }
+
+    protected int getRotationY(Direction side)
+    {
+        return getRotationY(side, DEFAULT_Y_ANGLE_OFFSET);
     }
 
     protected ItemModelBuilder getItemBuilder(Block block)
