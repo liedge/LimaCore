@@ -52,7 +52,7 @@ public final class LimaFluidUtil
 
             if (action.simulate()) return accepted;
 
-            sourceFluid = source.drainTank(tank, maxTransfer, IFluidHandler.FluidAction.EXECUTE, false);
+            sourceFluid = source.drainTank(tank, accepted, IFluidHandler.FluidAction.EXECUTE, false);
             return destination.fill(sourceFluid, IFluidHandler.FluidAction.EXECUTE);
         }
 
