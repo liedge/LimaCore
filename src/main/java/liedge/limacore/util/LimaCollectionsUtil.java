@@ -2,16 +2,16 @@ package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -77,6 +77,39 @@ public final class LimaCollectionsUtil
     }
 
     // Misc helpers
+    public static int[] shuffleIntArray(int[] array, RandomSource random)
+    {
+        for (int a = array.length - 1; a > 0; a--)
+        {
+            int b = random.nextInt(a + 1);
+            IntArrays.swap(array, a, b);
+        }
+
+        return array;
+    }
+
+    public static int[] shuffleIndices(List<?> list, RandomSource random)
+    {
+        int[] arr = new int[list.size()];
+        Arrays.setAll(arr, IntUnaryOperator.identity());
+
+        return shuffleIntArray(arr, random);
+    }
+
+    public static <T> List<T> shuffledList(List<T> source, RandomSource random)
+    {
+        List<T> result = new ObjectArrayList<>();
+
+        int[] si = shuffleIndices(source, random);
+
+        for (int i : si)
+        {
+            result.add(source.get(i));
+        }
+
+        return result;
+    }
+
     public static Stream<CompoundTag> streamCompoundList(ListTag tag)
     {
         if (tag.isEmpty()) return Stream.empty();

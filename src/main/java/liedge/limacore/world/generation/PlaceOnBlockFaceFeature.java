@@ -14,6 +14,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated(forRemoval = true, since = "1.9.2")
 public final class PlaceOnBlockFaceFeature extends Feature<PlaceOnBlockFaceFeature.Configuration>
 {
     private static final Codec<TargetBlockState> TARGET_CODEC = RecordCodecBuilder.create(instance -> instance.group(

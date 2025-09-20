@@ -15,6 +15,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@Deprecated(forRemoval = true, since = "1.9.2")
 public final class RandomVerticalScanPlacement extends PlacementModifier
 {
     public static final MapCodec<RandomVerticalScanPlacement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(

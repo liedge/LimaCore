@@ -16,9 +16,12 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DeathMessageType;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.placement.*;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.TagMatchTest;
@@ -61,6 +64,65 @@ public final class LimaBootstrapUtil
     }
 
     // Commonly used objects
+    public static BlockStateProvider simpleState(Holder<Block> holder)
+    {
+        return BlockStateProvider.simple(holder.value());
+    }
+
+    public static BlockPredicate matchesBlocks(Direction side, Block... blocks)
+    {
+        return BlockPredicate.matchesBlocks(side.getNormal(), blocks);
+    }
+
+    public static BlockPredicate isAir(Direction side)
+    {
+        return matchesBlocks(side, Blocks.AIR);
+    }
+
+    public static BlockPredicate isAirOrWater(Direction side)
+    {
+        return matchesBlocks(side, Blocks.AIR, Blocks.WATER);
+    }
+
+    public static BlockPredicate replaceable(Direction side)
+    {
+        return BlockPredicate.replaceable(side.getNormal());
+    }
+
+    public static BlockPredicate noFluids(Direction side)
+    {
+        return BlockPredicate.noFluid(side.getNormal());
+    }
+
+    private static BlockPredicate replaceableSturdyFace(Direction side, boolean allowFluids)
+    {
+        BlockPredicate sturdy = BlockPredicate.hasSturdyFace(side);
+        BlockPredicate replaceable = replaceable(side);
+
+        return allowFluids ? BlockPredicate.allOf(sturdy, replaceable) : BlockPredicate.allOf(sturdy, replaceable, noFluids(side));
+    }
+
+    public static BlockPredicate replaceableSturdyFaces(boolean allowFluids, Direction... sides)
+    {
+        List<BlockPredicate> predicates = Arrays.stream(sides).map(o -> replaceableSturdyFace(o, allowFluids)).toList();
+        return BlockPredicate.anyOf(predicates);
+    }
+
+    public static BlockPredicate replaceableSturdyFaces(Direction... sides)
+    {
+        return replaceableSturdyFaces(true, sides);
+    }
+
+    public static BlockPredicate replaceableSturdyFaces(boolean allowFluids)
+    {
+        return replaceableSturdyFaces(allowFluids, Direction.values());
+    }
+
+    public static BlockPredicate replaceableSturdyFaces()
+    {
+        return replaceableSturdyFaces(true);
+    }
+
     public static OreConfiguration oreConfig(int oreVeinSize, OreConfiguration.TargetBlockState... targetStates)
     {
         return new OreConfiguration(Arrays.asList(targetStates), oreVeinSize);
@@ -82,21 +144,25 @@ public final class LimaBootstrapUtil
         return OreConfiguration.target(new TagMatchTest(targetTag), oreBlock.get().defaultBlockState());
     }
 
+    @Deprecated(forRemoval = true, since = "1.9.2")
     public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTarget(Block targetBlock, Block toPlace, Direction face)
     {
         return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlace.defaultBlockState());
     }
 
+    @Deprecated(forRemoval = true, since = "1.9.2")
     public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTarget(Block targetBlock, Supplier<? extends Block> toPlaceSupplier, Direction face)
     {
         return blockFaceTarget(targetBlock, toPlaceSupplier.get(), face);
     }
 
+    @Deprecated(forRemoval = true, since = "1.9.2")
     public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTargetAutoOrient(Block targetBlock, Block toPlace, Direction face)
     {
         return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlace.defaultBlockState().setValue(BlockStateProperties.FACING, face));
     }
 
+    @Deprecated(forRemoval = true, since = "1.9.2")
     public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTargetAutoOrient(Block targetBlock, Supplier<? extends Block> toPlaceSupplier, Direction face)
     {
         return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlaceSupplier.get().defaultBlockState().setValue(BlockStateProperties.FACING, face));
