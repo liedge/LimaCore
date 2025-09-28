@@ -63,8 +63,9 @@ public final class LimaEntityUtil
     {
         return switch (target)
         {
+            case NeutralMob neutralMob when target instanceof Enemy -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_ENEMY;
+            case NeutralMob neutralMob -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_MOB;
             case Enemy enemy -> MobHostility.HOSTILE;
-            case NeutralMob neutralMob -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL;
             case Targeting targetingEntity -> attacker != null && targetingEntity.getTarget() == attacker ? MobHostility.HOSTILE : MobHostility.PASSIVE;
             default -> MobHostility.PASSIVE;
         };

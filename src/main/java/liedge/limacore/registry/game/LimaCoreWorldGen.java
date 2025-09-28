@@ -27,10 +27,8 @@ public final class LimaCoreWorldGen
 
     // Features
     public static final DeferredHolder<Feature<?>, PlaceOnSideFeature> PLACE_ON_SIDE_FEATURE = FEATURES.register("place_on_side", PlaceOnSideFeature::new);
-    public static final DeferredHolder<Feature<?>, PlaceOnBlockFaceFeature> PLACE_ON_BLOCK_FACE = FEATURES.register("place_on_block_face", PlaceOnBlockFaceFeature::new);
 
     // Placement modifiers
-    public static final DeferredHolder<PlacementModifierType<?>, LimaPlacementType<RandomVerticalScanPlacement>> RANDOM_VERTICAL_SCAN_PLACEMENT = PLACEMENT_MODIFIERS.register("random_vertical_scan", id -> new LimaPlacementType<>(id, RandomVerticalScanPlacement.CODEC));
     public static final DeferredHolder<PlacementModifierType<?>, LimaPlacementType<RandomAxisScanPlacement>> RANDOM_AXIS_SCAN_PLACEMENT = PLACEMENT_MODIFIERS.register("random_axis_scan", id -> new LimaPlacementType<>(id, RandomAxisScanPlacement.CODEC));
     public static final DeferredHolder<PlacementModifierType<?>, LimaPlacementType<StructurePlacementFilter>> STRUCTURE_PLACEMENT = PLACEMENT_MODIFIERS.register("in_structure", id -> new LimaPlacementType<>(id, StructurePlacementFilter.MAP_CODEC));
 

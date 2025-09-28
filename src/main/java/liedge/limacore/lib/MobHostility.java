@@ -9,7 +9,8 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 public enum MobHostility implements StringRepresentable
 {
     PASSIVE("passive"),
-    NEUTRAL("neutral"),
+    NEUTRAL_MOB("neutral_mob"),
+    NEUTRAL_ENEMY("neutral_enemy"),
     HOSTILE("hostile");
 
     public static final LimaEnumCodec<MobHostility> CODEC = LimaEnumCodec.create(MobHostility.class);

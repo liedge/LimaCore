@@ -1,7 +1,6 @@
 package liedge.limacore.data.generation;
 
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.world.generation.PlaceOnBlockFaceFeature;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -17,7 +16,6 @@ import net.minecraft.world.damagesource.DeathMessageType;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
@@ -142,29 +140,5 @@ public final class LimaBootstrapUtil
     public static OreConfiguration.TargetBlockState tagMatchOreTarget(TagKey<Block> targetTag, Supplier<? extends Block> oreBlock)
     {
         return OreConfiguration.target(new TagMatchTest(targetTag), oreBlock.get().defaultBlockState());
-    }
-
-    @Deprecated(forRemoval = true, since = "1.9.2")
-    public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTarget(Block targetBlock, Block toPlace, Direction face)
-    {
-        return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlace.defaultBlockState());
-    }
-
-    @Deprecated(forRemoval = true, since = "1.9.2")
-    public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTarget(Block targetBlock, Supplier<? extends Block> toPlaceSupplier, Direction face)
-    {
-        return blockFaceTarget(targetBlock, toPlaceSupplier.get(), face);
-    }
-
-    @Deprecated(forRemoval = true, since = "1.9.2")
-    public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTargetAutoOrient(Block targetBlock, Block toPlace, Direction face)
-    {
-        return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlace.defaultBlockState().setValue(BlockStateProperties.FACING, face));
-    }
-
-    @Deprecated(forRemoval = true, since = "1.9.2")
-    public static PlaceOnBlockFaceFeature.TargetBlockState blockFaceTargetAutoOrient(Block targetBlock, Supplier<? extends Block> toPlaceSupplier, Direction face)
-    {
-        return new PlaceOnBlockFaceFeature.TargetBlockState(new BlockMatchTest(targetBlock), face, toPlaceSupplier.get().defaultBlockState().setValue(BlockStateProperties.FACING, face));
     }
 }
