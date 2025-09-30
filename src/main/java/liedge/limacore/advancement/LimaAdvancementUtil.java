@@ -3,6 +3,7 @@ package liedge.limacore.advancement;
 import com.mojang.datafixers.Products;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.ModResources;
+import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.registries.Registries;
@@ -12,12 +13,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public final class LimaAdvancementUtil
 {
@@ -39,16 +38,15 @@ public final class LimaAdvancementUtil
         return predicate.matches(EntityPredicate.createContext(serverPlayer, toTest));
     }
 
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> playerHasItem(Supplier<? extends ItemLike> supplier)
+    public static Criterion<PlayerTrigger.TriggerInstance> playerLoggedIn(@Nullable EntityPredicate.Builder playerPredicate)
     {
-        return InventoryChangeTrigger.TriggerInstance.hasItems(supplier.get());
+        Optional<ContextAwarePredicate> player = Optional.ofNullable(playerPredicate).map(EntityPredicate::wrap);
+        return LimaCoreTriggerTypes.PLAYER_LOGGED_IN.get().createCriterion(new PlayerTrigger.TriggerInstance(player));
     }
 
-    @SafeVarargs
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> playerHasItems(Supplier<? extends ItemLike>... suppliers)
+    public static Criterion<PlayerTrigger.TriggerInstance> playerLoggedIn()
     {
-        ItemLike[] items = Stream.of(suppliers).map(Supplier::get).toArray(ItemLike[]::new);
-        return InventoryChangeTrigger.TriggerInstance.hasItems(items);
+        return playerLoggedIn(null);
     }
 
     public static Criterion<InventoryChangeTrigger.TriggerInstance> playerHasItems(TagKey<Item> tagKey)
