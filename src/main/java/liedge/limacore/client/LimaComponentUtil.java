@@ -24,6 +24,7 @@ public final class LimaComponentUtil
     public static final Component BULLET_2_INDENT = Component.literal("  • ");
     public static final Component MINUS_1_INDENT = Component.literal(" - ");
     public static final Component MINUS_2_INDENT = Component.literal("  - ");
+    public static final Component COLON_SPACE_SEPARATOR = Component.literal(": ");
 
     private static final Map<Direction, Translatable> DIRECTION_KEYS = LimaCollectionsUtil.fillAndCreateImmutableEnumMap(Direction.class, side -> LimaCore.RESOURCES.translationHolder("direction", "{}", side.getSerializedName()));
 
@@ -33,6 +34,11 @@ public final class LimaComponentUtil
     }
 
     //#region Component helper functions
+    public static MutableComponent colonSpaced(MutableComponent first, MutableComponent second)
+    {
+        return first.append(COLON_SPACE_SEPARATOR).append(second);
+    }
+
     public static MutableComponent bulletPointListWithHeader(Component header, Component bullet, Collection<? extends Component> elements)
     {
         return header.copy().append(CommonComponents.NEW_LINE).append(bulletPointList(bullet, elements));
