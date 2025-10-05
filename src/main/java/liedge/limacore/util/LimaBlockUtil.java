@@ -2,6 +2,7 @@ package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import liedge.limacore.lib.math.LimaCoreMath;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
@@ -43,7 +44,7 @@ public final class LimaBlockUtil
         if (player != null)
         {
             float xRot = player.getViewXRot(1f);
-            float cos = Mth.cos(LimaMathUtil.toRad(xRot));
+            float cos = Mth.cos(LimaCoreMath.toRad(xRot));
             if (cos > 0.7071f)
             {
                 return context.getHorizontalDirection().getOpposite();

@@ -4,8 +4,8 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
-import static liedge.limacore.util.LimaMathUtil.divideFloat;
-import static liedge.limacore.util.LimaMathUtil.divideFloatLerp;
+import static liedge.limacore.lib.math.LimaCoreMath.divideFloat;
+import static liedge.limacore.lib.math.LimaCoreMath.divideFloatLerp;
 
 public class TickTimer
 {

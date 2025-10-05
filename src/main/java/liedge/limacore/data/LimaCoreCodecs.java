@@ -13,7 +13,7 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.util.LimaCoreUtil;
-import liedge.limacore.util.LimaMathUtil;
+import liedge.limacore.lib.math.LimaCoreMath;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
@@ -38,8 +38,8 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import static liedge.limacore.util.LimaMathUtil.toDeg;
-import static liedge.limacore.util.LimaMathUtil.toRad;
+import static liedge.limacore.lib.math.LimaCoreMath.toDeg;
+import static liedge.limacore.lib.math.LimaCoreMath.toRad;
 
 public final class LimaCoreCodecs
 {
@@ -88,7 +88,7 @@ public final class LimaCoreCodecs
             return ops.getStringValue(input).flatMap(string -> {
                 try
                 {
-                    return DataResult.success(LimaMathUtil.parseHexadecimal(string));
+                    return DataResult.success(LimaCoreMath.parseHexadecimal(string));
                 }
                 catch (NumberFormatException ex)
                 {
@@ -131,7 +131,7 @@ public final class LimaCoreCodecs
             DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(FluidStack::getComponentsPatch))
             .apply(instance, FluidStack::new));
 
-    public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaMathUtil::unitVecForAxis);
+    public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaCoreMath::unitVecForAxis);
 
     public static final MapCodec<AxisAngle4f> UNIT_AXIS_ANGLE4F = RecordCodecBuilder.mapCodec(instance -> instance.group(
             DEG_TO_RAD_FLOAT.fieldOf("angle").forGetter(o -> o.angle),

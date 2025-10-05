@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.math.LimaRoundingMode;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
-import liedge.limacore.util.LimaMathUtil;
+import liedge.limacore.lib.math.LimaCoreMath;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
@@ -14,7 +14,7 @@ public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode
 {
     public static final MapCodec<RoundingNumberProvider> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             NumberProviders.CODEC.fieldOf("child").forGetter(RoundingNumberProvider::child),
-            LimaRoundingMode.NATURAL_OPTIONAL_MAP_CODEC.forGetter(RoundingNumberProvider::mode))
+            LimaRoundingMode.CODEC.optionalFieldOf("mode", LimaRoundingMode.NATURAL).forGetter(RoundingNumberProvider::mode))
             .apply(instance, RoundingNumberProvider::new));
 
     public static NumberProvider of(NumberProvider child, LimaRoundingMode mode)
@@ -31,7 +31,7 @@ public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode
     @Override
     public int getInt(LootContext context)
     {
-        return LimaMathUtil.round(child.getFloat(context), mode);
+        return LimaCoreMath.round(child.getFloat(context), mode);
     }
 
     @Override

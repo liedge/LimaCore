@@ -1,7 +1,7 @@
 package liedge.limacore.capability.itemhandler;
 
 import liedge.limacore.util.LimaItemUtil;
-import liedge.limacore.util.LimaMathUtil;
+import liedge.limacore.lib.math.LimaCoreMath;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
@@ -64,7 +64,7 @@ public final class LimaItemHandlerUtil
      */
     public static ItemStack insertItemIntoSlots(IItemHandler destination, ItemStack toInsert, int slotStartInclusive, int slotEndExclusive, boolean simulate)
     {
-        LimaMathUtil.validateOpenIndexRange(slotStartInclusive, slotEndExclusive, destination.getSlots());
+        LimaCoreMath.validateOpenIndexRange(slotStartInclusive, slotEndExclusive, destination.getSlots());
         if (toInsert.isEmpty()) return toInsert;
 
         for (int i = slotStartInclusive; i < slotEndExclusive; i++)
@@ -97,7 +97,7 @@ public final class LimaItemHandlerUtil
 
     public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlotStart, int sourceSlotEnd)
     {
-        LimaMathUtil.validateOpenIndexRange(sourceSlotStart, sourceSlotEnd, source.getSlots());
+        LimaCoreMath.validateOpenIndexRange(sourceSlotStart, sourceSlotEnd, source.getSlots());
 
         for (int i = sourceSlotStart; i < sourceSlotEnd; i++)
         {

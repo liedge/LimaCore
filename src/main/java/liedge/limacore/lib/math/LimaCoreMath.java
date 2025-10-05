@@ -1,6 +1,5 @@
-package liedge.limacore.util;
+package liedge.limacore.lib.math;
 
-import liedge.limacore.lib.math.LimaRoundingMode;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -14,9 +13,9 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
-public final class LimaMathUtil
+public final class LimaCoreMath
 {
-    private LimaMathUtil() {}
+    private LimaCoreMath() {}
 
     // Commonly used values & random
     public static final Random RANDOM = new Random(13L);
@@ -119,7 +118,7 @@ public final class LimaMathUtil
     {
         return switch (mode)
         {
-            case NATURAL -> Math.round((float) value);
+            case NATURAL -> (int) Math.round(value);
             case FLOOR -> Mth.floor(value);
             case CEIL -> Mth.ceil(value);
             case RANDOM -> roundRandomly(value);
