@@ -5,10 +5,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
-import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
@@ -17,14 +15,12 @@ import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.BakedModelWrapper;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,9 +39,8 @@ public final class BakedItemLayer extends BakedModelWrapper<BakedModel>
     private final RenderType fabulousRenderType;
     private final List<RenderType> renderTypes;
     private final List<RenderType> fabulousRenderTypes;
-    private final boolean skipNormalBufferAdd;
 
-    public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, @Nullable RenderType renderType, @Nullable RenderType fabulousRenderType, boolean skipNormalBufferAdd)
+    public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, @Nullable RenderType renderType, @Nullable RenderType fabulousRenderType)
     {
         super(parent);
         this.quads = quads;
@@ -54,40 +49,16 @@ public final class BakedItemLayer extends BakedModelWrapper<BakedModel>
         this.fabulousRenderType = fabulousRenderType != null ? renderType : Sheets.translucentCullBlockSheet();
         this.renderTypes = List.of(this.renderType);
         this.fabulousRenderTypes = List.of(this.fabulousRenderType);
-        this.skipNormalBufferAdd = skipNormalBufferAdd;
     }
 
     public BakedItemLayer(BakedModel parent, List<BakedQuad> quads, RenderTypeGroup renderTypeGroup)
     {
-        this(parent, quads, renderTypeGroup.entity(), renderTypeGroup.entityFabulous(), renderTypeGroup.entity() == LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID);
+        this(parent, quads, renderTypeGroup.entity(), renderTypeGroup.entityFabulous());
     }
 
     public List<BakedQuad> getQuads()
     {
         return quads;
-    }
-
-    /**
-     * For use in {@link liedge.limacore.mixin.ItemRendererMixin}. No reason to call this otherwise.
-     */
-    @ApiStatus.Internal
-    public boolean customBufferQuadAddition(PoseStack.Pose pose, VertexConsumer buffer, ItemStack stack, ItemColors colors, List<BakedQuad> quads, int light, int overlay)
-    {
-        if (!skipNormalBufferAdd) return false;
-
-        for (BakedQuad quad : quads)
-        {
-            int i = -1;
-            if (quad.isTinted()) i = colors.getColor(stack, quad.getTintIndex());
-
-            float red = FastColor.ARGB32.red(i) / 255f;
-            float green = FastColor.ARGB32.green(i) / 255f;
-            float blue = FastColor.ARGB32.blue(i) / 255f;
-
-            buffer.putBulkData(pose, quad, red, green, blue, 1f, light, overlay);
-        }
-
-        return true;
     }
 
     public void putQuadsInBuffer(PoseStack poseStack, MultiBufferSource bufferSource, float red, float green, float blue, int packedLight)
