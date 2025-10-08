@@ -9,7 +9,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.registries.holdersets.OrHolderSet;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -140,5 +142,15 @@ public final class LimaRegistryUtil
     public static <T> HolderSet<T> keyHolderSet(HolderGetter<T> holderGetter, ResourceKey<T>... keys)
     {
         return HolderSet.direct(holderGetter::getOrThrow, keys);
+    }
+
+    public static <T> HolderSet<T> mergeHolderSets(List<HolderSet<T>> holderSets)
+    {
+        return switch (holderSets.size())
+        {
+            case 0 -> HolderSet.empty();
+            case 1 -> holderSets.getFirst();
+            default -> new OrHolderSet<>(holderSets);
+        };
     }
 }
