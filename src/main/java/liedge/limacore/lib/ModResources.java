@@ -1,6 +1,7 @@
 package liedge.limacore.lib;
 
 import liedge.limacore.data.TransientDataComponentType;
+import liedge.limacore.registry.LimaDeferredAttributes;
 import liedge.limacore.registry.LimaDeferredBlocksWithItems;
 import liedge.limacore.registry.LimaDeferredRecipeSerializers;
 import net.minecraft.core.Registry;
@@ -10,6 +11,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -129,6 +132,11 @@ public record ModResources(String modid)
         return LimaDeferredRecipeSerializers.create(modid);
     }
 
+    public LimaDeferredAttributes deferredAttributes()
+    {
+        return LimaDeferredAttributes.create(modid);
+    }
+
     public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)
     {
         return new RegistryBuilder<>(registryKey);
@@ -154,6 +162,11 @@ public record ModResources(String modid)
     public TagKey<Item> itemTag(String name)
     {
         return ItemTags.create(location(name));
+    }
+
+    public TagKey<Fluid> fluidTag(String name)
+    {
+        return FluidTags.create(location(name));
     }
 
     public TagKey<BlockEntityType<?>> blockEntityTag(String name)

@@ -9,7 +9,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.UnaryOperator;
 
-public class LimaDeferredRecipeSerializers extends DeferredRegister<RecipeSerializer<?>>
+public final class LimaDeferredRecipeSerializers extends DeferredRegister<RecipeSerializer<?>>
 {
     public static LimaDeferredRecipeSerializers create(String namespace)
     {
