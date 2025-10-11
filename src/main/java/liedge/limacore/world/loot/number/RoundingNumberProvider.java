@@ -6,9 +6,12 @@ import liedge.limacore.lib.math.LimaRoundingMode;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.lib.math.LimaCoreMath;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+
+import java.util.Set;
 
 public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode) implements NumberProvider
 {
@@ -38,5 +41,11 @@ public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode
     public LootNumberProviderType getType()
     {
         return LimaCoreLootRegistries.ROUNDING_NUMBER_PROVIDER.get();
+    }
+
+    @Override
+    public Set<LootContextParam<?>> getReferencedContextParams()
+    {
+        return child.getReferencedContextParams();
     }
 }

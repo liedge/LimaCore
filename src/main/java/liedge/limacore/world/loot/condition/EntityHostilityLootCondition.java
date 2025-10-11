@@ -1,4 +1,4 @@
-package liedge.limacore.world.loot;
+package liedge.limacore.world.loot.condition;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;

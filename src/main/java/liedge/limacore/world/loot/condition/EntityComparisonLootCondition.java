@@ -1,4 +1,4 @@
-package liedge.limacore.world.loot;
+package liedge.limacore.world.loot.condition;
 
 import com.mojang.datafixers.Products;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

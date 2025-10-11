@@ -22,7 +22,7 @@ import java.util.Set;
  * Runs {@link BlockEntity#saveToItem(ItemStack, HolderLookup.Provider)} on the loot item stack. Only
  * copies data if the loot item is a block item and that block is contained within {@link BlockEntityType#getValidBlocks()}.
  */
-public class SaveBlockEntityFunction extends LootItemConditionalFunction
+public final class SaveBlockEntityFunction extends LootItemConditionalFunction
 {
     public static final MapCodec<SaveBlockEntityFunction> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, SaveBlockEntityFunction::new));
 

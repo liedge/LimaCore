@@ -2,6 +2,10 @@ package liedge.limacore.registry.game;
 
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.world.loot.*;
+import liedge.limacore.world.loot.condition.EntityHostilityLootCondition;
+import liedge.limacore.world.loot.condition.NumberComparisonLootCondition;
+import liedge.limacore.world.loot.level.MathOpsLevelBasedValue;
+import liedge.limacore.world.loot.level.RangedLookupLevelBasedValue;
 import liedge.limacore.world.loot.number.*;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
@@ -46,6 +50,7 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<EnchantmentLevelEntityPredicate>> ENCHANTMENT_LEVEL_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("enchantment_level", () -> EnchantmentLevelEntityPredicate.CODEC);
 
     // Conditions
+    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> NUMBER_COMPARISON_CONDITION = CONDITIONS.register("number_comparison", () -> new LootItemConditionType(NumberComparisonLootCondition.CODEC));
     public static final DeferredHolder<LootItemConditionType, LootItemConditionType> HOSTILITY_CONDITION = CONDITIONS.register("hostility", () -> new LootItemConditionType(EntityHostilityLootCondition.CODEC));
 
     // Functions
@@ -59,13 +64,14 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<RemoveItemLootModifier>> REMOVE_ITEM_MODIFIER = GLM_CODECS.register("remove_item", () -> RemoveItemLootModifier.CODEC);
 
     // Level based value types
-    public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<EnhancedLookupLevelBasedValue>> ENHANCED_LOOKUP_LEVEL_BASED_VALUE = LBV_CODECS.register("enhanced_lookup", () -> EnhancedLookupLevelBasedValue.CODEC);
+    public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<RangedLookupLevelBasedValue>> RANGED_LOOKUP_LEVEL_BASED_VALUE = LBV_CODECS.register("ranged_lookup", () -> RangedLookupLevelBasedValue.CODEC);
     public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<MathOpsLevelBasedValue>> MATH_OPS_LEVEL_BASED_VALUE = LBV_CODECS.register("math_ops", () -> MathOpsLevelBasedValue.CODEC);
 
     // Loot number types
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> DISTANCE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("distance", () -> new LootNumberProviderType(DistanceNumberProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ROUNDING_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("rounding", () -> new LootNumberProviderType(RoundingNumberProvider.CODEC));
-    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> TARGETED_ATTRIBUTE_VALUE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("targeted_attribute_value", () -> new LootNumberProviderType(TargetedAttributeValueProvider.CODEC));
-    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> TARGETED_ENCHANTMENT_LEVEL_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("targeted_enchantment_level", () -> new LootNumberProviderType(TargetedEnchantmentLevelProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ATTRIBUTE_VALUE_PROVIDER = NUMBER_PROVIDERS.register("entity_attribute_value", () -> new LootNumberProviderType(EntityAttributeValueProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ENCHANTMENT_LEVEL_PROVIDER = NUMBER_PROVIDERS.register("entity_enchantment_level", () -> new LootNumberProviderType(EntityEnchantmentLevelProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> MATH_OPS_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("math_ops", () -> new LootNumberProviderType(MathOpsNumberProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> LEVEL_BASED_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("level_based", () -> new LootNumberProviderType(LevelBasedNumberProvider.CODEC));
 }

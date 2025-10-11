@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 public abstract class LimaLootSubProvider implements LimaLootSubProviderExtensions
 {
     private final Map<ResourceKey<LootTable>, LootTable.Builder> tables = new Object2ObjectOpenHashMap<>();
-    private final HolderLookup.Provider registries;
+    protected final HolderLookup.Provider registries;
 
     protected LimaLootSubProvider(HolderLookup.Provider registries)
     {
@@ -24,12 +24,12 @@ public abstract class LimaLootSubProvider implements LimaLootSubProviderExtensio
         LimaCollectionsUtil.putNoDuplicates(tables, key, builder);
     }
 
-    protected abstract void generateTables(HolderLookup.Provider registries);
+    protected abstract void generateTables();
 
     @Override
     public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output)
     {
-        generateTables(registries);
+        generateTables();
         tables.forEach(output);
     }
 }

@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
 
-public class AddItemLootModifier extends LootModifier
+public final class AddItemLootModifier extends LootModifier
 {
     public static final MapCodec<AddItemLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance)
             .and(ItemStack.CODEC.fieldOf("item").forGetter(o -> o.item))

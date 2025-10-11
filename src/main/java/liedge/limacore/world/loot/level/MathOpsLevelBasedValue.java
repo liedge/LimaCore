@@ -1,4 +1,4 @@
-package liedge.limacore.world.loot.number;
+package liedge.limacore.world.loot.level;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

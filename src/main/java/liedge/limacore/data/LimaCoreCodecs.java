@@ -169,6 +169,15 @@ public final class LimaCoreCodecs
         return openStartNumberRange(Codec.FLOAT, minExclusive, maxInclusive);
     }
 
+    public static <E> MapCodec<List<E>> singleOrPluralNonEmpty(Codec<E> elementCodec, String singularFieldName)
+    {
+        MapCodec<E> singular = elementCodec.fieldOf(singularFieldName);
+        MapCodec<List<E>> plural = ExtraCodecs.nonEmptyList(elementCodec.listOf()).fieldOf(singularFieldName + 's');
+        return Codec.mapEither(singular, plural).xmap(
+                either -> either.map(List::of, Function.identity()),
+                list -> list.size() == 1 ? Either.left(list.getFirst()) : Either.right(list));
+    }
+
     public static <E extends Enum<E>> Codec<Set<E>> enumSetCodec(Codec<E> enumElementCodec)
     {
         return enumElementCodec.listOf().xmap(list -> list.isEmpty() ? Set.of() : ImmutableSet.copyOf(EnumSet.copyOf(list)), List::copyOf);
