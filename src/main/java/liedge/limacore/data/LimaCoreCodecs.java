@@ -220,9 +220,29 @@ public final class LimaCoreCodecs
         return flatComapMapMapCodec(NeoForgeExtraCodecs.xor(leftCodec, rightCodec), value -> xorSubclassDataResult(value, leftClass, rightClass), Either::unwrap);
     }
 
-    public static <T, A, F extends A> Codec<A> flatDispatchCodec(Codec<T> typeCodec, Class<F> flatClass, Codec<F> flatCodec, Function<? super A, ? extends T> typeFunction, Function<? super T, MapCodec<? extends A>> typeCodecFunction)
+    private static <A, F extends A> Either<F, A> inlinedSubclassEither(Class<F> inlineClass, A value)
     {
-        return Codec.xor(flatCodec, typeCodec.dispatch(typeFunction, typeCodecFunction)).xmap(Either::unwrap, value -> flatClass.isInstance(value) ? Either.left(flatClass.cast(value)) : Either.right(value));
+        return inlineClass.isInstance(value) ? Either.left(inlineClass.cast(value)) : Either.right(value);
+    }
+
+    public static <T, A, F extends A> Codec<A> dispatchWithInline(Codec<T> typeCodec, String typeKey, Class<F> inlineClass, Codec<F> inlineCodec, Function<? super A, ? extends T> typeGetter, Function<? super T, MapCodec<? extends A>> codecGetter)
+    {
+        return Codec.xor(inlineCodec, typeCodec.dispatch(typeKey, typeGetter, codecGetter)).xmap(Either::unwrap, value -> inlinedSubclassEither(inlineClass, value));
+    }
+
+    public static <T, A, F extends A> Codec<A> dispatchWithInline(Codec<T> typeCodec, Class<F> inlineClass, Codec<F> inlineCodec, Function<? super A, ? extends T> typeGetter, Function<? super T, MapCodec<? extends A>> codecGetter)
+    {
+        return dispatchWithInline(typeCodec, "type", inlineClass, inlineCodec, typeGetter, codecGetter);
+    }
+
+    public static <T, A, F extends A> MapCodec<A> dispatchMapWithInline(Codec<T> typeCodec, String typeKey, Class<F> inlineClass, MapCodec<F> inlineCodec, Function<? super A, ? extends T> typeGetter, Function<? super T, MapCodec<? extends A>> codecGetter)
+    {
+        return NeoForgeExtraCodecs.xor(inlineCodec, typeCodec.dispatchMap(typeKey, typeGetter, codecGetter)).xmap(Either::unwrap, value -> inlineClass.isInstance(value) ? Either.left(inlineClass.cast(value)) : Either.right(value));
+    }
+
+    public static <T, A, F extends A> MapCodec<A> dispatchMapWithInline(Codec<T> typeCodec, Class<F> inlineClass, MapCodec<F> inlineCodec, Function<? super A, ? extends T> typeGetter, Function<? super T, MapCodec<? extends A>> codecGetter)
+    {
+        return dispatchMapWithInline(typeCodec, "type", inlineClass, inlineCodec, typeGetter, codecGetter);
     }
 
     public static <E> MapCodec<List<E>> smartSizedListField(Codec<E> elementCodec, String fieldName, int minInclusive, int maxInclusive)

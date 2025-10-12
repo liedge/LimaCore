@@ -66,9 +66,24 @@ public final class LimaEnumCodec<A extends Enum<A> & StringRepresentable> implem
         return new LimaEnumCodec<>(enumClass, validValues);
     }
 
-    public <B, F extends B> Codec<B> flatDispatch(Class<F> flatClass, Codec<F> flatCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
+    public <B, F extends B> Codec<B> dispatchWithInline(String typeKey, Class<F> inlineClass, Codec<F> inlineCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
     {
-        return LimaCoreCodecs.flatDispatchCodec(this, flatClass, flatCodec, typeGetter, codecGetter);
+        return LimaCoreCodecs.dispatchWithInline(this, typeKey, inlineClass, inlineCodec, typeGetter, codecGetter);
+    }
+
+    public <B, F extends B> Codec<B> dispatchWithInline(Class<F> inlineClass, Codec<F> inlineCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
+    {
+        return LimaCoreCodecs.dispatchWithInline(this, inlineClass, inlineCodec, typeGetter, codecGetter);
+    }
+
+    public <B, F extends B> MapCodec<B> dispatchMapWithInline(String typeKey, Class<F> inlineClass, MapCodec<F> inlineCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
+    {
+        return LimaCoreCodecs.dispatchMapWithInline(this, typeKey, inlineClass, inlineCodec, typeGetter, codecGetter);
+    }
+
+    public <B, F extends B> MapCodec<B> dispatchMapWithInline(Class<F> inlineClass, MapCodec<F> inlineCodec, Function<? super B, ? extends A> typeGetter, Function<? super A, MapCodec<? extends B>> codecGetter)
+    {
+        return LimaCoreCodecs.dispatchMapWithInline(this, inlineClass, inlineCodec, typeGetter, codecGetter);
     }
 
     @Override
