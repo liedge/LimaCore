@@ -6,41 +6,24 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record NetworkSerializer<T>(ResourceLocation id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+public record NetworkSerializer<T>(ResourceLocation id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) implements StreamCodec<RegistryFriendlyByteBuf, T>
 {
+    public static final StreamCodec<RegistryFriendlyByteBuf, NetworkSerializer<?>> REGISTRY_STREAM_CODEC = ByteBufCodecs.registry(LimaCoreRegistries.Keys.NETWORK_SERIALIZERS);
+
     public static <T> NetworkSerializer<T> create(ResourceLocation id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
     {
         return new NetworkSerializer<>(id, streamCodec);
     }
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, NetworkSerializer<?>> REGISTRY_STREAM_CODEC = ByteBufCodecs.registry(LimaCoreRegistries.Keys.NETWORK_SERIALIZERS);
-
     @Override
-    public String toString()
+    public T decode(RegistryFriendlyByteBuf buffer)
     {
-        return "NetworkSerializer[" + id + "]";
+        return streamCodec.decode(buffer);
     }
 
     @Override
-    public int hashCode()
+    public void encode(RegistryFriendlyByteBuf buffer, T value)
     {
-        return id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == this)
-        {
-            return true;
-        }
-        else if (obj instanceof NetworkSerializer<?> serializer)
-        {
-            return this.id.equals(serializer.id);
-        }
-        else
-        {
-            return false;
-        }
+        streamCodec.encode(buffer, value);
     }
 }

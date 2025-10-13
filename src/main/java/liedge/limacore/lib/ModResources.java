@@ -3,6 +3,7 @@ package liedge.limacore.lib;
 import liedge.limacore.data.TransientDataComponentType;
 import liedge.limacore.registry.LimaDeferredAttributes;
 import liedge.limacore.registry.LimaDeferredBlocksWithItems;
+import liedge.limacore.registry.LimaDeferredNetworkSerializers;
 import liedge.limacore.registry.LimaDeferredRecipeSerializers;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -137,6 +138,11 @@ public record ModResources(String modid)
         return LimaDeferredAttributes.create(modid);
     }
 
+    public LimaDeferredNetworkSerializers deferredNetworkSerializers()
+    {
+        return LimaDeferredNetworkSerializers.create(modid);
+    }
+
     public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)
     {
         return new RegistryBuilder<>(registryKey);
@@ -253,33 +259,4 @@ public record ModResources(String modid)
         return new TransientDataComponentType<>(location(name));
     }
     //#endregion
-
-    @Override
-    public int hashCode()
-    {
-        return modid.hashCode();
-    }
-
-    @Override
-    public String toString()
-    {
-        return modid;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (o == this)
-        {
-            return true;
-        }
-        else if (o instanceof ModResources resources)
-        {
-            return this.modid.equals(resources.modid);
-        }
-        else
-        {
-            return false;
-        }
-    }
 }
