@@ -7,23 +7,25 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 final class LimaCoreClientPacketHandler
 {
     private LimaCoreClientPacketHandler() {}
 
-    private static void handleDataWatcherPacket(@Nullable DataWatcherHolder holder, int index, Object data)
+    private static void handleDataWatcherPacket(@Nullable DataWatcherHolder holder, List<DataWatcherHolder.DataEntry<?>> entries)
     {
-        if (holder != null) holder.receiveDataPacket(index, data);
+        if (holder != null) holder.receiveDataWatcherPacket(entries);
     }
 
-    static <T> void handleMenuDataWatcherPacket(ClientboundMenuDataWatcherPacket<T> packet)
+    static void handleMenuDataWatcherPacket(ClientboundMenuDataWatcherPacket packet)
     {
-        handleDataWatcherPacket(LimaCoreClientUtil.getClientPlayerMenu(packet.getContainerId(), DataWatcherHolder.class), packet.getIndex(), packet.getData());
+        handleDataWatcherPacket(LimaCoreClientUtil.getClientPlayerMenu(packet.containerId(), DataWatcherHolder.class), packet.entries());
     }
 
-    static <T> void handleBlockDataWatcherPacket(ClientboundBlockEntityDataWatcherPacket<T> packet)
+    static void handleBlockDataWatcherPacket(ClientboundBlockEntityDataWatcherPacket packet)
     {
-        handleDataWatcherPacket(LimaCoreClientUtil.getClientSafeBlockEntity(packet.getPos(), DataWatcherHolder.class), packet.getIndex(), packet.getData());
+        handleDataWatcherPacket(LimaCoreClientUtil.getClientSafeBlockEntity(packet.blockPos(), DataWatcherHolder.class), packet.entries());
     }
 
     static void handleParticlePacket(ClientboundParticlePacket packet)

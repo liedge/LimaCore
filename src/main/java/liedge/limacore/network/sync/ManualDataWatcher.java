@@ -5,7 +5,7 @@ import liedge.limacore.network.NetworkSerializer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ManualDataWatcher<T> extends LimaDataWatcher<T>
+public final class ManualDataWatcher<T> extends LimaDataWatcher<T>
 {
     public static <T> LimaDataWatcher<T> manuallyTrack(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
     {
@@ -20,7 +20,7 @@ public class ManualDataWatcher<T> extends LimaDataWatcher<T>
     private final Supplier<T> getter;
     private final Consumer<T> setter;
 
-    protected ManualDataWatcher(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
+    private ManualDataWatcher(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
     {
         super(serializer);
         this.getter = getter;

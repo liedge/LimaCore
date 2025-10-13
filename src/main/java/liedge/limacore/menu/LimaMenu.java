@@ -84,9 +84,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     @Override
-    public <T> void sendDataWatcherPacket(int index, NetworkSerializer<T> serializer, T data)
+    public void sendDataWatcherPacket(List<DataEntry<?>> entries)
     {
-        getServerUser().connection.send(new ClientboundMenuDataWatcherPacket<>(this.containerId, index, serializer, data));
+        getServerUser().connection.send(new ClientboundMenuDataWatcherPacket(entries, this.containerId));
     }
 
     @Override

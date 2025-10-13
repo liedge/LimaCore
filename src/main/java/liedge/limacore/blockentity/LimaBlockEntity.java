@@ -2,7 +2,6 @@ package liedge.limacore.blockentity;
 
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.menu.BlockEntityMenuType;
-import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundBlockEntityDataWatcherPacket;
 import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
@@ -68,11 +67,12 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     }
 
     @Override
-    public <T> void sendDataWatcherPacket(int index, NetworkSerializer<T> serializer, T data)
+    public void sendDataWatcherPacket(List<DataEntry<?>> entries)
     {
         ServerLevel level = nonNullServerLevel();
         BlockPos blockPos = getBlockPos();
-        PacketDistributor.sendToPlayersTrackingChunk(level, level.getChunkAt(blockPos).getPos(), new ClientboundBlockEntityDataWatcherPacket<>(blockPos, index, serializer, data));
+
+        PacketDistributor.sendToPlayersTrackingChunk(level, level.getChunkAt(blockPos).getPos(), new ClientboundBlockEntityDataWatcherPacket(entries, blockPos));
     }
 
     @Override

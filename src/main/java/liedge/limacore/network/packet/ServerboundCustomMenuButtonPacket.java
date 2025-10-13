@@ -22,7 +22,7 @@ public record ServerboundCustomMenuButtonPacket<T>(int containerId, int buttonId
         int containerId = net.readVarInt();
         int buttonId = net.readVarInt();
         NetworkSerializer<T> serializer = (NetworkSerializer<T>) REGISTRY_STREAM_CODEC.decode(net);
-        T data = serializer.streamCodec().decode(net);
+        T data = serializer.decode(net);
 
         return new ServerboundCustomMenuButtonPacket<>(containerId, buttonId, serializer, data);
     }
@@ -32,7 +32,7 @@ public record ServerboundCustomMenuButtonPacket<T>(int containerId, int buttonId
         net.writeVarInt(containerId);
         net.writeVarInt(buttonId);
         REGISTRY_STREAM_CODEC.encode(net, serializer);
-        serializer.streamCodec().encode(net, data);
+        serializer.encode(net, data);
     }
 
     @Override

@@ -3,7 +3,7 @@ package liedge.limacore.network.sync;
 import liedge.limacore.network.NetworkSerializer;
 import org.jetbrains.annotations.ApiStatus;
 
-public abstract class LimaDataWatcher<T>
+public abstract sealed class LimaDataWatcher<T> permits ManualDataWatcher, AutomaticDataWatcher
 {
     private final NetworkSerializer<T> serializer;
     private boolean changed;
@@ -28,18 +28,25 @@ public abstract class LimaDataWatcher<T>
     protected abstract void setCurrentData(T currentData);
 
     @ApiStatus.Internal
-    protected void sendDataPacket(int index, DataWatcherHolder holder)
-    {
-        holder.sendDataWatcherPacket(index, serializer, getCurrentData());
-    }
-
-    @ApiStatus.Internal
-    protected void tickWatcher(int index, DataWatcherHolder holder)
+    protected boolean tick()
     {
         if (isChanged())
         {
-            sendDataPacket(index, holder);
             setChanged(false);
+            return true;
         }
+
+        return false;
+    }
+
+    DataWatcherHolder.DataEntry<T> writeDataEntry(int index)
+    {
+        return new DataWatcherHolder.DataEntry<>(index, serializer, getCurrentData());
+    }
+
+    @SuppressWarnings("unchecked")
+    void readDataEntry(DataWatcherHolder.DataEntry<?> entry)
+    {
+        setCurrentData((T) entry.data());
     }
 }

@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class AutomaticDataWatcher<T> extends ManualDataWatcher<T>
+public sealed class AutomaticDataWatcher<T> extends LimaDataWatcher<T> permits AutomaticDataWatcher.ItemWatcher
 {
     public static <T> LimaDataWatcher<T> keepSynced(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
     {
@@ -41,11 +41,15 @@ public class AutomaticDataWatcher<T> extends ManualDataWatcher<T>
         }, eid -> setter.accept(LimaCoreClientUtil.getClientEntity(eid)));
     }
 
+    private final Supplier<T> getter;
+    private final Consumer<T> setter;
     private T previousData;
 
-    protected AutomaticDataWatcher(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
+    private AutomaticDataWatcher(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
     {
-        super(serializer, getter, setter);
+        super(serializer);
+        this.getter = getter;
+        this.setter = setter;
     }
 
     protected boolean areDataValuesEqual(T previousData, T currentData)
@@ -73,18 +77,36 @@ public class AutomaticDataWatcher<T> extends ManualDataWatcher<T>
     }
 
     @Override
-    protected void tickWatcher(int index, DataWatcherHolder holder)
+    protected T getCurrentData()
+    {
+        return getter.get();
+    }
+
+    @Override
+    protected void setCurrentData(T currentData)
+    {
+        setter.accept(currentData);
+    }
+
+    @Override
+    protected boolean tick()
     {
         if (checkForChanges()) setChanged(true);
 
-        super.tickWatcher(index, holder);
+        return super.tick();
     }
 
-    private static class ItemWatcher extends AutomaticDataWatcher<ItemStack>
+    static final class ItemWatcher extends AutomaticDataWatcher<ItemStack>
     {
         private ItemWatcher(Supplier<ItemStack> getter, Consumer<ItemStack> setter)
         {
             super(LimaCoreNetworkSerializers.ITEM_STACK.get(), getter, setter);
+        }
+
+        @Override
+        protected ItemStack getCurrentData()
+        {
+            return super.getCurrentData().copy();
         }
 
         @Override
