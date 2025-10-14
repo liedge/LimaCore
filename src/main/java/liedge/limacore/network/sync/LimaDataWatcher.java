@@ -1,5 +1,6 @@
 package liedge.limacore.network.sync;
 
+import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -39,14 +40,14 @@ public abstract sealed class LimaDataWatcher<T> permits ManualDataWatcher, Autom
         return false;
     }
 
-    DataWatcherHolder.DataEntry<T> writeDataEntry(int index)
+    IndexedStreamData<T> writeStreamData(int index)
     {
-        return new DataWatcherHolder.DataEntry<>(index, serializer, getCurrentData());
+        return new IndexedStreamData<>(index, serializer, getCurrentData());
     }
 
-    @SuppressWarnings("unchecked")
-    void readDataEntry(DataWatcherHolder.DataEntry<?> entry)
+    void readStreamData(IndexedStreamData<?> streamData)
     {
-        setCurrentData((T) entry.data());
+        T data = streamData.tryCast(serializer);
+        if (data != null) setCurrentData(data);
     }
 }

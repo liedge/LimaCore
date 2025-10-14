@@ -8,6 +8,7 @@ import liedge.limacore.LimaCore;
 import liedge.limacore.capability.fluid.LimaFluidHandler;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.menu.slot.LimaHandlerSlot;
+import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
@@ -84,9 +85,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     @Override
-    public void sendDataWatcherPacket(List<DataEntry<?>> entries)
+    public void sendDataWatcherPacket(List<IndexedStreamData<?>> streamData)
     {
-        getServerUser().connection.send(new ClientboundMenuDataWatcherPacket(entries, this.containerId));
+        getServerUser().connection.send(new ClientboundMenuDataWatcherPacket(streamData, this.containerId));
     }
 
     @Override
@@ -212,22 +213,15 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         sendSoundToPlayer(player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), volume, pitch);
     }
 
-    @SuppressWarnings("unchecked")
     @ApiStatus.Internal
-    public final <T> void handleCustomButtonData(ServerPlayer sender, int buttonId, NetworkSerializer<T> serializer, T data)
+    public final void handleCustomButtonData(ServerPlayer sender, IndexedStreamData<?> streamData)
     {
+        int buttonId = streamData.index();
+
         if (buttonEventHandlers.containsKey(buttonId))
         {
-            EventHandler<?> rawHandler = buttonEventHandlers.get(buttonId);
-            if (rawHandler.serializer == serializer)
-            {
-                EventHandler<T> handler = (EventHandler<T>) rawHandler;
-                handler.action().accept(sender, data);
-            }
-            else
-            {
-                LimaCore.LOGGER.warn("Received custom button data with mismatching data types: expected {} but received {}", rawHandler.serializer().id(), serializer.id());
-            }
+            EventHandler<?> handler = buttonEventHandlers.get(buttonId);
+            handler.tryHandle(sender, streamData);
         }
         else
         {
@@ -447,5 +441,11 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     }
 
     private record EventHandler<T>(NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
-    { }
+    {
+        private void tryHandle(ServerPlayer player, IndexedStreamData<?> streamData)
+        {
+            T data = streamData.tryCast(serializer);
+            if (data != null) action.accept(player, data);
+        }
+    }
 }

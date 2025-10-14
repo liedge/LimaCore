@@ -1,6 +1,7 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.client.LimaCoreClientUtil;
+import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
@@ -13,19 +14,19 @@ final class LimaCoreClientPacketHandler
 {
     private LimaCoreClientPacketHandler() {}
 
-    private static void handleDataWatcherPacket(@Nullable DataWatcherHolder holder, List<DataWatcherHolder.DataEntry<?>> entries)
+    private static void handleDataWatcherPacket(@Nullable DataWatcherHolder holder, List<IndexedStreamData<?>> streamData)
     {
-        if (holder != null) holder.receiveDataWatcherPacket(entries);
+        if (holder != null) holder.receiveDataWatcherPacket(streamData);
     }
 
     static void handleMenuDataWatcherPacket(ClientboundMenuDataWatcherPacket packet)
     {
-        handleDataWatcherPacket(LimaCoreClientUtil.getClientPlayerMenu(packet.containerId(), DataWatcherHolder.class), packet.entries());
+        handleDataWatcherPacket(LimaCoreClientUtil.getClientPlayerMenu(packet.containerId(), DataWatcherHolder.class), packet.streamData());
     }
 
     static void handleBlockDataWatcherPacket(ClientboundBlockEntityDataWatcherPacket packet)
     {
-        handleDataWatcherPacket(LimaCoreClientUtil.getClientSafeBlockEntity(packet.blockPos(), DataWatcherHolder.class), packet.entries());
+        handleDataWatcherPacket(LimaCoreClientUtil.getClientSafeBlockEntity(packet.blockPos(), DataWatcherHolder.class), packet.streamData());
     }
 
     static void handleParticlePacket(ClientboundParticlePacket packet)

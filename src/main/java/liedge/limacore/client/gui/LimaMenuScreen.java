@@ -6,6 +6,7 @@ import liedge.limacore.LimaCore;
 import liedge.limacore.capability.fluid.LimaFluidUtil;
 import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.menu.slot.LimaFluidSlot;
+import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
 import liedge.limacore.network.packet.ServerboundFluidSlotClickPacket;
@@ -191,7 +192,8 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
 
     public <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
     {
-        PacketDistributor.sendToServer(new ServerboundCustomMenuButtonPacket<>(menu.containerId, buttonId, serializer, value));
+        ServerboundCustomMenuButtonPacket packet = new ServerboundCustomMenuButtonPacket(menu.containerId, new IndexedStreamData<>(buttonId, serializer, value));
+        PacketDistributor.sendToServer(packet);
     }
 
     public <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)

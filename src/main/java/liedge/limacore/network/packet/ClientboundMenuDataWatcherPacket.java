@@ -1,7 +1,8 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.LimaCore;
-import liedge.limacore.network.sync.DataWatcherHolder;
+import liedge.limacore.network.ClientboundPayload;
+import liedge.limacore.network.IndexedStreamData;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,11 +11,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 
-public record ClientboundMenuDataWatcherPacket(List<DataWatcherHolder.DataEntry<?>> entries, int containerId) implements ClientboundDataWatcherPacket
+public record ClientboundMenuDataWatcherPacket(List<IndexedStreamData<?>> streamData, int containerId) implements ClientboundPayload
 {
     public static final Type<ClientboundMenuDataWatcherPacket> TYPE = LimaCore.RESOURCES.packetType("menu_data");
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMenuDataWatcherPacket> STREAM_CODEC = StreamCodec.composite(
-            DataWatcherHolder.DataEntry.STREAM_CODEC, ClientboundMenuDataWatcherPacket::entries,
+            IndexedStreamData.LIST_STREAM_CODEC, ClientboundMenuDataWatcherPacket::streamData,
             ByteBufCodecs.VAR_INT, ClientboundMenuDataWatcherPacket::containerId,
             ClientboundMenuDataWatcherPacket::new);
 

@@ -15,11 +15,11 @@ public final class LimaCoreServerPacketHandler
         if (holder != null) holder.forceSyncDataWatchers();
     }
 
-    static <T> void handleCustomMenuButtonPacket(ServerboundCustomMenuButtonPacket<T> packet, ServerPlayer sender)
+    static void handleCustomMenuButtonPacket(ServerboundCustomMenuButtonPacket packet, ServerPlayer sender)
     {
         if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == packet.containerId())
         {
-            menu.handleCustomButtonData(sender, packet.buttonId(), packet.serializer(), packet.data());
+            menu.handleCustomButtonData(sender, packet.streamData());
         }
     }
 
