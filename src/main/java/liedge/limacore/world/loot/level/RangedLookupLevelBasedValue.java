@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,21 +22,35 @@ public record RangedLookupLevelBasedValue(List<Float> values, int levelOffset, O
             Codec.FLOAT.optionalFieldOf("default_above").forGetter(RangedLookupLevelBasedValue::defaultAbove))
             .apply(instance, RangedLookupLevelBasedValue::new));
 
-    public static RangedLookupLevelBasedValue create(int startingLevel, float defaultBelow, float defaultAbove, float... values)
+    public static RangedLookupLevelBasedValue create(int startingLevel, @Nullable Float defaultBelow, @Nullable Float defaultAbove, List<Float> values)
     {
         Preconditions.checkArgument(startingLevel > 0, "Ranged lookup table level range must start at 1.");
-        return new RangedLookupLevelBasedValue(FloatList.of(values), startingLevel - 1, Optional.of(defaultBelow), Optional.of(defaultAbove));
+        return new RangedLookupLevelBasedValue(values, startingLevel - 1, Optional.ofNullable(defaultBelow), Optional.ofNullable(defaultAbove));
     }
 
-    public static RangedLookupLevelBasedValue lookupStartingAtLevel(int startingLevel, float... values)
+    public static RangedLookupLevelBasedValue create(int startingLevel, @Nullable Float defaultBelow, @Nullable Float defaultAbove, float... values)
     {
-        Preconditions.checkArgument(startingLevel > 0, "Ranged lookup table level range must start at 1.");
-        return new RangedLookupLevelBasedValue(FloatList.of(values), startingLevel - 1, Optional.empty(), Optional.empty());
+        return create(startingLevel, defaultBelow, defaultAbove, FloatList.of(values));
     }
 
-    public static RangedLookupLevelBasedValue lookup(float... values)
+    public static RangedLookupLevelBasedValue lookupAfterLevel(int startingLevel, float... values)
     {
-        return lookupStartingAtLevel(1, values);
+        return create(startingLevel, null, null, values);
+    }
+
+    public static RangedLookupLevelBasedValue lookupAfterLevelOrBelow(int startingLevel, float defaultBelow, float... values)
+    {
+        return create(startingLevel, defaultBelow, null, values);
+    }
+
+    public static RangedLookupLevelBasedValue lookupAfterLevelOrAbove(int startingLevel, float defaultAbove, float... values)
+    {
+        return create(startingLevel, null, defaultAbove, values);
+    }
+
+    public static RangedLookupLevelBasedValue linearLookup(float... values)
+    {
+        return lookupAfterLevel(1, values);
     }
 
     @Override

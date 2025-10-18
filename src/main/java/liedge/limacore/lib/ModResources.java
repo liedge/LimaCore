@@ -1,6 +1,5 @@
 package liedge.limacore.lib;
 
-import liedge.limacore.data.TransientDataComponentType;
 import liedge.limacore.registry.LimaDeferredAttributes;
 import liedge.limacore.registry.LimaDeferredBlocksWithItems;
 import liedge.limacore.registry.LimaDeferredNetworkSerializers;
@@ -29,7 +28,7 @@ import java.util.Arrays;
 
 public record ModResources(String modid)
 {
-    public static final ModResources COMMON_NAMESPACE = new ModResources("c");
+    public static final ModResources COMMON = new ModResources("c");
     public static final ModResources NEOFORGE = new ModResources("neoforge");
     public static final ModResources MC = new ModResources("minecraft");
 
@@ -252,11 +251,6 @@ public record ModResources(String modid)
     public <T extends CustomPacketPayload> CustomPacketPayload.Type<T> packetType(String name)
     {
         return new CustomPacketPayload.Type<>(location(name));
-    }
-
-    public <T> TransientDataComponentType<T> transientDataComponent(String name)
-    {
-        return new TransientDataComponentType<>(location(name));
     }
     //#endregion
 }
