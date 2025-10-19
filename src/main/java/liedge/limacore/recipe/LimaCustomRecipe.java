@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -142,12 +143,26 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
     //#endregion
 
-    public void consumeItemIngredients(T input)
+    private boolean shouldConsumeIngredient(Ingredient root, RandomSource random)
+    {
+        if (root.getCustomIngredient() instanceof ConsumeChanceIngredient chanceIngredient)
+        {
+            float chance = chanceIngredient.consumeChance();
+            return chance != 0 && random.nextFloat() < chance;
+        }
+
+        return true;
+    }
+
+    public void consumeItemIngredients(T input, RandomSource random)
     {
         for (SizedIngredient sizedIngredient : itemIngredients)
         {
             int remaining = sizedIngredient.count();
             Ingredient root = sizedIngredient.ingredient();
+
+            // Consumption chance happens here
+            if (!shouldConsumeIngredient(root, random)) continue; // Skip entirely
 
             for (int slot = 0; slot < input.size(); slot++)
             {

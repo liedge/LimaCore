@@ -169,6 +169,11 @@ public final class LimaCoreCodecs
         return openStartNumberRange(Codec.FLOAT, minExclusive, maxInclusive);
     }
 
+    public static Codec<Float> floatOpenEndRange(float minInclusive, float maxExclusive)
+    {
+        return openEndNumberRange(Codec.FLOAT, minInclusive, maxExclusive);
+    }
+
     public static <E> MapCodec<List<E>> singleOrPluralNonEmpty(Codec<E> elementCodec, String singularFieldName)
     {
         MapCodec<E> singular = elementCodec.fieldOf(singularFieldName);

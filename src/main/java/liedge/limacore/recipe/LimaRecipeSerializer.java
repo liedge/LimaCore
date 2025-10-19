@@ -23,36 +23,7 @@ public record LimaRecipeSerializer<R extends Recipe<?>>(ResourceLocation id, Map
         return new Builder<>(factory);
     }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == this)
-        {
-            return true;
-        }
-        else if (obj instanceof LimaRecipeSerializer<?> other)
-        {
-            return id.equals(other.id);
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return id.hashCode();
-    }
-
-    @Override
-    public String toString()
-    {
-        return id.toString();
-    }
-
-    public static final class Builder<R extends LimaCustomRecipe<?>> extends LimaRecipeSerializerBuilder<R, Builder<R>>
+    public static final class Builder<R extends LimaCustomRecipe<?>> extends LimaRecipeSerializerBuilder<R, LimaRecipeSerializer<R>, Builder<R>>
     {
         private final LimaCustomRecipe.RecipeFactory<R> factory;
 

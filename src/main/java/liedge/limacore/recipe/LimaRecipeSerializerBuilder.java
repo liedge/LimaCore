@@ -8,13 +8,14 @@ import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.List;
 
-public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>, B extends LimaRecipeSerializerBuilder<R, B>>
+public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>, S extends RecipeSerializer<R>, B extends LimaRecipeSerializerBuilder<R, S, B>>
 {
     protected MapCodec<List<SizedIngredient>> itemIngredientCodec = LimaCoreCodecs.ITEM_INGREDIENTS_UNIT;
     protected MapCodec<List<SizedFluidIngredient>> fluidIngredientCodec = LimaCoreCodecs.FLUID_INGREDIENTS_UNIT;
@@ -96,7 +97,7 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
         return withFluidResults(0, max);
     }
 
-    public abstract LimaRecipeSerializer<R> build(ResourceLocation id);
+    public abstract S build(ResourceLocation id);
 
     protected Products.P4<RecordCodecBuilder.Mu<R>, List<SizedIngredient>, List<SizedFluidIngredient>, List<ItemResult>, List<FluidStack>> commonFields(RecordCodecBuilder.Instance<R> instance)
     {

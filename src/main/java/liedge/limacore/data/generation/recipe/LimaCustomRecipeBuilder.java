@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.recipe.ItemResult;
 import liedge.limacore.recipe.LimaCustomRecipe;
+import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
@@ -52,9 +53,19 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return input(new SizedIngredient(ingredient, 1));
     }
 
+    public B randomInput(Ingredient child, float consumeChance)
+    {
+        return input(ConsumeChanceIngredient.of(child, consumeChance));
+    }
+
     public B input(Ingredient ingredient, int count)
     {
         return input(new SizedIngredient(ingredient, count));
+    }
+
+    public B randomInput(Ingredient child, int count, float consumeChance)
+    {
+        return input(ConsumeChanceIngredient.of(child, consumeChance), count);
     }
 
     public B input(ItemLike itemLike)
@@ -67,6 +78,11 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return input(SizedIngredient.of(itemLike, count));
     }
 
+    public B randomInput(ItemLike itemLike, int count, float consumeChance)
+    {
+        return input(ConsumeChanceIngredient.of(Ingredient.of(itemLike), consumeChance), count);
+    }
+
     public B input(TagKey<Item> tagKey)
     {
         return input(Ingredient.of(tagKey));
@@ -75,6 +91,11 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     public B input(TagKey<Item> tagKey, int count)
     {
         return input(SizedIngredient.of(tagKey, count));
+    }
+
+    public B randomInput(TagKey<Item> tagKey, int count, float consumeChance)
+    {
+        return input(ConsumeChanceIngredient.of(Ingredient.of(tagKey), consumeChance), count);
     }
 
     public B fluidInput(SizedFluidIngredient ingredient)
