@@ -119,19 +119,6 @@ public final class LimaStreamCodecs
         net.writeDouble(value);
     }
 
-    public static <B extends ByteBuf, T> Optional<T> readOptional(StreamDecoder<? super B, T> decoder, B buffer)
-    {
-        return buffer.readBoolean() ? Optional.of(decoder.decode(buffer)) : Optional.empty();
-    }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public static <B extends ByteBuf, T> void writeOptional(StreamEncoder<? super B, T> encoder, B buffer, Optional<T> value)
-    {
-        boolean present = value.isPresent();
-        buffer.writeBoolean(present);
-        if (present) encoder.encode(buffer, value.get());
-    }
-
     public static <B extends ByteBuf, E, C extends Collection<E>> C readClampedCollection(StreamDecoder<? super B, E> decoder, B buffer, IntFunction<C> collectionFactory, int min, int max)
     {
         int size = readClampedVarInt(buffer, min, max);
@@ -154,7 +141,7 @@ public final class LimaStreamCodecs
     //#region Stream codec operations
     public static <B extends ByteBuf, T> StreamCodec.CodecOperation<B, T, Optional<T>> asOptional()
     {
-        return LimaStreamCodecs::optionalValue;
+        return ByteBufCodecs::optional;
     }
 
     public static <B extends ByteBuf, T, I extends T> StreamCodec.CodecOperation<B, T, I> classCastMap(Class<I> iClass)
@@ -232,11 +219,6 @@ public final class LimaStreamCodecs
     public static StreamCodec<ByteBuf, Double> doubleRange(double min, double max)
     {
         return StreamCodec.of((net, n) -> writeClampedDouble(net, n, min, max), net -> readClampedDouble(net, min, max));
-    }
-
-    public static <B extends ByteBuf, T> StreamCodec<B, Optional<T>> optionalValue(StreamCodec<? super B, T> baseCodec)
-    {
-        return StreamCodec.of((net, o) -> writeOptional(baseCodec, net, o), net -> readOptional(baseCodec, net));
     }
 
     public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec<B, C> clampedCollection(StreamCodec<? super B, E> elementCodec, IntFunction<? extends C> factory, int min, int max)

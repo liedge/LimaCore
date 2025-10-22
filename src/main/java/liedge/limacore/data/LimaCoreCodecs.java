@@ -120,10 +120,11 @@ public final class LimaCoreCodecs
      */
     public static final Codec<Vector3f> VECTOR3F_16X = ExtraCodecs.VECTOR3F.xmap(vec -> vec.mul(0.0625f), vec -> vec.mul(16));
 
+    public static final MapCodec<DataComponentPatch> ITEM_COMPONENTS_FIELD = DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY);
     public static final MapCodec<ItemStack> ITEM_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
             Codec.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-            DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch))
+            ITEM_COMPONENTS_FIELD.forGetter(ItemStack::getComponentsPatch))
             .apply(instance, ItemStack::new));
     public static final MapCodec<FluidStack> FLUID_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             FluidStack.FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
@@ -164,6 +165,17 @@ public final class LimaCoreCodecs
         });
     }
 
+    public static <N extends Number & Comparable<N>> Codec<N> openNumberRange(Codec<N> baseCodec, N minExclusive, N maxExclusive)
+    {
+        return baseCodec.validate(num ->
+        {
+            if (num.compareTo(minExclusive) > 0 && num.compareTo(maxExclusive) < 0)
+                return DataResult.success(num);
+            else
+                return DataResult.error(() -> String.format("Value %s outside of valid range (%s,%s)", num, minExclusive, maxExclusive));
+        });
+    }
+
     public static Codec<Float> floatOpenStartRange(float minExclusive, float maxInclusive)
     {
         return openStartNumberRange(Codec.FLOAT, minExclusive, maxInclusive);
@@ -174,13 +186,24 @@ public final class LimaCoreCodecs
         return openEndNumberRange(Codec.FLOAT, minInclusive, maxExclusive);
     }
 
-    public static <E> MapCodec<List<E>> singleOrPluralNonEmpty(Codec<E> elementCodec, String singularFieldName)
+    public static Codec<Float> floatOpenRange(float minExclusive, float maxExclusive)
+    {
+        return openNumberRange(Codec.FLOAT, minExclusive, maxExclusive);
+    }
+
+    public static <E> MapCodec<List<E>> singleOrPluralBoundedList(Codec<E> elementCodec, String singularFieldName, int minInclusive, int maxInclusive)
     {
         MapCodec<E> singular = elementCodec.fieldOf(singularFieldName);
-        MapCodec<List<E>> plural = ExtraCodecs.nonEmptyList(elementCodec.listOf()).fieldOf(singularFieldName + 's');
+        MapCodec<List<E>> plural = autoOptionalListField(elementCodec, singularFieldName + 's', minInclusive, maxInclusive);
+
         return Codec.mapEither(singular, plural).xmap(
                 either -> either.map(List::of, Function.identity()),
                 list -> list.size() == 1 ? Either.left(list.getFirst()) : Either.right(list));
+    }
+
+    public static <E> MapCodec<List<E>> singleOrPluralNonEmpty(Codec<E> elementCodec, String singularFieldName)
+    {
+        return singleOrPluralBoundedList(elementCodec, singularFieldName, 1, Integer.MAX_VALUE);
     }
 
     public static <E extends Enum<E>> Codec<Set<E>> enumSetCodec(Codec<E> enumElementCodec)
@@ -250,7 +273,7 @@ public final class LimaCoreCodecs
         return dispatchMapWithInline(typeCodec, "type", inlineClass, inlineCodec, typeGetter, codecGetter);
     }
 
-    public static <E> MapCodec<List<E>> smartSizedListField(Codec<E> elementCodec, String fieldName, int minInclusive, int maxInclusive)
+    public static <E> MapCodec<List<E>> autoOptionalListField(Codec<E> elementCodec, String fieldName, int minInclusive, int maxInclusive)
     {
         Preconditions.checkArgument(minInclusive >= 0, "Minimum size must be non-negative.");
         Preconditions.checkArgument(maxInclusive >= minInclusive, "Maximum size must be greater than or equal to minimum size.");
@@ -261,17 +284,17 @@ public final class LimaCoreCodecs
 
     public static MapCodec<List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(SizedIngredient.FLAT_CODEC, INGREDIENTS_KEY, minInclusive, maxInclusive);
+        return autoOptionalListField(SizedIngredient.FLAT_CODEC, INGREDIENTS_KEY, minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(SizedFluidIngredient.FLAT_CODEC, FLUID_INGREDIENTS_KEY, minInclusive, maxInclusive);
+        return autoOptionalListField(SizedFluidIngredient.FLAT_CODEC, FLUID_INGREDIENTS_KEY, minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
     {
-        return smartSizedListField(FluidStack.CODEC, FLUID_RESULTS_KEY, minInclusive, maxInclusive);
+        return autoOptionalListField(FluidStack.CODEC, FLUID_RESULTS_KEY, minInclusive, maxInclusive);
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)

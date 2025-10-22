@@ -2,11 +2,15 @@ package liedge.limacore.data.generation.recipe;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.recipe.ItemResult;
 import liedge.limacore.recipe.LimaCustomRecipe;
 import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
+import liedge.limacore.recipe.result.ConstantItemResult;
+import liedge.limacore.recipe.result.ItemResult;
+import liedge.limacore.recipe.result.RandomChanceItemResult;
+import liedge.limacore.recipe.result.VariableCountItemResult;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -130,19 +134,10 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return selfUnchecked();
     }
 
-    public B output(ItemStack stack, float chance)
-    {
-        return output(new ItemResult(stack, chance));
-    }
-
+    // Constant outputs
     public B output(ItemStack stack)
     {
-        return output(new ItemResult(stack));
-    }
-
-    public B output(ItemLike itemLike, int count, float chance)
-    {
-        return output(new ItemStack(itemLike, count), chance);
+        return output(new ConstantItemResult(stack, true));
     }
 
     public B output(ItemLike itemLike, int count)
@@ -153,6 +148,48 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     public B output(ItemLike itemLike)
     {
         return output(itemLike, 1);
+    }
+
+    // Random chance outputs
+    public B randomOutput(ItemStack stack, float chance)
+    {
+        return output(new RandomChanceItemResult(stack, chance, true));
+    }
+
+    public B randomOutput(ItemLike itemLike, int count, float chance)
+    {
+        return randomOutput(new ItemStack(itemLike, count), chance);
+    }
+
+    public B optionalRandomOutput(ItemStack stack, float chance)
+    {
+        return output(new RandomChanceItemResult(stack, chance, false));
+    }
+
+    public B optionalRandomOutput(ItemLike itemLike, int count, float chance)
+    {
+        return optionalRandomOutput(new ItemStack(itemLike, count), chance);
+    }
+
+    // Variable count outputs
+    public B variableCountOutput(ItemStack stack, int minCount, int maxCount)
+    {
+        return output(new VariableCountItemResult(stack, minCount, maxCount, true));
+    }
+
+    public B variableCountOutput(ItemLike itemLike, int minCount, int maxCount)
+    {
+        return output(new VariableCountItemResult(itemLike, DataComponentPatch.EMPTY, minCount, maxCount, true));
+    }
+
+    public B optionalVariableCountOutput(ItemStack stack, int minCount, int maxCount)
+    {
+        return output(new VariableCountItemResult(stack, minCount, maxCount, false));
+    }
+
+    public B optionalVariableCountOutput(ItemLike itemLike, int minCount, int maxCount)
+    {
+        return output(new VariableCountItemResult(itemLike, DataComponentPatch.EMPTY, minCount, maxCount, false));
     }
 
     public B fluidOutput(FluidStack fluidStack)
@@ -175,7 +212,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     protected String getDefaultRecipeName()
     {
         if (!itemResults.isEmpty())
-            return LimaRegistryUtil.getItemName(itemResults.getFirst().item());
+            return LimaRegistryUtil.getItemName(itemResults.getFirst().getItem());
         else if (!fluidResults.isEmpty())
             return LimaRegistryUtil.getFluidName(fluidResults.getFirst());
         else

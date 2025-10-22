@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
+import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -33,6 +34,10 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
             return DataResult.error(() -> "Recipe has no item or fluid ingredients.");
         else if (recipe.getItemResults().isEmpty() && recipe.getFluidResults().isEmpty())
             return DataResult.error(() -> "Recipe has no item or fluid output results.");
+        else if (!recipe.getItemResults().isEmpty() && recipe.getItemResults().stream().noneMatch(ItemResult::requiredOutput))
+        {
+            return DataResult.error(() -> "Recipe must have at least 1 required item output.");
+        }
         else
             return DataResult.success(recipe);
     }
@@ -112,7 +117,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     public List<ItemStack> getPossibleItemResults()
     {
-        return itemResults.stream().map(ItemResult::item).collect(LimaStreamsUtil.toObjectList());
+        return itemResults.stream().map(ItemResult::getMaximumResult).collect(LimaStreamsUtil.toObjectList());
     }
 
     public List<FluidStack> getFluidResults()

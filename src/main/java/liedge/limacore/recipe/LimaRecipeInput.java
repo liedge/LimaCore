@@ -11,34 +11,12 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 public interface LimaRecipeInput extends RecipeInput
 {
     static LimaRecipeInput create(@Nullable IItemHandler itemContainer, @Nullable LimaFluidHandler fluidContainer)
     {
-        return switch (Objects.isNull(itemContainer) + "," + Objects.isNull(fluidContainer))
-        {
-            case "false,false" -> of(itemContainer, fluidContainer);
-            case "false,true" -> of(itemContainer);
-            case "true,false" -> of(fluidContainer);
-            default -> EmptyInput.INSTANCE;
-        };
-    }
-
-    static LimaRecipeInput of(IItemHandler itemContainer)
-    {
-        return new ItemsOnly(itemContainer);
-    }
-
-    static LimaRecipeInput of(LimaFluidHandler fluidContainer)
-    {
-        return new FluidsOnly(fluidContainer);
-    }
-
-    static LimaRecipeInput of(IItemHandler itemContainer, LimaFluidHandler fluidContainer)
-    {
-        return new ItemsAndFluids(itemContainer, fluidContainer);
+        return new SimpleWrapper(itemContainer, fluidContainer);
     }
 
     ItemStack extractItem(int slot, int count, boolean simulate);
@@ -80,136 +58,54 @@ public interface LimaRecipeInput extends RecipeInput
         return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !areFluidsEmpty());
     }
 
-    final class EmptyInput implements LimaRecipeInput
+    interface ContainerWrapper extends LimaRecipeInput
     {
-        private static final EmptyInput INSTANCE = new EmptyInput();
+        @Nullable IItemHandler itemContainer();
 
-        private EmptyInput() {}
-
-        @Override
-        public ItemStack extractItem(int slot, int count, boolean simulate)
-        {
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
-        {
-            return FluidStack.EMPTY;
-        }
-
-        @Override
-        public FluidStack getFluid(int tank)
-        {
-            return FluidStack.EMPTY;
-        }
-
-        @Override
-        public int tanks()
-        {
-            return 0;
-        }
-
-        @Override
-        public ItemStack getItem(int index)
-        {
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public int size()
-        {
-            return 0;
-        }
-    }
-
-    interface ItemContainerSource extends LimaRecipeInput
-    {
-        IItemHandler itemContainer();
+        @Nullable LimaFluidHandler fluidContainer();
 
         @Override
         default ItemStack extractItem(int slot, int count, boolean simulate)
         {
-            return itemContainer().extractItem(slot, count, simulate);
+            IItemHandler container = itemContainer();
+            return container != null ? container.extractItem(slot, count, simulate) : ItemStack.EMPTY;
         }
 
         @Override
         default ItemStack getItem(int index)
         {
-            return itemContainer().getStackInSlot(index);
+            IItemHandler container = itemContainer();
+            return container != null ? container.getStackInSlot(index) : ItemStack.EMPTY;
         }
 
         @Override
         default int size()
         {
-            return itemContainer().getSlots();
+            IItemHandler container = itemContainer();
+            return container != null ? container.getSlots() : 0;
         }
-    }
-
-    interface FluidContainerSource extends LimaRecipeInput
-    {
-        LimaFluidHandler fluidContainer();
 
         @Override
         default FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
         {
-            return fluidContainer().drainTank(tank, amount, action, true);
+            LimaFluidHandler container = fluidContainer();
+            return container != null ? container.drainTank(tank, amount, action, true) : FluidStack.EMPTY;
         }
 
         @Override
         default FluidStack getFluid(int tank)
         {
-            return fluidContainer().getFluidInTank(tank);
+            LimaFluidHandler container = fluidContainer();
+            return container != null ? container.getFluidInTank(tank) : FluidStack.EMPTY;
         }
 
         @Override
         default int tanks()
         {
-            return fluidContainer().getTanks();
+            LimaFluidHandler container = fluidContainer();
+            return container != null ? container.getTanks() : 0;
         }
     }
 
-    record ItemsOnly(IItemHandler itemContainer) implements ItemContainerSource
-    {
-        @Override
-        public FluidStack extractFluid(int tank, int amount, IFluidHandler.FluidAction action)
-        {
-            return FluidStack.EMPTY;
-        }
-
-        @Override
-        public FluidStack getFluid(int tank)
-        {
-            return FluidStack.EMPTY;
-        }
-
-        @Override
-        public int tanks()
-        {
-            return 0;
-        }
-    }
-
-    record FluidsOnly(LimaFluidHandler fluidContainer) implements FluidContainerSource
-    {
-        @Override
-        public ItemStack extractItem(int slot, int count, boolean simulate)
-        {
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public ItemStack getItem(int index)
-        {
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public int size()
-        {
-            return 0;
-        }
-    }
-
-    record ItemsAndFluids(IItemHandler itemContainer, LimaFluidHandler fluidContainer) implements ItemContainerSource, FluidContainerSource {}
+    record SimpleWrapper(@Nullable IItemHandler itemContainer, @Nullable LimaFluidHandler fluidContainer) implements ContainerWrapper { }
 }

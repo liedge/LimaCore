@@ -8,29 +8,40 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public sealed class AutomaticDataWatcher<T> extends LimaDataWatcher<T> permits AutomaticDataWatcher.ItemWatcher
+public sealed abstract class AutomaticDataWatcher<T> extends LimaDataWatcher<T>
 {
     public static <T> LimaDataWatcher<T> keepSynced(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
     {
-        return new AutomaticDataWatcher<>(serializer, getter, setter);
+        return new SimpleValue<>(serializer, getter, setter);
     }
 
-    public static <T> LimaDataWatcher<T> keepSynced(Supplier<? extends NetworkSerializer<T>> supplier, Supplier<T> getter, Consumer<T> setter)
+    public static <T> LimaDataWatcher<T> keepSynced(Supplier<? extends NetworkSerializer<T>> typeSupplier, Supplier<T> getter, Consumer<T> setter)
     {
-        return new AutomaticDataWatcher<>(supplier.get(), getter, setter);
+        return keepSynced(typeSupplier.get(), getter, setter);
+    }
+
+    public static <T> LimaDataWatcher<Optional<T>> keepNullableSynced(NetworkSerializer<Optional<T>> serializer, Supplier<@Nullable T> getter, Consumer<@Nullable T> setter)
+    {
+        return new NullableValue<>(serializer, getter, setter);
+    }
+
+    public static <T> LimaDataWatcher<Optional<T>> keepNullableSynced(Supplier<? extends NetworkSerializer<Optional<T>>> typeSupplier, Supplier<@Nullable T> getter, Consumer<@Nullable T> setter)
+    {
+        return keepNullableSynced(typeSupplier.get(), getter, setter);
     }
 
     public static <E extends Enum<E>> LimaDataWatcher<Integer> keepEnumSynced(Class<E> enumClass, Supplier<E> getter, Consumer<E> setter)
     {
-        return new AutomaticDataWatcher<>(LimaCoreNetworkSerializers.VAR_INT.get(), () -> getter.get().ordinal(), ordinal -> setter.accept(LimaCollectionsUtil.getEnumByOrdinal(enumClass, ordinal)));
+        return new EnumWatcher<>(enumClass, getter, setter);
     }
 
     public static LimaDataWatcher<ItemStack> keepItemSynced(Supplier<ItemStack> getter, Consumer<ItemStack> setter)
     {
-        return new ItemWatcher(getter, setter);
+        return new ItemStackValue(getter, setter);
     }
 
     public static LimaDataWatcher<Integer> keepClientsideEntitySynced(Supplier<@Nullable Entity> getter, Consumer<@Nullable Entity> setter)
@@ -41,15 +52,11 @@ public sealed class AutomaticDataWatcher<T> extends LimaDataWatcher<T> permits A
         }, eid -> setter.accept(LimaCoreClientUtil.getClientEntity(eid)));
     }
 
-    private final Supplier<T> getter;
-    private final Consumer<T> setter;
     private T previousData;
 
-    private AutomaticDataWatcher(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
+    private AutomaticDataWatcher(NetworkSerializer<T> serializer)
     {
         super(serializer);
-        this.getter = getter;
-        this.setter = setter;
     }
 
     protected boolean areDataValuesEqual(T previousData, T currentData)
@@ -77,18 +84,6 @@ public sealed class AutomaticDataWatcher<T> extends LimaDataWatcher<T> permits A
     }
 
     @Override
-    protected T getCurrentData()
-    {
-        return getter.get();
-    }
-
-    @Override
-    protected void setCurrentData(T currentData)
-    {
-        setter.accept(currentData);
-    }
-
-    @Override
     protected boolean tick()
     {
         if (checkForChanges()) setChanged(true);
@@ -96,9 +91,86 @@ public sealed class AutomaticDataWatcher<T> extends LimaDataWatcher<T> permits A
         return super.tick();
     }
 
-    static final class ItemWatcher extends AutomaticDataWatcher<ItemStack>
+    private static sealed class SimpleValue<T> extends AutomaticDataWatcher<T>
     {
-        private ItemWatcher(Supplier<ItemStack> getter, Consumer<ItemStack> setter)
+        private final Supplier<T> getter;
+        private final Consumer<T> setter;
+
+        private SimpleValue(NetworkSerializer<T> serializer, Supplier<T> getter, Consumer<T> setter)
+        {
+            super(serializer);
+            this.getter = getter;
+            this.setter = setter;
+        }
+
+        @Override
+        protected T getCurrentData()
+        {
+            return getter.get();
+        }
+
+        @Override
+        protected void setCurrentData(T currentData)
+        {
+            setter.accept(currentData);
+        }
+    }
+
+    private static final class NullableValue<T> extends AutomaticDataWatcher<Optional<T>>
+    {
+        private final Supplier<@Nullable T> getter;
+        private final Consumer<@Nullable T> setter;
+
+        private NullableValue(NetworkSerializer<Optional<T>> serializer, Supplier<@Nullable T> getter, Consumer<@Nullable T> setter)
+        {
+            super(serializer);
+            this.getter = getter;
+            this.setter = setter;
+        }
+
+        @Override
+        protected Optional<T> getCurrentData()
+        {
+            return Optional.ofNullable(getter.get());
+        }
+
+        @Override
+        protected void setCurrentData(Optional<T> currentData)
+        {
+            setter.accept(currentData.orElse(null));
+        }
+    }
+
+    private static final class EnumWatcher<E extends Enum<E>> extends AutomaticDataWatcher<Integer>
+    {
+        private final Class<E> enumClass;
+        private final Supplier<E> getter;
+        private final Consumer<E> setter;
+
+        private EnumWatcher(Class<E> enumClass, Supplier<E> getter, Consumer<E> setter)
+        {
+            super(LimaCoreNetworkSerializers.VAR_INT.get());
+            this.enumClass = enumClass;
+            this.getter = getter;
+            this.setter = setter;
+        }
+
+        @Override
+        protected Integer getCurrentData()
+        {
+            return getter.get().ordinal();
+        }
+
+        @Override
+        protected void setCurrentData(Integer currentData)
+        {
+            setter.accept(LimaCollectionsUtil.getEnumByOrdinal(enumClass, currentData));
+        }
+    }
+
+    private static final class ItemStackValue extends SimpleValue<ItemStack>
+    {
+        private ItemStackValue(Supplier<ItemStack> getter, Consumer<ItemStack> setter)
         {
             super(LimaCoreNetworkSerializers.ITEM_STACK.get(), getter, setter);
         }
