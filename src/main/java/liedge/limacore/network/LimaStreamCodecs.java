@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.util.LimaCoreUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.StringTag;
@@ -39,6 +40,7 @@ public final class LimaStreamCodecs
 
     // Common registries
     public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_DIRECT = ByteBufCodecs.registry(Registries.ITEM);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_HOLDER = ByteBufCodecs.holderRegistry(Registries.ITEM);
 
     // Extra codecs
     public static final StreamCodec<ByteBuf, Unit> UNIT = NeoForgeStreamCodecs.uncheckedUnit(Unit.INSTANCE);

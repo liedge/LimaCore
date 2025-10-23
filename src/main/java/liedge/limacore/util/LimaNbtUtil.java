@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,9 +40,9 @@ public final class LimaNbtUtil
     private LimaNbtUtil() {}
 
     // Compound tag codec decode helpers
-    public static <T> void tryEncodeTo(Codec<T> codec, DynamicOps<Tag> ops, T value, CompoundTag compoundTag, String key)
+    public static <T> void tryEncodeTo(Codec<T> codec, DynamicOps<Tag> ops, @Nullable T value, CompoundTag compoundTag, String key)
     {
-        LimaCoreCodecs.tryEncodeTo(codec, ops, value, tag -> compoundTag.put(key, tag));
+        if (value != null) LimaCoreCodecs.tryEncodeTo(codec, ops, value, tag -> compoundTag.put(key, tag));
     }
 
     public static <T> T strictDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
@@ -50,11 +51,32 @@ public final class LimaNbtUtil
         return LimaCoreCodecs.strictDecode(codec, ops, tag);
     }
 
+    @Nullable
+    public static <T> T tryDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
+    {
+        Tag tag = compoundTag.get(key);
+        return tag != null ? LimaCoreCodecs.tryDecode(codec, ops, tag) : null;
+    }
+
     public static <T> T tryDecode(Codec<T> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key, T fallback)
     {
         Tag tag = compoundTag.get(key);
         if (tag == null) return fallback;
-        return LimaCoreCodecs.tryDecode(codec, ops, tag, fallback);
+        else return LimaCoreCodecs.tryDecode(codec, ops, tag, fallback);
+    }
+
+    @Nullable
+    public static <T> T tryFlatDecode(Codec<Optional<T>> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key)
+    {
+        Tag tag = compoundTag.get(key);
+        return tag != null ? LimaCoreCodecs.tryFlatDecode(codec, ops, tag) : null;
+    }
+
+    public static <T> T tryFlatDecode(Codec<Optional<T>> codec, DynamicOps<Tag> ops, CompoundTag compoundTag, String key, T fallback)
+    {
+        Tag tag = compoundTag.get(key);
+        if (tag == null) return fallback;
+        else return LimaCoreCodecs.tryFlatDecode(codec, ops, tag, fallback);
     }
 
     //#region Fallback getters

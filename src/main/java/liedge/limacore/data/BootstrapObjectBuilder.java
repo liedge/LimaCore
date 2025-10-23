@@ -15,6 +15,11 @@ public interface BootstrapObjectBuilder<T>
         context.register(key(), build());
     }
 
+    default String identityTranslationKey()
+    {
+        return ModResources.registryPrefixedIdLangKey(key());
+    }
+
     default String suffixTranslationKey(String suffix)
     {
         return ModResources.registryPrefixVariantIdLangKey(key(), suffix);

@@ -379,6 +379,16 @@ public final class LimaCoreCodecs
         return partialDecode(codec, ops, input).orElse(fallback);
     }
 
+    public static <A, U> @Nullable A tryFlatDecode(Codec<Optional<A>> codec, DynamicOps<U> ops, U input)
+    {
+        return partialDecode(codec, ops, input).flatMap(Function.identity()).orElse(null);
+    }
+
+    public static <A, U> A tryFlatDecode(Codec<Optional<A>> codec, DynamicOps<U> ops, U input, A fallback)
+    {
+        return partialDecode(codec, ops, input).flatMap(Function.identity()).orElse(fallback);
+    }
+
     private static <A, U> Optional<U> partialEncode(Codec<A> codec, DynamicOps<U> ops, A input)
     {
         return codec.encodeStart(ops, input).resultOrPartial(msg -> LOGGER.warn("Codec {} encountered errors during encoding: {}", codec, msg));

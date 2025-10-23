@@ -4,6 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.data.LimaCoreCodecs;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +18,10 @@ public record ConstantItemResult(ItemStack item, boolean requiredOutput) impleme
             REQUIRED_FIELD.forGetter(ConstantItemResult::requiredOutput))
             .apply(instance, ConstantItemResult::new));
     static final MapCodec<ConstantItemResult> CODEC = INLINE_CODEC.fieldOf("item");
+    static final StreamCodec<RegistryFriendlyByteBuf, ConstantItemResult> STREAM_CODEC = StreamCodec.composite(
+            ItemStack.STREAM_CODEC, ConstantItemResult::item,
+            ByteBufCodecs.BOOL, ConstantItemResult::requiredOutput,
+            ConstantItemResult::new);
 
     @Override
     public Item getItem()

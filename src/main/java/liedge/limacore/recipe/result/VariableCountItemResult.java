@@ -5,8 +5,12 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.data.LimaCoreCodecs;
+import liedge.limacore.network.LimaStreamCodecs;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +34,13 @@ public final class VariableCountItemResult implements ItemResult
             REQUIRED_FIELD.forGetter(o -> o.required))
             .apply(instance, VariableCountItemResult::new))
             .validate(VariableCountItemResult::validate);
+    static final StreamCodec<RegistryFriendlyByteBuf, VariableCountItemResult> STREAM_CODEC = StreamCodec.composite(
+            LimaStreamCodecs.ITEM_HOLDER, o -> o.holder,
+            DataComponentPatch.STREAM_CODEC, o -> o.components,
+            ByteBufCodecs.VAR_INT, o -> o.minCount,
+            ByteBufCodecs.VAR_INT, o -> o.maxCount,
+            ByteBufCodecs.BOOL, o -> o.required,
+            VariableCountItemResult::new);
 
     private final Holder<Item> holder;
     private final DataComponentPatch components;
