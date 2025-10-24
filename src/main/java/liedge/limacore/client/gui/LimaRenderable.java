@@ -14,7 +14,7 @@ public interface LimaRenderable extends Renderable
     int getHeight();
 
     @Override
-    void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks);
+    void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);
 
     default boolean hasTooltip()
     {

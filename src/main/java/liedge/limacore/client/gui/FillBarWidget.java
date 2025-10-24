@@ -6,21 +6,14 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public abstract class FillBarWidget implements LimaRenderable
+public abstract class FillBarWidget extends BaseLimaRenderable
 {
-    private final int x;
-    private final int y;
-    private final int backgroundWidth;
-    private final int backgroundHeight;
     private final int foregroundWidth;
     private final int foregroundHeight;
 
     protected FillBarWidget(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight)
     {
-        this.x = x;
-        this.y = y;
-        this.backgroundWidth = backgroundWidth;
-        this.backgroundHeight = backgroundHeight;
+        super(x, y, backgroundWidth, backgroundHeight);
         this.foregroundWidth = foregroundWidth;
         this.foregroundHeight = foregroundHeight;
     }
@@ -33,7 +26,7 @@ public abstract class FillBarWidget implements LimaRenderable
 
     protected void renderBackground(GuiGraphics graphics)
     {
-        graphics.blitSprite(getBackgroundSprite(), getX(), getY(), backgroundWidth, backgroundHeight);
+        graphics.blitSprite(getBackgroundSprite(), getX(), getY(), getWidth(), getHeight());
     }
 
     protected void renderHorizontalBar(GuiGraphics graphics, float fillPercentage)
@@ -54,30 +47,6 @@ public abstract class FillBarWidget implements LimaRenderable
         }
     }
 
-    @Override
-    public int getX()
-    {
-        return x;
-    }
-
-    @Override
-    public int getY()
-    {
-        return y;
-    }
-
-    @Override
-    public int getWidth()
-    {
-        return backgroundWidth;
-    }
-
-    @Override
-    public int getHeight()
-    {
-        return backgroundHeight;
-    }
-
     public abstract static class HorizontalBar extends FillBarWidget
     {
         protected HorizontalBar(int x, int y, int backgroundWidth, int backgroundHeight, int foregroundWidth, int foregroundHeight)
@@ -86,7 +55,7 @@ public abstract class FillBarWidget implements LimaRenderable
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
             renderBackground(graphics);
             renderHorizontalBar(graphics, getFillPercentage());
@@ -101,7 +70,7 @@ public abstract class FillBarWidget implements LimaRenderable
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
             renderBackground(graphics);
             renderVerticalBar(graphics, getFillPercentage());
