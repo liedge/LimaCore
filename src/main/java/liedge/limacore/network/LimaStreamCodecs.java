@@ -252,5 +252,10 @@ public final class LimaStreamCodecs
     {
         return object2IntMap(keyCodec, ByteBufCodecs.VAR_INT);
     }
+
+    public static <B extends ByteBuf, K> StreamCodec<B, Object2IntMap<K>> object2IntLinkedMap(StreamCodec<? super B, K> keyCodec, StreamCodec<? super B, Integer> valueCodec)
+    {
+        return ByteBufCodecs.map(Object2IntLinkedOpenHashMap::new, keyCodec, valueCodec);
+    }
     //#endregion
 }

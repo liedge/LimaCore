@@ -29,14 +29,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
+import java.util.*;
+import java.util.function.*;
 
 import static liedge.limacore.lib.math.LimaCoreMath.toDeg;
 import static liedge.limacore.lib.math.LimaCoreMath.toRad;
@@ -216,14 +210,19 @@ public final class LimaCoreCodecs
         return elementCodec.listOf().xmap(list -> ObjectSets.unmodifiable(new ObjectLinkedOpenHashSet<>(list)), List::copyOf);
     }
 
-    public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec, Codec<Integer> valueCodec)
+    public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec, Codec<Integer> valueCodec, Function<Map<K, Integer>, ? extends Object2IntMap<K>> wrapper)
     {
-        return Codec.unboundedMap(keyCodec, valueCodec).xmap(map -> Object2IntMaps.unmodifiable(new Object2IntOpenHashMap<>(map)), Function.identity());
+        return Codec.unboundedMap(keyCodec, valueCodec).xmap(boxedMap -> Object2IntMaps.unmodifiable(wrapper.apply(boxedMap)), Function.identity());
     }
 
-    public static <K> Codec<Object2IntMap<K>> object2IntMap(Codec<K> keyCodec)
+    public static <K> Codec<Object2IntMap<K>> object2IntHashMap(Codec<K> keyCodec, Codec<Integer> valueCodec)
     {
-        return object2IntMap(keyCodec, Codec.INT);
+        return object2IntMap(keyCodec, valueCodec, Object2IntOpenHashMap::new);
+    }
+
+    public static <K> Codec<Object2IntMap<K>> object2IntLinkedHashMap(Codec<K> keyCodec, Codec<Integer> valueCodec)
+    {
+        return object2IntMap(keyCodec, valueCodec, Object2IntLinkedOpenHashMap::new);
     }
 
     public static <R, T extends R> Codec<T> classCastRegistryCodec(Registry<R> registry, Class<T> valueClass)
