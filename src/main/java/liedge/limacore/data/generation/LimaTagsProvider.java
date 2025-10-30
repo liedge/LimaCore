@@ -2,6 +2,7 @@ package liedge.limacore.data.generation;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import liedge.limacore.LimaCore;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -13,6 +14,7 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
+import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -117,16 +119,28 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
         @Override
         protected CompletableFuture<HolderLookup.Provider> createContentsProvider()
         {
-            return super.createContentsProvider().thenCombine(blockTagsLookup, (provider, blockTags) -> {
-                copyOps.forEach((blockTag, itemTag) -> {
-                    TagBuilder builder = getOrCreateRawBuilder(itemTag);
-                    blockTags.apply(blockTag)
-                            .orElseThrow(() -> new IllegalStateException("Can't copy non-existent block tag " + blockTag.location()))
-                            .build()
-                            .forEach(builder::add);
-                });
+            return super.createContentsProvider().thenCombine(blockTagsLookup, (registries, blockTags) ->
+            {
+                copyBlockTags(blockTags);
+               return registries;
+            });
+        }
 
-                return provider;
+        private void copyBlockTags(TagLookup<Block> blockTags)
+        {
+            copyOps.forEach((blockTag, itemTag) ->
+            {
+                TagBuilder itemBuilder = getOrCreateRawBuilder(itemTag);
+                TagBuilder blockBuilder = blockTags.apply(blockTag).orElseThrow(() -> new IllegalStateException("Can't copy non-existent block tag " + blockTag.location())).getRawBuilder();
+
+                List<TagEntry> built = blockBuilder.build();
+                for (TagEntry entry : built)
+                {
+                    if (entry.isTag() || BuiltInRegistries.ITEM.containsKey(entry.getId()))
+                        itemBuilder.add(entry);
+                    else
+                        LimaCore.LOGGER.info("Skipping item reference tag entry {} since it is missing from the Item registry.", entry.getId());
+                }
             });
         }
     }
