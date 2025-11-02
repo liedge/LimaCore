@@ -8,6 +8,7 @@ import liedge.limacore.LimaCore;
 import liedge.limacore.capability.fluid.LimaFluidHandler;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.menu.slot.LimaHandlerSlot;
+import liedge.limacore.menu.slot.RecipeOutputSlot;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
@@ -108,6 +109,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             stack = stack1.copy();
 
             if (!quickMoveInternal(index, stack1)) return ItemStack.EMPTY;
+
+            // Recipe trigger must be called here for quick transfer
+            if (slot instanceof RecipeOutputSlot recipeSlot) recipeSlot.onQuickCraft(stack1, stack);
 
             if (stack1.isEmpty())
             {
