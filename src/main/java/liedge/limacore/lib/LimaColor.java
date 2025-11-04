@@ -50,29 +50,6 @@ public record LimaColor(int argb32, float red, float green, float blue, Style ch
     @Override
     public String toString()
     {
-        return "#" + argb32;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Integer.hashCode(argb32);
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == this)
-        {
-            return true;
-        }
-        else if (obj instanceof LimaColor color)
-        {
-            return this.argb32() == color.argb32();
-        }
-        else
-        {
-            return false;
-        }
+        return "#" + Integer.toHexString(argb32);
     }
 }
