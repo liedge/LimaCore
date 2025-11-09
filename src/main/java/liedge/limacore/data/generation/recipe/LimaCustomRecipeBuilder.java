@@ -3,7 +3,8 @@ package liedge.limacore.data.generation.recipe;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.recipe.LimaCustomRecipe;
-import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
+import liedge.limacore.recipe.ingredient.DeterministicFluidIngredient;
+import liedge.limacore.recipe.ingredient.DeterministicItemIngredient;
 import liedge.limacore.recipe.result.ConstantItemResult;
 import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.recipe.result.RandomChanceItemResult;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.List;
@@ -59,7 +61,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B randomInput(Ingredient child, float consumeChance)
     {
-        return input(ConsumeChanceIngredient.of(child, consumeChance));
+        return input(DeterministicItemIngredient.of(child, consumeChance));
     }
 
     public B input(Ingredient ingredient, int count)
@@ -69,7 +71,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B randomInput(Ingredient child, int count, float consumeChance)
     {
-        return input(ConsumeChanceIngredient.of(child, consumeChance), count);
+        return input(DeterministicItemIngredient.of(child, consumeChance), count);
     }
 
     public B input(ItemLike itemLike)
@@ -84,7 +86,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B randomInput(ItemLike itemLike, int count, float consumeChance)
     {
-        return input(ConsumeChanceIngredient.of(Ingredient.of(itemLike), consumeChance), count);
+        return input(DeterministicItemIngredient.of(Ingredient.of(itemLike), consumeChance), count);
     }
 
     public B input(TagKey<Item> tagKey)
@@ -99,7 +101,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B randomInput(TagKey<Item> tagKey, int count, float consumeChance)
     {
-        return input(ConsumeChanceIngredient.of(Ingredient.of(tagKey), consumeChance), count);
+        return input(DeterministicItemIngredient.of(Ingredient.of(tagKey), consumeChance), count);
     }
 
     public B fluidInput(SizedFluidIngredient ingredient)
@@ -108,9 +110,20 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return selfUnchecked();
     }
 
+    public B fluidInput(FluidIngredient singleIngredient, int amount)
+    {
+        return fluidInput(new SizedFluidIngredient(singleIngredient, amount));
+    }
+
     public B fluidInput(FluidStack fluidStack)
     {
         return fluidInput(SizedFluidIngredient.of(fluidStack));
+    }
+
+    public B randomFluidInput(FluidStack fluidStack, float consumeChance)
+    {
+        DeterministicFluidIngredient wrapper = new DeterministicFluidIngredient(FluidIngredient.single(fluidStack), consumeChance);
+        return fluidInput(wrapper, fluidStack.getAmount());
     }
 
     public B fluidInput(Fluid fluid, int amount)
@@ -118,14 +131,30 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return fluidInput(SizedFluidIngredient.of(fluid, amount));
     }
 
+    public B randomFluidInput(Fluid fluid, int amount, float consumeChance)
+    {
+        return randomFluidInput(new FluidStack(fluid, amount), consumeChance);
+    }
+
     public B fluidInput(Holder<Fluid> fluidHolder, int amount)
     {
         return fluidInput(fluidHolder.value(), amount);
     }
 
+    public B randomFluidInput(Holder<Fluid> fluidHolder, int amount, float consumeChance)
+    {
+        return randomFluidInput(fluidHolder.value(), amount, consumeChance);
+    }
+
     public B fluidInput(TagKey<Fluid> tagKey, int amount)
     {
         return fluidInput(SizedFluidIngredient.of(tagKey, amount));
+    }
+
+    public B randomFluidInput(TagKey<Fluid> tagKey, int amount, float consumeChance)
+    {
+        DeterministicFluidIngredient wrapper = new DeterministicFluidIngredient(FluidIngredient.tag(tagKey), consumeChance);
+        return fluidInput(wrapper, amount);
     }
 
     public B output(ItemResult result)

@@ -1,8 +1,6 @@
 package liedge.limacore.recipe.ingredient;
 
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.data.LimaCoreCodecs;
 import liedge.limacore.registry.game.LimaCoreIngredientTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -12,16 +10,13 @@ import net.neoforged.neoforge.common.crafting.IngredientType;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public record ConsumeChanceIngredient(Ingredient child, float consumeChance) implements ICustomIngredient
+public record DeterministicItemIngredient(Ingredient child, float consumeChance) implements ICustomIngredient, DeterministicIngredient<Ingredient>
 {
-    public static final MapCodec<ConsumeChanceIngredient> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Ingredient.CODEC_NONEMPTY.fieldOf("child").forGetter(ConsumeChanceIngredient::child),
-            LimaCoreCodecs.floatOpenEndRange(0f, 1f).fieldOf("consume_chance").forGetter(ConsumeChanceIngredient::consumeChance))
-            .apply(instance, ConsumeChanceIngredient::new));
+    public static final MapCodec<DeterministicItemIngredient> CODEC = DeterministicIngredient.codec(Ingredient.CODEC_NONEMPTY, DeterministicItemIngredient::new);
 
     public static Ingredient of(Ingredient child, float consumeChance)
     {
-        return new Ingredient(new ConsumeChanceIngredient(child, consumeChance));
+        return new Ingredient(new DeterministicItemIngredient(child, consumeChance));
     }
 
     @Override
@@ -46,6 +41,6 @@ public record ConsumeChanceIngredient(Ingredient child, float consumeChance) imp
     @Override
     public IngredientType<?> getType()
     {
-        return LimaCoreIngredientTypes.CONSUME_CHANCE.get();
+        return LimaCoreIngredientTypes.DETERMINISTIC_ITEM.get();
     }
 }

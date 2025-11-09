@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.recipe.ingredient.ConsumeChanceIngredient;
+import liedge.limacore.recipe.ingredient.DeterministicIngredient;
 import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
@@ -148,15 +148,18 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
     //#endregion
 
-    private boolean shouldConsumeIngredient(Ingredient root, RandomSource random)
+    private boolean shouldConsumeItemIngredient(Ingredient root, RandomSource random)
     {
-        if (root.getCustomIngredient() instanceof ConsumeChanceIngredient chanceIngredient)
-        {
-            float chance = chanceIngredient.consumeChance();
-            return chance != 0 && random.nextFloat() < chance;
-        }
+        if (root.getCustomIngredient() instanceof DeterministicIngredient<?> ingredient)
+            return ingredient.shouldConsume(random);
+        else return true;
+    }
 
-        return true;
+    private boolean shouldConsumeFluidIngredient(FluidIngredient root, RandomSource random)
+    {
+        if (root instanceof DeterministicIngredient<?> ingredient)
+            return ingredient.shouldConsume(random);
+        else return true;
     }
 
     public void consumeItemIngredients(T input, RandomSource random)
@@ -167,7 +170,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
             Ingredient root = sizedIngredient.ingredient();
 
             // Consumption chance happens here
-            if (!shouldConsumeIngredient(root, random)) continue; // Skip entirely
+            if (!shouldConsumeItemIngredient(root, random)) continue; // Skip entirely
 
             for (int slot = 0; slot < input.size(); slot++)
             {
@@ -182,12 +185,14 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         }
     }
 
-    public void consumeFluidIngredients(T input)
+    public void consumeFluidIngredients(T input, RandomSource random)
     {
         for (SizedFluidIngredient sizedIngredient : fluidIngredients)
         {
             int remaining = sizedIngredient.amount();
             FluidIngredient root = sizedIngredient.ingredient();
+
+            if (!shouldConsumeFluidIngredient(root, random)) continue;
 
             for (int tank = 0; tank < input.tanks(); tank++)
             {
