@@ -1,103 +1,89 @@
 package liedge.limacore.recipe;
 
-import liedge.limacore.LimaCore;
 import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaRecipesUtil;
-import net.minecraft.ResourceLocationException;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class LimaRecipeCheck<I extends RecipeInput, R extends Recipe<I>> implements RecipeManager.CachedCheck<I, R>, INBTSerializable<StringTag>
+public interface LimaRecipeCheck<I extends RecipeInput, R extends Recipe<I>> extends RecipeManager.CachedCheck<I, R>
 {
-    private static final String NULL_MARKER = "null";
-
-    public static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(RecipeType<R> type)
+    static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(RecipeType<R> type)
     {
-        return new LimaRecipeCheck<>(type);
+        return new SimpleCheck<>(type);
     }
 
-    public static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(Supplier<? extends RecipeType<R>> typeSupplier)
+    static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(Supplier<? extends RecipeType<R>> typeSupplier)
     {
-        return new LimaRecipeCheck<>(typeSupplier.get());
+        return new SimpleCheck<>(typeSupplier.get());
     }
 
-    private final RecipeType<R> recipeType;
+    RecipeType<R> getRecipeType();
 
-    private @Nullable ResourceLocation lastUsedId;
+    @Nullable
+    ResourceLocation getLastUsedRecipeId();
 
-    private LimaRecipeCheck(RecipeType<R> recipeType)
-    {
-        this.recipeType = recipeType;
-    }
-
-    public RecipeType<R> getRecipeType()
-    {
-        return recipeType;
-    }
+    void setLastUsedRecipeId(@Nullable ResourceLocation lastUsedRecipeId);
 
     @Override
-    public Optional<RecipeHolder<R>> getRecipeFor(I input, Level level)
+    default Optional<RecipeHolder<R>> getRecipeFor(I input, Level level)
     {
-        Optional<RecipeHolder<R>> optional = level.getRecipeManager().getRecipeFor(recipeType, input, level, lastUsedId);
-        optional.ifPresent(holder -> this.lastUsedId = holder.id());
-
-        return optional;
+        Optional<RecipeHolder<R>> lookup = level.getRecipeManager().getRecipeFor(getRecipeType(), input, level, getLastUsedRecipeId());
+        lookup.ifPresent(o -> setLastUsedRecipeId(o.id()));
+        return lookup;
     }
 
-    public Optional<RecipeHolder<R>> getLastUsedRecipe(@Nullable Level level)
+    default Optional<RecipeHolder<R>> getLastUsedRecipe(@Nullable Level level)
     {
-        if (level == null || lastUsedId == null) return Optional.empty();
-        return LimaRecipesUtil.getRecipeById(level, lastUsedId, recipeType);
+        ResourceLocation id = getLastUsedRecipeId();
+        if (level == null || id == null) return Optional.empty();
+        return LimaRecipesUtil.getRecipeById(level, id, getRecipeType());
     }
 
-    public void setLastUsedRecipe(@Nullable RecipeHolder<R> recipe)
+    default void setLastUsedRecipe(@Nullable RecipeHolder<R> lastUsedRecipe)
     {
-        lastUsedId = recipe != null ? recipe.id() : null;
+        ResourceLocation id = lastUsedRecipe != null ? lastUsedRecipe.id() : null;
+        setLastUsedRecipeId(id);
     }
 
-    public LimaDataWatcher<String> createDataWatcher()
+    default LimaDataWatcher<Optional<ResourceLocation>> keepLastUsedSynced()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.STRING_UTF8, this::serialize, this::deserialize);
+        return AutomaticDataWatcher.keepNullableSynced(LimaCoreNetworkSerializers.OPTIONAL_RESOURCE_LOCATION, this::getLastUsedRecipeId, this::setLastUsedRecipeId);
     }
 
-    // Serialization stuff
-    @Override
-    public StringTag serializeNBT(HolderLookup.Provider provider)
+    final class SimpleCheck<I extends RecipeInput, R extends Recipe<I>> implements LimaRecipeCheck<I, R>
     {
-        return StringTag.valueOf(serialize());
-    }
+        private final RecipeType<R> recipeType;
+        @Nullable
+        private ResourceLocation lastUsedId;
 
-    @Override
-    public void deserializeNBT(HolderLookup.Provider provider, StringTag nbt)
-    {
-        deserialize(nbt.getAsString());
-    }
-
-    private String serialize()
-    {
-        return lastUsedId != null ? lastUsedId.toString() : NULL_MARKER;
-    }
-
-    private void deserialize(String value)
-    {
-        try
+        private SimpleCheck(RecipeType<R> recipeType)
         {
-            lastUsedId = !value.equals(NULL_MARKER) ? ResourceLocation.parse(value) : null;
+            this.recipeType = recipeType;
         }
-        catch (ResourceLocationException ex)
+
+        @Override
+        public RecipeType<R> getRecipeType()
         {
-            LimaCore.LOGGER.warn("Tried to deserialize invalid recipe ID '{}'.", value);
-            lastUsedId = null;
+            return recipeType;
+        }
+
+        @Override
+        public @Nullable ResourceLocation getLastUsedRecipeId()
+        {
+            return lastUsedId;
+        }
+
+        @Override
+        public void setLastUsedRecipeId(@Nullable ResourceLocation lastUsedRecipeId)
+        {
+            this.lastUsedId = lastUsedRecipeId;
         }
     }
 }

@@ -171,7 +171,7 @@ public final class LimaNbtUtil
 
     public static @Nullable ResourceLocation getOptionalResourceLocation(CompoundTag tag, String key)
     {
-        return tag.contains(key, Tag.TAG_STRING) ? ResourceLocation.parse(tag.getString(key)) : null;
+        return tag.contains(key, Tag.TAG_STRING) ? ResourceLocation.tryParse(tag.getString(key)) : null;
     }
 
     public static void putOptionalResourceLocation(CompoundTag tag, String key, @Nullable ResourceLocation resourceLocation)
