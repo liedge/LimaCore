@@ -25,9 +25,7 @@ public interface ItemResult
 
     Codec<ItemResult> CODEC = ItemResultType.CODEC.dispatchWithInline(ConstantItemResult.class, ConstantItemResult.INLINE_CODEC, ItemResult::getType, ItemResultType::getCodec);
     StreamCodec<RegistryFriendlyByteBuf, ItemResult> STREAM_CODEC = ItemResultType.STREAM_CODEC.dispatch(ItemResult::getType, ItemResultType::getStreamCodec);
-
     MapCodec<List<ItemResult>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
-    StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> LIST_UNIT_STREAM_CODEC = StreamCodec.unit(List.of());
 
     Comparator<ItemResult> REQUIRED_FIRST = Comparator.comparing(ItemResult::requiredOutput).reversed();
 

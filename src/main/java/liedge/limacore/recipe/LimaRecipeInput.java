@@ -1,12 +1,12 @@
 package liedge.limacore.recipe;
 
 import liedge.limacore.capability.fluid.LimaFluidHandler;
+import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
+import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeInput;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,12 +48,12 @@ public interface LimaRecipeInput extends RecipeInput
         return true;
     }
 
-    default boolean checkItemInputSize(List<SizedIngredient> itemIngredients)
+    default boolean checkItemInputSize(List<LimaSizedItemIngredient> itemIngredients)
     {
-        return itemIngredients.isEmpty() || (itemIngredients.size() <= size() && !isEmpty());
+        return itemIngredients.isEmpty() || (itemIngredients.size() <= size() && !areItemsEmpty());
     }
 
-    default boolean checkFluidInputSize(List<SizedFluidIngredient> fluidIngredients)
+    default boolean checkFluidInputSize(List<LimaSizedFluidIngredient> fluidIngredients)
     {
         return fluidIngredients.isEmpty() || (fluidIngredients.size() <= tanks() && !areFluidsEmpty());
     }

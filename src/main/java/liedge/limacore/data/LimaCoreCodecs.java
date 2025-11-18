@@ -12,17 +12,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
-import liedge.limacore.util.LimaCoreUtil;
 import liedge.limacore.lib.math.LimaCoreMath;
+import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
@@ -30,7 +28,10 @@ import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import static liedge.limacore.lib.math.LimaCoreMath.toDeg;
 import static liedge.limacore.lib.math.LimaCoreMath.toRad;
@@ -42,8 +43,6 @@ public final class LimaCoreCodecs
     private LimaCoreCodecs() {}
 
     // Map codec common keys
-    public static final String INGREDIENTS_KEY = "ingredients";
-    public static final String FLUID_INGREDIENTS_KEY = "fluid_ingredients";
     public static final String FLUID_RESULTS_KEY = "fluid_results";
 
     /**
@@ -133,8 +132,6 @@ public final class LimaCoreCodecs
             AXIS_VECTOR.fieldOf("axis").forGetter(o -> new Vector3f(o.x, o.y, o.z))).apply(instance, AxisAngle4f::new));
 
     public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
-    public static final MapCodec<List<SizedIngredient>> ITEM_INGREDIENTS_UNIT = EmptyFieldMapCodec.emptyListField(INGREDIENTS_KEY);
-    public static final MapCodec<List<SizedFluidIngredient>> FLUID_INGREDIENTS_UNIT = EmptyFieldMapCodec.emptyListField(FLUID_INGREDIENTS_KEY);
     public static final MapCodec<List<FluidStack>> FLUID_RESULTS_UNIT = EmptyFieldMapCodec.emptyListField(FLUID_RESULTS_KEY);
 
     public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
@@ -279,16 +276,6 @@ public final class LimaCoreCodecs
 
         Codec<List<E>> listCodec = elementCodec.listOf(minInclusive, maxInclusive);
         return minInclusive == 0 ? listCodec.optionalFieldOf(fieldName, List.of()) : listCodec.fieldOf(fieldName);
-    }
-
-    public static MapCodec<List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
-    {
-        return autoOptionalListField(SizedIngredient.FLAT_CODEC, INGREDIENTS_KEY, minInclusive, maxInclusive);
-    }
-
-    public static MapCodec<List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
-    {
-        return autoOptionalListField(SizedFluidIngredient.FLAT_CODEC, FLUID_INGREDIENTS_KEY, minInclusive, maxInclusive);
     }
 
     public static MapCodec<List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)

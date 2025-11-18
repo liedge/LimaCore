@@ -5,7 +5,9 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.recipe.ingredient.DeterministicIngredient;
+import liedge.limacore.recipe.ingredient.LimaSizedIngredient;
+import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
+import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
 import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
@@ -15,11 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.List;
 
@@ -43,14 +43,14 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     // Ingredients
-    private final List<SizedIngredient> itemIngredients;
-    private final List<SizedFluidIngredient> fluidIngredients;
+    private final List<LimaSizedItemIngredient> itemIngredients;
+    private final List<LimaSizedFluidIngredient> fluidIngredients;
 
     // Results
     private final List<ItemResult> itemResults;
     private final List<FluidStack> fluidResults;
 
-    protected LimaCustomRecipe(List<SizedIngredient> itemIngredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults)
+    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults)
     {
         this.itemIngredients = itemIngredients;
         this.fluidIngredients = fluidIngredients;
@@ -58,29 +58,29 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         this.fluidResults = fluidResults;
     }
 
-    protected LimaCustomRecipe(List<SizedIngredient> itemIngredients, List<ItemResult> itemResults)
+    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<ItemResult> itemResults)
     {
         this(itemIngredients, List.of(), itemResults, List.of());
     }
 
     //#region Ingredient functions
-    public List<SizedIngredient> getItemIngredients()
+    public List<LimaSizedItemIngredient> getItemIngredients()
     {
         return itemIngredients;
     }
 
-    public List<SizedFluidIngredient> getFluidIngredients()
+    public List<LimaSizedFluidIngredient> getFluidIngredients()
     {
         return fluidIngredients;
     }
 
-    public SizedIngredient getItemIngredient(int index)
+    public LimaSizedItemIngredient getItemIngredient(int index)
     {
         Preconditions.checkElementIndex(index, itemIngredients.size(), "Item Ingredient");
         return itemIngredients.get(index);
     }
 
-    public SizedFluidIngredient getFluidIngredient(int index)
+    public LimaSizedFluidIngredient getFluidIngredient(int index)
     {
         Preconditions.checkElementIndex(index, fluidIngredients.size(), "Fluid Ingredient");
         return fluidIngredients.get(index);
@@ -148,29 +148,20 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
     //#endregion
 
-    private boolean shouldConsumeItemIngredient(Ingredient root, RandomSource random)
+    private boolean skipIngredient(LimaSizedIngredient<?, ?> ingredient, RandomSource random)
     {
-        if (root.getCustomIngredient() instanceof DeterministicIngredient<?> ingredient)
-            return ingredient.shouldConsume(random);
-        else return true;
-    }
-
-    private boolean shouldConsumeFluidIngredient(FluidIngredient root, RandomSource random)
-    {
-        if (root instanceof DeterministicIngredient<?> ingredient)
-            return ingredient.shouldConsume(random);
-        else return true;
+        float chance = ingredient.getConsumeChance();
+        return ingredient.isDeterministic() && (chance == 0 || !(random.nextFloat() < chance));
     }
 
     public void consumeItemIngredients(T input, RandomSource random)
     {
-        for (SizedIngredient sizedIngredient : itemIngredients)
+        for (LimaSizedItemIngredient sizedIngredient : itemIngredients)
         {
-            int remaining = sizedIngredient.count();
-            Ingredient root = sizedIngredient.ingredient();
+            int remaining = sizedIngredient.getSize();
+            Ingredient root = sizedIngredient.getIngredient();
 
-            // Consumption chance happens here
-            if (!shouldConsumeItemIngredient(root, random)) continue; // Skip entirely
+            if (skipIngredient(sizedIngredient, random)) continue;
 
             for (int slot = 0; slot < input.size(); slot++)
             {
@@ -187,12 +178,12 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     public void consumeFluidIngredients(T input, RandomSource random)
     {
-        for (SizedFluidIngredient sizedIngredient : fluidIngredients)
+        for (LimaSizedFluidIngredient sizedIngredient : fluidIngredients)
         {
-            int remaining = sizedIngredient.amount();
-            FluidIngredient root = sizedIngredient.ingredient();
+            int remaining = sizedIngredient.getSize();
+            FluidIngredient root = sizedIngredient.getIngredient();
 
-            if (!shouldConsumeFluidIngredient(root, random)) continue;
+            if (skipIngredient(sizedIngredient, random)) continue;
 
             for (int tank = 0; tank < input.tanks(); tank++)
             {
@@ -213,10 +204,10 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
         int[] removalTracker = new int[input.size()];
 
-        for (SizedIngredient sizedIngredient : itemIngredients)
+        for (LimaSizedItemIngredient sizedIngredient : itemIngredients)
         {
-            int stillNeeded = sizedIngredient.count();
-            Ingredient root = sizedIngredient.ingredient();
+            int stillNeeded = sizedIngredient.getSize();
+            Ingredient root = sizedIngredient.getIngredient();
 
             for (int slot = 0; slot < input.size(); slot++)
             {
@@ -246,10 +237,10 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
         int[] removalTracker = new int[input.tanks()];
 
-        for (SizedFluidIngredient sizedIngredient : fluidIngredients)
+        for (LimaSizedFluidIngredient sizedIngredient : fluidIngredients)
         {
-            int stillNeeded = sizedIngredient.amount();
-            FluidIngredient root = sizedIngredient.ingredient();
+            int stillNeeded = sizedIngredient.getSize();
+            FluidIngredient root = sizedIngredient.getIngredient();
 
             for (int tank = 0; tank < input.tanks(); tank++)
             {
@@ -289,7 +280,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     public boolean isIncomplete()
     {
         // Seems like only the client recipe book uses this?
-        return itemIngredients.isEmpty() || itemIngredients.stream().map(SizedIngredient::ingredient).anyMatch(Ingredient::hasNoItems);
+        return itemIngredients.isEmpty() || itemIngredients.stream().map(LimaSizedItemIngredient::getIngredient).anyMatch(Ingredient::hasNoItems);
     }
 
     /**
@@ -335,12 +326,12 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     @FunctionalInterface
-    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<SizedIngredient>, List<SizedFluidIngredient>, List<ItemResult>, List<FluidStack>, R>
+    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidStack>, R>
     {
-        R create(List<SizedIngredient> itemIngredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults);
+        R create(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults);
 
         @Override
-        default R apply(List<SizedIngredient> ingredients, List<SizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidStacks)
+        default R apply(List<LimaSizedItemIngredient> ingredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidStacks)
         {
             return create(ingredients, fluidIngredients, itemResults, fluidStacks);
         }

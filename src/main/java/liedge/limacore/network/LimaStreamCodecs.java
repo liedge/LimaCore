@@ -23,9 +23,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.Collection;
@@ -48,9 +46,6 @@ public final class LimaStreamCodecs
     public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, StringTag> STRING_NBT_TAG = ByteBufCodecs.STRING_UTF8.map(StringTag::valueOf, StringTag::getAsString);
     public static final StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
-    public static final StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> ITEM_INGREDIENTS_UNIT = StreamCodec.unit(List.of());
-    public static final StreamCodec<RegistryFriendlyByteBuf, List<SizedFluidIngredient>> FLUID_INGREDIENTS_UNIT = StreamCodec.unit(List.of());
-    public static final StreamCodec<RegistryFriendlyByteBuf, List<FluidStack>> FLUID_RESULTS_UNIT = StreamCodec.unit(List.of());
 
     public static final StreamCodec<ByteBuf, IntList> INT_LIST = new StreamCodec<>()
     {
@@ -163,19 +158,9 @@ public final class LimaStreamCodecs
     //#endregion
 
     //#region Stream codec factories
-    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int minInclusive, int maxInclusive)
+    public static <B extends ByteBuf, E> StreamCodec<B, List<E>> unitList()
     {
-        return SizedIngredient.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
-    }
-
-    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedIngredient>> sizedIngredients(int maxIngredients)
-    {
-        return sizedIngredients(1, maxIngredients);
-    }
-
-    public static StreamCodec<RegistryFriendlyByteBuf, List<SizedFluidIngredient>> sizedFluidIngredients(int minInclusive, int maxInclusive)
-    {
-        return SizedFluidIngredient.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
+        return StreamCodec.unit(List.of());
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
