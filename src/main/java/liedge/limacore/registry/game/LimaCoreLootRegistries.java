@@ -1,6 +1,9 @@
 package liedge.limacore.registry.game;
 
 import com.mojang.serialization.MapCodec;
+import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
+import liedge.limacore.advancement.HostilityEntityPredicate;
+import liedge.limacore.advancement.LivingHealthPredicate;
 import liedge.limacore.world.loot.*;
 import liedge.limacore.world.loot.condition.EntityHostilityLootCondition;
 import liedge.limacore.world.loot.condition.NumberComparisonLootCondition;
@@ -46,6 +49,7 @@ public final class LimaCoreLootRegistries
     }
 
     // Entity sub predicate types
+    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<LivingHealthPredicate>> LIVING_HEALTH_PREDICATE = ENTITY_SUB_PREDICATES.register("living_health", () -> LivingHealthPredicate.CODEC);
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<HostilityEntityPredicate>> HOSTILITY_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("hostility", () -> HostilityEntityPredicate.CODEC);
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<EnchantmentLevelEntityPredicate>> ENCHANTMENT_LEVEL_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("enchantment_level", () -> EnchantmentLevelEntityPredicate.CODEC);
 

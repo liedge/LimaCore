@@ -1,5 +1,7 @@
 package liedge.limacore.lib;
 
+import com.mojang.serialization.Codec;
+import liedge.limacore.advancement.ComparableBounds;
 import liedge.limacore.data.LimaEnumCodec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,6 +17,7 @@ public enum MobHostility implements StringRepresentable
 
     public static final LimaEnumCodec<MobHostility> CODEC = LimaEnumCodec.create(MobHostility.class);
     public static final StreamCodec<FriendlyByteBuf, MobHostility> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(MobHostility.class);
+    public static final Codec<ComparableBounds<MobHostility>> BOUNDS_CODEC = ComparableBounds.codec(CODEC);
 
     private final String name;
 

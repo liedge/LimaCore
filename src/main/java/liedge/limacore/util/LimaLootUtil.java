@@ -1,6 +1,6 @@
 package liedge.limacore.util;
 
-import liedge.limacore.world.loot.EnchantmentLevelEntityPredicate;
+import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
