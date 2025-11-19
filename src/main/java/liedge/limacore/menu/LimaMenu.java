@@ -329,14 +329,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected boolean quickMoveToAllInventory(ItemStack stack, boolean reverse)
     {
-        if (reverse)
-        {
-            return quickMoveToHotbar(stack, true) || quickMoveToInventory(stack, true);
-        }
-        else
-        {
-            return quickMoveToInventory(stack, false) || quickMoveToHotbar(stack, false);
-        }
+        return quickMoveToInventory(stack, reverse) || quickMoveToHotbar(stack, reverse);
     }
     //#endregion
 
