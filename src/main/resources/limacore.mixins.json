@@ -1,8 +1,8 @@
 {
-  "required": true,
-  "package": "liedge.limacore.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "refmap": "limacore.refmap.json",
-  "mixins": [ "DamageSourceMixin", "LivingEntityMixin" ],
-  "client": [ "GuiGraphicsMixin" ]
+    "required": true,
+    "package": "liedge.limacore.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "refmap": "limacore.refmap.json",
+    "mixins": [ "DamageSourceMixin", "LivingEntityMixin", "RegisterNamedRenderTypesEventMixin" ],
+    "client": [ "GuiGraphicsMixin" ]
 }

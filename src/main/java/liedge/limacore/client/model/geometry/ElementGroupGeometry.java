@@ -1,16 +1,16 @@
 package liedge.limacore.client.model.geometry;
 
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.math.Transformation;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import liedge.limacore.LimaCore;
-import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import liedge.limacore.util.LimaJsonUtil;
 import liedge.limacore.util.LimaStreamsUtil;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -34,12 +34,6 @@ import java.util.function.Function;
 public abstract class ElementGroupGeometry implements IUnbakedGeometry<ElementGroupGeometry>
 {
     public static final String DEFAULT_GROUP_NAME = "group";
-    public static final ResourceLocation CUSTOM_EMISSIVE_RENDER_TYPE_NAME = LimaCore.RESOURCES.location("custom_emissive");
-
-    public static RenderTypeGroup customEmissiveRenderTypes()
-    {
-        return new RenderTypeGroup(RenderType.SOLID, LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID);
-    }
 
     private final List<BlockElement> elements;
     private final Map<String, IntList> elementGroups;
@@ -61,11 +55,6 @@ public abstract class ElementGroupGeometry implements IUnbakedGeometry<ElementGr
         if (!rootTransform.isIdentity()) modelState = UnbakedGeometryHelper.composeRootTransformIntoModelState(modelState, rootTransform);
 
         return bake(context, baker, spriteGetter, modelState, overrides, particleIcon, modelRenderTypes, elements, elementGroups);
-    }
-
-    protected RenderTypeGroup getRenderTypes(IGeometryBakingContext context, ResourceLocation name)
-    {
-        return name.equals(CUSTOM_EMISSIVE_RENDER_TYPE_NAME) ? customEmissiveRenderTypes() : context.getRenderType(name);
     }
 
     protected abstract BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, TextureAtlasSprite particleIcon, RenderTypeGroup modelRenderTypes, List<BlockElement> elements, Map<String, IntList> elementGroups);

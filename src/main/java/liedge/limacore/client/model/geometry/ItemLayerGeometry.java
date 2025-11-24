@@ -78,7 +78,7 @@ public class ItemLayerGeometry extends ElementGroupGeometry
                 }
             }
 
-            RenderTypeGroup layerRenderTypes = definition.renderTypeName() != null ? getRenderTypes(context, definition.renderTypeName()) : modelRenderTypes;
+            RenderTypeGroup layerRenderTypes = definition.renderTypeName() != null ? context.getRenderType(definition.renderTypeName()) : modelRenderTypes;
             layerBuilder.setRenderTypes(layerRenderTypes);
         }
 

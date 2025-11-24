@@ -56,7 +56,7 @@ public class BlockLayerGeometry extends ElementGroupGeometry
 
         for (GeometryLayerDefinition definition : layerDefinitions)
         {
-            RenderTypeGroup rtg = definition.renderTypeName() != null ? getRenderTypes(context, definition.renderTypeName()) : modelRenderTypes;
+            RenderTypeGroup rtg = definition.renderTypeName() != null ? context.getRenderType(definition.renderTypeName()) : modelRenderTypes;
             RenderType layerRenderType = rtg.isEmpty() ? RenderType.SOLID : rtg.block();
 
             BlockQuadsGroup.Builder builder = builders.computeIfAbsent(layerRenderType, $ -> BlockQuadsGroup.builder());

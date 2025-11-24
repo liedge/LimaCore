@@ -2,6 +2,7 @@ package liedge.limacore.client.renderer;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import liedge.limacore.LimaCore;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -14,6 +15,9 @@ import java.util.function.Function;
 public final class LimaCoreRenderTypes
 {
     private LimaCoreRenderTypes () {}
+
+    // Named render type keys
+    public static final ResourceLocation EMISSIVE_SOLID_ITEM_NAME = LimaCore.RESOURCES.location("emissive");
 
     public static final RenderStateShard.ShaderStateShard POSITION_TEX_COLOR_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionTexColorShader);
 

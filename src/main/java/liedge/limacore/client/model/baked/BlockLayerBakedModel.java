@@ -3,7 +3,7 @@ package liedge.limacore.client.model.baked;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import liedge.limacore.client.model.geometry.ElementGroupGeometry;
+import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -50,7 +50,7 @@ public final class BlockLayerBakedModel extends LimaAbstractBakedModel
         this.masterQuadsGroup = masterBuilder.build();
 
         BakedItemLayer normalLayer = new BakedItemLayer(this, normalItemQuads, RenderTypeGroup.EMPTY);
-        BakedItemLayer emissiveLayer = new BakedItemLayer(this, emissiveItemQuads, ElementGroupGeometry.customEmissiveRenderTypes());
+        BakedItemLayer emissiveLayer = new BakedItemLayer(this, emissiveItemQuads, LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID, LimaCoreRenderTypes.ITEM_POS_TEX_COLOR_SOLID);
         this.itemRenderPasses = List.of(normalLayer, emissiveLayer);
     }
 
