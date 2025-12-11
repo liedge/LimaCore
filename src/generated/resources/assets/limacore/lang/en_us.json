@@ -20,5 +20,8 @@
   "relative_side.limacore.left": "Left",
   "relative_side.limacore.rear": "Rear",
   "relative_side.limacore.right": "Right",
-  "relative_side.limacore.top": "Top"
+  "relative_side.limacore.top": "Top",
+  "result_priority.limacore.primary": "Primary Output",
+  "result_priority.limacore.secondary": "Secondary Output",
+  "result_priority.limacore.tertiary": "Tertiary Output"
 }

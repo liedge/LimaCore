@@ -22,8 +22,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.Collection;
@@ -39,6 +39,7 @@ public final class LimaStreamCodecs
     // Common registries
     public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_DIRECT = ByteBufCodecs.registry(Registries.ITEM);
     public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_HOLDER = ByteBufCodecs.holderRegistry(Registries.ITEM);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Fluid>> FLUID_HOLDER = ByteBufCodecs.holderRegistry(Registries.FLUID);
 
     // Extra codecs
     public static final StreamCodec<ByteBuf, Unit> UNIT = NeoForgeStreamCodecs.uncheckedUnit(Unit.INSTANCE);
@@ -161,11 +162,6 @@ public final class LimaStreamCodecs
     public static <B extends ByteBuf, E> StreamCodec<B, List<E>> unitList()
     {
         return StreamCodec.unit(List.of());
-    }
-
-    public static StreamCodec<RegistryFriendlyByteBuf, List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
-    {
-        return FluidStack.STREAM_CODEC.apply(asClampedList(minInclusive, maxInclusive));
     }
 
     public static <T, U extends T> StreamCodec<RegistryFriendlyByteBuf, U> classCastRegistryStreamCodec(ResourceKey<? extends Registry<T>> registryKey, Class<U> valueClass)

@@ -5,10 +5,12 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.recipe.ingredient.LimaSizedIngredient;
 import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
+import liedge.limacore.recipe.ingredient.LimaSizedIngredient;
 import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
+import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
+import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -22,6 +24,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Recipe<T>
 {
@@ -33,10 +36,10 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         if (recipe.getItemIngredients().isEmpty() && recipe.getFluidIngredients().isEmpty())
             return DataResult.error(() -> "Recipe has no item or fluid ingredients.");
         else if (recipe.getItemResults().isEmpty() && recipe.getFluidResults().isEmpty())
-            return DataResult.error(() -> "Recipe has no item or fluid output results.");
-        else if (!recipe.getItemResults().isEmpty() && recipe.getItemResults().stream().noneMatch(ItemResult::requiredOutput))
+            return DataResult.error(() -> "Recipe has no item or fluid results.");
+        else if (Stream.concat(recipe.getItemResults().stream(), recipe.getFluidResults().stream()).noneMatch(sbr -> sbr.getPriority() == ResultPriority.PRIMARY))
         {
-            return DataResult.error(() -> "Recipe must have at least 1 required item output.");
+            return DataResult.error(() -> "At least one result (item or fluid) must be designated as primary.");
         }
         else
             return DataResult.success(recipe);
@@ -48,9 +51,9 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     // Results
     private final List<ItemResult> itemResults;
-    private final List<FluidStack> fluidResults;
+    private final List<FluidResult> fluidResults;
 
-    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults)
+    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidResult> fluidResults)
     {
         this.itemIngredients = itemIngredients;
         this.fluidIngredients = fluidIngredients;
@@ -117,15 +120,15 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     public List<ItemStack> getPossibleItemResults()
     {
-        return itemResults.stream().map(ItemResult::getMaximumResult).collect(LimaStreamsUtil.toObjectList());
+        return itemResults.stream().map(ItemResult::getMaxStack).collect(LimaStreamsUtil.toObjectList());
     }
 
-    public List<FluidStack> getFluidResults()
+    public List<FluidResult> getFluidResults()
     {
         return fluidResults;
     }
 
-    public FluidStack getFluidResult(int index)
+    public FluidResult getFluidResult(int index)
     {
         Preconditions.checkElementIndex(index, fluidResults.size(), "Fluid results");
         return fluidResults.get(index);
@@ -136,15 +139,20 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
      * recipes.
      * @return The first fluid result.
      */
-    public FluidStack getFirstFluidResult()
+    public FluidResult getFirstFluidResult()
     {
         Preconditions.checkState(!fluidResults.isEmpty(), "Recipe has no fluid results.");
         return fluidResults.getFirst();
     }
 
-    public List<FluidStack> generateFluidResults(T input, HolderLookup.Provider registries)
+    public List<FluidStack> generateFluidResults(T input, HolderLookup.Provider registries, RandomSource random)
     {
-        return fluidResults.stream().map(FluidStack::copy).collect(LimaStreamsUtil.toObjectList());
+        return fluidResults.stream().map(r -> r.generateResult(random)).filter(s -> !s.isEmpty()).collect(LimaStreamsUtil.toObjectList());
+    }
+
+    public List<FluidStack> getPossibleFluidResults()
+    {
+        return fluidResults.stream().map(FluidResult::getMaxStack).collect(LimaStreamsUtil.toObjectList());
     }
     //#endregion
 
@@ -276,6 +284,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return true;
     }
 
+    @Deprecated
     @Override
     public boolean isIncomplete()
     {
@@ -326,14 +335,5 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     @FunctionalInterface
-    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidStack>, R>
-    {
-        R create(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidResults);
-
-        @Override
-        default R apply(List<LimaSizedItemIngredient> ingredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidStack> fluidStacks)
-        {
-            return create(ingredients, fluidIngredients, itemResults, fluidStacks);
-        }
-    }
+    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidResult>, R> { }
 }

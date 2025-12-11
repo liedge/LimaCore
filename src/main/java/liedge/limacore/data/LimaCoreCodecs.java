@@ -16,11 +16,8 @@ import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.util.LimaCoreUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
@@ -43,7 +40,6 @@ public final class LimaCoreCodecs
     private LimaCoreCodecs() {}
 
     // Map codec common keys
-    public static final String FLUID_RESULTS_KEY = "fluid_results";
 
     /**
      * Float codec for decoding into radians for code use and encoding into degrees for readability.
@@ -113,18 +109,6 @@ public final class LimaCoreCodecs
      */
     public static final Codec<Vector3f> VECTOR3F_16X = ExtraCodecs.VECTOR3F.xmap(vec -> vec.mul(0.0625f), vec -> vec.mul(16));
 
-    public static final MapCodec<DataComponentPatch> ITEM_COMPONENTS_FIELD = DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY);
-    public static final MapCodec<ItemStack> ITEM_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-            Codec.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-            ITEM_COMPONENTS_FIELD.forGetter(ItemStack::getComponentsPatch))
-            .apply(instance, ItemStack::new));
-    public static final MapCodec<FluidStack> FLUID_STACK_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            FluidStack.FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
-            ExtraCodecs.POSITIVE_INT.fieldOf("amount").forGetter(FluidStack::getAmount),
-            DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(FluidStack::getComponentsPatch))
-            .apply(instance, FluidStack::new));
-
     public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaCoreMath::unitVecForAxis);
 
     public static final MapCodec<AxisAngle4f> UNIT_AXIS_ANGLE4F = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -132,7 +116,6 @@ public final class LimaCoreCodecs
             AXIS_VECTOR.fieldOf("axis").forGetter(o -> new Vector3f(o.x, o.y, o.z))).apply(instance, AxisAngle4f::new));
 
     public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
-    public static final MapCodec<List<FluidStack>> FLUID_RESULTS_UNIT = EmptyFieldMapCodec.emptyListField(FLUID_RESULTS_KEY);
 
     public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
     {
@@ -276,11 +259,6 @@ public final class LimaCoreCodecs
 
         Codec<List<E>> listCodec = elementCodec.listOf(minInclusive, maxInclusive);
         return minInclusive == 0 ? listCodec.optionalFieldOf(fieldName, List.of()) : listCodec.fieldOf(fieldName);
-    }
-
-    public static MapCodec<List<FluidStack>> fluidResults(int minInclusive, int maxInclusive)
-    {
-        return autoOptionalListField(FluidStack.CODEC, FLUID_RESULTS_KEY, minInclusive, maxInclusive);
     }
 
     public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)

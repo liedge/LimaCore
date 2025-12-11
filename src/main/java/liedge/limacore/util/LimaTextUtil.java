@@ -28,7 +28,7 @@ public final class LimaTextUtil
         return PERCENT_1PLACE.format(value * 100d).toString();
     }
 
-    public static String formatWholeNumber(int value)
+    public static String formatWholeNumber(long value)
     {
         return WHOLE_NUMBER_COMMA.format(value).toString();
     }

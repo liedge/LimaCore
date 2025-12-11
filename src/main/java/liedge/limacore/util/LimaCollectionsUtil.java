@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -55,6 +56,41 @@ public final class LimaCollectionsUtil
         }
 
         return first;
+    }
+    //#endregion
+
+    //#region Collection joiners
+    public static <E, C extends Collection<E>> C joinCollections(Collector<E, ?, C> collector, Collection<? extends E> a, Collection<? extends E> b)
+    {
+        return Stream.concat(a.stream(), b.stream()).collect(collector);
+    }
+
+    @SafeVarargs
+    public static <E, C extends Collection<E>> C joinCollections(Collector<E, ?, C> collector, Collection<? extends E>... collections)
+    {
+        return Stream.of(collections).flatMap(Collection::stream).collect(collector);
+    }
+
+    public static <E> List<E> joinAsList(Collection<? extends E> a, Collection<? extends E> b)
+    {
+        return joinCollections(LimaStreamsUtil.toObjectList(), a, b);
+    }
+
+    @SafeVarargs
+    public static <E> List<E> joinAsList(Collection<? extends E>... collections)
+    {
+        return joinCollections(LimaStreamsUtil.toObjectList(), collections);
+    }
+
+    public static <E> List<E> joinAsUnmodifiableList(Collection<? extends E> a, Collection<? extends E> b)
+    {
+        return joinCollections(LimaStreamsUtil.toUnmodifiableObjectList(), a, b);
+    }
+
+    @SafeVarargs
+    public static <E> List<E> joinAsUnmodifiableList(Collection<? extends E>... collections)
+    {
+        return joinCollections(LimaStreamsUtil.toUnmodifiableObjectList(), collections);
     }
     //#endregion
 

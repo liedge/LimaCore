@@ -2,81 +2,78 @@ package liedge.limacore.recipe.result;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import liedge.limacore.data.EmptyFieldMapCodec;
-import liedge.limacore.data.LimaCoreCodecs;
 import liedge.limacore.network.LimaStreamCodecs;
+import liedge.limacore.util.LimaRegistryUtil;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.UnaryOperator;
+import java.util.Objects;
 
-public interface ItemResult
+public final class ItemResult extends StackBaseResult<Item, ItemStack>
 {
-    String MAP_CODEC_KEY = "item_results";
-    MapCodec<Boolean> REQUIRED_FIELD = Codec.BOOL.optionalFieldOf("required", true);
+    public static final Codec<ItemResult> CODEC = codec(ItemStack.ITEM_NON_AIR_CODEC, "count", Item.ABSOLUTE_MAX_STACK_SIZE, ItemResult::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ItemResult> STREAM_CODEC = streamCodec(LimaStreamCodecs.ITEM_HOLDER, ItemResult::new);
+    public static final String MAP_CODEC_KEY = "item_results";
+    public static final MapCodec<List<ItemResult>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
 
-    Codec<ItemResult> CODEC = ItemResultType.CODEC.dispatchWithInline(ConstantItemResult.class, ConstantItemResult.INLINE_CODEC, ItemResult::getType, ItemResultType::getCodec);
-    StreamCodec<RegistryFriendlyByteBuf, ItemResult> STREAM_CODEC = ItemResultType.STREAM_CODEC.dispatch(ItemResult::getType, ItemResultType::getStreamCodec);
-    MapCodec<List<ItemResult>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
-
-    Comparator<ItemResult> REQUIRED_FIRST = Comparator.comparing(ItemResult::requiredOutput).reversed();
-
-    static MapCodec<List<ItemResult>> listMapCodec(int min, int max)
+    public static MapCodec<List<ItemResult>> listMapCodec(int min, int max)
     {
-        UnaryOperator<List<ItemResult>> sortingFunction = unsorted ->
-        {
-            if (unsorted.size() < 2 || unsorted.stream().allMatch(ItemResult::requiredOutput)) return unsorted;
-
-            // We cannot guarantee a mutable input
-            ObjectList<ItemResult> sorted = new ObjectArrayList<>(unsorted);
-            sorted.sort(REQUIRED_FIRST);
-            return ObjectLists.unmodifiable(sorted);
-        };
-
-        return LimaCoreCodecs.autoOptionalListField(CODEC, MAP_CODEC_KEY, min, max).xmap(sortingFunction, sortingFunction);
+        return createListMapCodec(CODEC, MAP_CODEC_KEY, min, max);
     }
 
-    static StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> listStreamCodec(int min, int max)
+    public static StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> listStreamCodec(int min, int max)
     {
         return STREAM_CODEC.apply(LimaStreamCodecs.asClampedList(min, max));
     }
 
-    boolean requiredOutput();
-
-    Item getItem();
-
-    ItemStack getMaximumResult();
-
-    ItemStack generateResult(RandomSource random);
-
-    ItemResultType getType();
-
-    // For JEI GUI use on specialized subtypes. Override as needed
-    default ItemStack getGuiPreviewResult()
+    public static ItemResult create(Holder<Item> base, @Nullable DataComponentPatch components, ResultCount count, float chance, ResultPriority priority)
     {
-        return getMaximumResult();
+        return new ItemResult(base, Objects.requireNonNullElse(components, DataComponentPatch.EMPTY), count, chance, priority);
     }
 
-    default float resultChance()
+    public static ItemResult create(ItemLike itemLike, @Nullable DataComponentPatch components, ResultCount count, float chance, ResultPriority priority)
     {
-        return 1f;
+        return create(LimaRegistryUtil.getHolder(itemLike), components, count, chance, priority);
     }
 
-    default int minimumCount()
+    public static ItemResult create(ItemStack stack, float chance, ResultPriority priority, @Nullable ResultCount count)
     {
-        return maximumCount();
+        count = count != null ? count : ResultCount.exactly(stack.getCount());
+        return create(stack.getItem(), stack.getComponentsPatch(), count, chance, priority);
     }
 
-    default int maximumCount()
+    public static ItemResult create(ItemStack stack, float chance, ResultPriority priority)
     {
-        return getMaximumResult().getCount();
+        return create(stack, chance, priority, null);
+    }
+
+    private ItemResult(Holder<Item> item, DataComponentPatch components, ResultCount count, float chance, ResultPriority priority)
+    {
+        super(item, components, count, chance, priority);
+    }
+
+    @Override
+    protected ItemStack createStack(int stackSize)
+    {
+        return new ItemStack(base, stackSize, components);
+    }
+
+    @Override
+    protected ItemStack getEmptyStack()
+    {
+        return ItemStack.EMPTY;
+    }
+
+    public Item getItem()
+    {
+        return base.value();
     }
 }

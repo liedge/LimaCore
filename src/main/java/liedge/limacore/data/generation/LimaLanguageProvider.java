@@ -4,6 +4,7 @@ import liedge.limacore.advancement.LimaAdvancementUtil;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.menu.LimaMenuType;
+import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -154,5 +156,19 @@ public abstract class LimaLanguageProvider extends LanguageProvider
     {
         String key = prefix + "." + modResources.modid() + "." + suffix;
         add(key, value);
+    }
+
+    protected <E extends Enum<E> & Translatable & StringRepresentable> void addEnum(Class<E> enumClass, BiFunction<E, String, String> formatter)
+    {
+        E[] values = LimaCollectionsUtil.checkedEnumConstants(enumClass);
+        for (E value : values)
+        {
+            add(value, formatter.apply(value, localizeSimpleName(value)));
+        }
+    }
+
+    protected <E extends Enum<E> & Translatable & StringRepresentable> void addEnum(Class<E> enumClass)
+    {
+        addEnum(enumClass, (e, v) -> v);
     }
 }

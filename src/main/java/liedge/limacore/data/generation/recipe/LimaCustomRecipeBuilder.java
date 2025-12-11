@@ -5,13 +5,12 @@ import liedge.limacore.lib.ModResources;
 import liedge.limacore.recipe.LimaCustomRecipe;
 import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
 import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
-import liedge.limacore.recipe.result.ConstantItemResult;
+import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
-import liedge.limacore.recipe.result.RandomChanceItemResult;
-import liedge.limacore.recipe.result.VariableCountItemResult;
+import liedge.limacore.recipe.result.ResultCount;
+import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +32,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     protected final List<LimaSizedItemIngredient> itemIngredients = new ObjectArrayList<>();
     protected final List<LimaSizedFluidIngredient> fluidIngredients = new ObjectArrayList<>();
     protected final List<ItemResult> itemResults = new ObjectArrayList<>();
-    protected final List<FluidStack> fluidResults = new ObjectArrayList<>();
+    protected final List<FluidResult> fluidResults = new ObjectArrayList<>();
 
     protected LimaCustomRecipeBuilder(ModResources modResources)
     {
@@ -152,16 +151,41 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return randomFluidInput(FluidIngredient.tag(tagKey), amount, consumeChance);
     }
 
+    //#region Item results
     public B output(ItemResult result)
     {
         itemResults.add(result);
         return selfUnchecked();
     }
 
-    // Constant outputs
+    public B output(ItemStack stack, float chance, ResultPriority priority)
+    {
+        return output(ItemResult.create(stack, chance, priority));
+    }
+
+    public B output(ItemStack stack, float chance)
+    {
+        return output(stack, chance, ResultPriority.PRIMARY);
+    }
+
     public B output(ItemStack stack)
     {
-        return output(new ConstantItemResult(stack, true));
+        return output(stack, 1f);
+    }
+
+    public B output(ItemLike itemLike, ResultCount count, float chance, ResultPriority priority)
+    {
+        return output(ItemResult.create(itemLike, null, count, chance, priority));
+    }
+
+    public B output(ItemLike itemLike, ResultCount count, float chance)
+    {
+        return output(itemLike, count, chance, ResultPriority.PRIMARY);
+    }
+
+    public B output(ItemLike itemLike, ResultCount count)
+    {
+        return output(itemLike, count, 1f);
     }
 
     public B output(ItemLike itemLike, int count)
@@ -173,53 +197,58 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
     {
         return output(itemLike, 1);
     }
+    //#endregion
 
-    // Random chance outputs
-    public B randomOutput(ItemStack stack, float chance)
+    //#region Fluid results
+    public B fluidOutput(FluidResult result)
     {
-        return output(new RandomChanceItemResult(stack, chance, true));
+        fluidResults.add(result);
+        return selfUnchecked();
     }
 
-    public B randomOutput(ItemLike itemLike, int count, float chance)
+    public B fluidOutput(FluidStack stack, float chance, ResultPriority priority)
     {
-        return randomOutput(new ItemStack(itemLike, count), chance);
+        return fluidOutput(FluidResult.create(stack, chance, priority));
     }
 
-    public B optionalRandomOutput(ItemStack stack, float chance)
+    public B fluidOutput(FluidStack stack, float chance)
     {
-        return output(new RandomChanceItemResult(stack, chance, false));
-    }
-
-    public B optionalRandomOutput(ItemLike itemLike, int count, float chance)
-    {
-        return optionalRandomOutput(new ItemStack(itemLike, count), chance);
-    }
-
-    // Variable count outputs
-    public B variableCountOutput(ItemStack stack, int minCount, int maxCount)
-    {
-        return output(new VariableCountItemResult(stack, minCount, maxCount, true));
-    }
-
-    public B variableCountOutput(ItemLike itemLike, int minCount, int maxCount)
-    {
-        return output(new VariableCountItemResult(itemLike, DataComponentPatch.EMPTY, minCount, maxCount, true));
-    }
-
-    public B optionalVariableCountOutput(ItemStack stack, int minCount, int maxCount)
-    {
-        return output(new VariableCountItemResult(stack, minCount, maxCount, false));
-    }
-
-    public B optionalVariableCountOutput(ItemLike itemLike, int minCount, int maxCount)
-    {
-        return output(new VariableCountItemResult(itemLike, DataComponentPatch.EMPTY, minCount, maxCount, false));
+        return fluidOutput(stack, chance, ResultPriority.PRIMARY);
     }
 
     public B fluidOutput(FluidStack fluidStack)
     {
-        fluidResults.add(fluidStack);
-        return selfUnchecked();
+        return fluidOutput(fluidStack, 1f);
+    }
+
+    public B fluidOutput(Fluid fluid, ResultCount count, float chance, ResultPriority priority)
+    {
+        return fluidOutput(FluidResult.create(fluid, null, count, chance, priority));
+    }
+
+    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count, float chance, ResultPriority priority)
+    {
+        return fluidOutput(fluidHolder.value(), count, chance, priority);
+    }
+
+    public B fluidOutput(Fluid fluid, ResultCount count, float chance)
+    {
+        return fluidOutput(fluid, count, chance, ResultPriority.PRIMARY);
+    }
+
+    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count, float chance)
+    {
+        return fluidOutput(fluidHolder.value(), count, chance);
+    }
+
+    public B fluidOutput(Fluid fluid, ResultCount count)
+    {
+        return fluidOutput(fluid, count, 1f);
+    }
+
+    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count)
+    {
+        return fluidOutput(fluidHolder.value(), count);
     }
 
     public B fluidOutput(Fluid fluid, int amount)
@@ -229,8 +258,9 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B fluidOutput(Holder<Fluid> fluidHolder, int amount)
     {
-        return fluidOutput(new FluidStack(fluidHolder.value(), amount));
+        return fluidOutput(fluidHolder.value(), amount);
     }
+    //#endregion
 
     @Override
     protected String getDefaultRecipeName()
@@ -238,7 +268,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         if (!itemResults.isEmpty())
             return LimaRegistryUtil.getItemName(itemResults.getFirst().getItem());
         else if (!fluidResults.isEmpty())
-            return LimaRegistryUtil.getFluidName(fluidResults.getFirst());
+            return LimaRegistryUtil.getFluidName(fluidResults.getFirst().getFluid());
         else
             throw new IllegalStateException("Default recipe name cannot be determined without any item or fluid results.");
     }
@@ -256,7 +286,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         @Override
         protected R buildRecipe()
         {
-            return factory.create(itemIngredients, fluidIngredients, itemResults, fluidResults);
+            return factory.apply(itemIngredients, fluidIngredients, itemResults, fluidResults);
         }
     }
 }

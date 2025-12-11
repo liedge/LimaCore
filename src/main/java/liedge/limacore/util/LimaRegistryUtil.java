@@ -4,8 +4,10 @@ import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -132,6 +134,26 @@ public final class LimaRegistryUtil
     {
         return getNonNullRegistryId(holder).getPath();
     }
+
+    //#region Built in holder helpers
+    @SuppressWarnings("deprecation")
+    public static Holder<Item> getHolder(ItemLike itemLike)
+    {
+        return itemLike.asItem().builtInRegistryHolder();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Holder<Fluid> getHolder(Fluid fluid)
+    {
+        return fluid.builtInRegistryHolder();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Holder<EntityType<?>> getHolder(EntityType<?> entityType)
+    {
+        return entityType.builtInRegistryHolder();
+    }
+    //#endregion
 
     public static <T> HolderSet<T> keyHolderSet(HolderGetter<T> holderGetter, ResourceKey<T> key)
     {
