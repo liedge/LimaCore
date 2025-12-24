@@ -1,22 +1,22 @@
 package liedge.limacore.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.loot.IntRange;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.*;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceWit
 import net.minecraft.world.level.storage.loot.predicates.ValueCheckCondition;
 import net.minecraft.world.level.storage.loot.providers.number.EnchantmentLevelProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,11 +35,36 @@ public final class LimaLootUtil
 {
     private LimaLootUtil() {}
 
+    public static <T extends LootContextUser> Codec<T> contextUserCodec(Codec<T> unvalidatedCodec, LootContextParamSet params, String contextName)
+    {
+        return unvalidatedCodec.validate(value ->
+        {
+            ProblemReporter.Collector reporter = new ProblemReporter.Collector();
+            ValidationContext context = new ValidationContext(reporter, params);
+            value.validate(context);
+
+            if (reporter.getReport().isEmpty())
+                return DataResult.success(value);
+            else
+                return DataResult.error(() -> String.format("Validation error in %s: %s", contextName, reporter.getReport().get()));
+        });
+    }
+
+    public static Codec<LootItemCondition> conditionsCodec(LootContextParamSet params, String contextName)
+    {
+        return contextUserCodec(LootItemCondition.DIRECT_CODEC, params, contextName);
+    }
+
     //#region Loot context helper factories
+    public static LootContext contextOf(LootParams params)
+    {
+        return new LootContext.Builder(params).create(Optional.empty());
+    }
+
     public static LootContext emptyLootContext(ServerLevel level)
     {
         LootParams params = new LootParams.Builder(level).create(LootContextParamSets.EMPTY);
-        return new LootContext.Builder(params).create(Optional.empty());
+        return contextOf(params);
     }
 
     public static LootContext chestLootContext(ServerLevel level, Entity target, @Nullable Entity attacker)
@@ -48,19 +74,26 @@ public final class LimaLootUtil
                 .withOptionalParameter(LootContextParams.THIS_ENTITY, target)
                 .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, attacker)
                 .create(LootContextParamSets.CHEST);
-        return new LootContext.Builder(params).create(Optional.empty());
+
+        return contextOf(params);
     }
 
-    public static LootContext entityLootContext(ServerLevel level, Entity target, DamageSource damageSource, LivingEntity attacker)
+    public static LootContext entityLootContext(ServerLevel level, Entity thisEntity, Vec3 origin, DamageSource damageSource)
     {
         LootParams params = new LootParams.Builder(level)
-                .withParameter(LootContextParams.THIS_ENTITY, target)
-                .withParameter(LootContextParams.ORIGIN, target.position())
+                .withParameter(LootContextParams.ORIGIN, origin)
                 .withParameter(LootContextParams.DAMAGE_SOURCE, damageSource)
-                .withParameter(LootContextParams.ATTACKING_ENTITY, attacker)
+                .withParameter(LootContextParams.THIS_ENTITY, thisEntity)
+                .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, damageSource.getEntity())
                 .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, damageSource.getDirectEntity())
                 .create(LootContextParamSets.ENTITY);
-        return new LootContext.Builder(params).create(Optional.empty());
+
+        return contextOf(params);
+    }
+
+    public static LootContext entityLootContext(ServerLevel level, Entity thisEntity, DamageSource damageSource)
+    {
+        return entityLootContext(level, thisEntity, thisEntity.position(), damageSource);
     }
 
     //#endregion

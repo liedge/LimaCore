@@ -8,6 +8,7 @@ import liedge.limacore.lib.LimaColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.FormattedText;
@@ -206,6 +207,42 @@ public final class LimaGuiUtil
 
             poseStack.popPose();
         }
+    }
+
+    public static void fillVerticalGradient(GuiGraphics graphics, RenderType renderType, float x1, float y1, float x2, float y2, int z, int topColor, int bottomColor)
+    {
+        Matrix4f mx4 = graphics.pose().last().pose();
+        VertexConsumer buffer = graphics.bufferSource().getBuffer(renderType);
+
+        buffer.addVertex(mx4, x1, y1, z).setColor(topColor);
+        buffer.addVertex(mx4, x1, y2, z).setColor(bottomColor);
+        buffer.addVertex(mx4, x2, y2, z).setColor(bottomColor);
+        buffer.addVertex(mx4, x2, y1, z).setColor(topColor);
+
+        graphics.flush();
+    }
+
+    public static void fillVerticalGradient(GuiGraphics graphics, RenderType renderType, float x1, float y1, float x2, float y2, int topColor, int bottomColor)
+    {
+        fillVerticalGradient(graphics, renderType, x1, y1, x2, y2, 0, topColor, bottomColor);
+    }
+
+    public static void fillHorizontalGradient(GuiGraphics graphics, RenderType renderType, float x1, float y1, float x2, float y2, int z, int leftColor, int rightColor)
+    {
+        Matrix4f mx4 = graphics.pose().last().pose();
+        VertexConsumer buffer = graphics.bufferSource().getBuffer(renderType);
+
+        buffer.addVertex(mx4, x1, y1, z).setColor(leftColor);
+        buffer.addVertex(mx4, x1, y2, z).setColor(leftColor);
+        buffer.addVertex(mx4, x2, y2, z).setColor(rightColor);
+        buffer.addVertex(mx4, x2, y1, z).setColor(rightColor);
+
+        graphics.flush();
+    }
+
+    public static void fillHorizontalGradient(GuiGraphics graphics, RenderType renderType, float x1, float y1, float x2, float y2, int leftColor, int rightColor)
+    {
+        fillHorizontalGradient(graphics, renderType, x1, y1, x2, y2, 0, leftColor, rightColor);
     }
     //#endregion
 }
