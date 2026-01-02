@@ -18,20 +18,20 @@ import java.util.Set;
 public class DamageSourceMixin implements LimaDamageSourceExtension
 {
     @Unique
-    private Set<TagKey<DamageType>> limaCore$dynamicTags;
+    private Set<TagKey<DamageType>> limaCore$extraTags;
 
     @ModifyReturnValue(method = "is(Lnet/minecraft/tags/TagKey;)Z", at = @At(value = "RETURN"))
-    private boolean checkDynamicTags(boolean original, @Local(argsOnly = true) TagKey<DamageType> key)
+    private boolean checkExtraTags(boolean original, @Local(argsOnly = true) TagKey<DamageType> key)
     {
         if (original) return true;
-        else return (limaCore$dynamicTags != null && limaCore$dynamicTags.contains(key));
+        else return (limaCore$extraTags != null && limaCore$extraTags.contains(key));
     }
 
     @Override
-    public void limaCore$addDynamicTag(@NotNull TagKey<DamageType> tag)
+    public @NotNull Set<TagKey<DamageType>> limaCore$getExtraTags()
     {
-        if (limaCore$dynamicTags == null) limaCore$dynamicTags = new ObjectOpenHashSet<>();
+        if (limaCore$extraTags == null) limaCore$extraTags = new ObjectOpenHashSet<>();
 
-        limaCore$dynamicTags.add(tag);
+        return limaCore$extraTags;
     }
 }

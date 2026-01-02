@@ -4,6 +4,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
 
+import java.util.Collection;
+import java.util.Set;
+
 /**
  * Extension of {@link MutableDataComponentHolder} with all methods made default
  * to meet the interface injection mixin requirements.
@@ -11,8 +14,18 @@ import net.neoforged.neoforge.common.MutableDataComponentHolder;
  */
 public interface LimaDamageSourceExtension
 {
-    default void limaCore$addDynamicTag(TagKey<DamageType> tag)
+    default Set<TagKey<DamageType>> limaCore$getExtraTags()
     {
-        throw new IllegalArgumentException("Interface LimaDamageSourceExtension implementation must override addDynamicTag");
+        throw new UnsupportedOperationException("Interface LimaDamageSourceExtension implementation must override getExtraTags");
+    }
+
+    default void limaCore$addExtraTags(Collection<TagKey<DamageType>> tags)
+    {
+        limaCore$getExtraTags().addAll(tags);
+    }
+
+    default void limaCore$addExtraTag(TagKey<DamageType> tag)
+    {
+        limaCore$getExtraTags().add(tag);
     }
 }

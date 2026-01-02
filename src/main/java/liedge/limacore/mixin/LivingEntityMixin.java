@@ -27,10 +27,10 @@ public abstract class LivingEntityMixin
     @Inject(method = "hurt", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/neoforged/neoforge/common/damagesource/DamageContainer;getNewDamage()F", ordinal = 0))
     private void trueOnPreDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
     {
+        // Modifiers
         limacore$modifiers.clear();
         NeoForge.EVENT_BUS.post(new DamageAttributeModifiersEvent(source, amount, limacore$modifiers));
         LivingEntity thisEntity = (LivingEntity) (Object) this;
-
         for (var pair : limacore$modifiers)
         {
             AttributeInstance instance = thisEntity.getAttribute(pair.getA());
