@@ -1,10 +1,10 @@
 package liedge.limacore.world.loot.condition;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.math.CompareOperation;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
+import liedge.limacore.util.LimaLootUtil;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -42,6 +42,6 @@ public record NumberComparisonLootCondition(NumberProvider first, NumberProvider
     @Override
     public Set<LootContextParam<?>> getReferencedContextParams()
     {
-        return Sets.union(first.getReferencedContextParams(), second.getReferencedContextParams());
+        return LimaLootUtil.joinReferencedParams(first, second);
     }
 }

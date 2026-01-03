@@ -4,8 +4,11 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.neoforged.neoforge.common.BooleanAttribute;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Function;
 
 public final class LimaDeferredAttributes extends DeferredRegister<Attribute>
 {
@@ -19,13 +22,23 @@ public final class LimaDeferredAttributes extends DeferredRegister<Attribute>
         super(Registries.ATTRIBUTE, namespace);
     }
 
-    public DeferredHolder<Attribute, RangedAttribute> registerAttribute(String name, double defaultValue, double min, double max, boolean sync, Attribute.Sentiment sentiment)
+    private <T extends Attribute> DeferredHolder<Attribute, T> registerAttribute(String name, Attribute.Sentiment sentiment, boolean sync, Function<String, T> langKeyFactory)
     {
         return register(name, id ->
         {
-            RangedAttribute attribute = new RangedAttribute(ModResources.prefixedIdLangKey("attribute", id), defaultValue, min, max);
+            T attribute = langKeyFactory.apply(ModResources.prefixedIdLangKey("attribute", id));
             attribute.setSyncable(sync).setSentiment(sentiment);
             return attribute;
         });
+    }
+
+    public DeferredHolder<Attribute, BooleanAttribute> registerBool(String name, Attribute.Sentiment sentiment, boolean sync, boolean defaultValue)
+    {
+        return registerAttribute(name, sentiment, sync, descId -> new BooleanAttribute(descId, defaultValue));
+    }
+
+    public DeferredHolder<Attribute, RangedAttribute> registerRanged(String name, Attribute.Sentiment sentiment, boolean sync, double defaultValue, double min, double max)
+    {
+        return registerAttribute(name, sentiment, sync, descId -> new RangedAttribute(descId, defaultValue, min, max));
     }
 }

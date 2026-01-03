@@ -1,5 +1,6 @@
 package liedge.limacore.util;
 
+import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.*;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -30,6 +32,8 @@ import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public final class LimaLootUtil
 {
@@ -53,6 +57,17 @@ public final class LimaLootUtil
     public static Codec<LootItemCondition> conditionsCodec(LootContextParamSet params, String contextName)
     {
         return contextUserCodec(LootItemCondition.DIRECT_CODEC, params, contextName);
+    }
+
+    public static Set<LootContextParam<?>> joinReferencedParams(LootContextUser... users)
+    {
+        return switch (users.length)
+        {
+            case 0 -> Set.of();
+            case 1 -> users[0].getReferencedContextParams();
+            case 2 -> Sets.union(users[0].getReferencedContextParams(), users[1].getReferencedContextParams());
+            default -> Stream.of(users).flatMap(o -> o.getReferencedContextParams().stream()).collect(LimaStreamsUtil.toUnmodifiableObjectSet());
+        };
     }
 
     //#region Loot context helper factories

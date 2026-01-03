@@ -3,6 +3,7 @@ package liedge.limacore.world.loot.number;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
+import liedge.limacore.util.LimaLootUtil;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -12,8 +13,6 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public record DistanceNumberProvider(LootPositionSource origin, LootPositionSource end, NumberProvider fallback) implements NumberProvider
 {
@@ -41,6 +40,6 @@ public record DistanceNumberProvider(LootPositionSource origin, LootPositionSour
     @Override
     public Set<LootContextParam<?>> getReferencedContextParams()
     {
-        return Stream.of(origin, end, fallback).flatMap(o -> o.getReferencedContextParams().stream()).collect(Collectors.toSet());
+        return LimaLootUtil.joinReferencedParams(origin, end, fallback);
     }
 }

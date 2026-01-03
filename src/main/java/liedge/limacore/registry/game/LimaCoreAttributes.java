@@ -18,6 +18,6 @@ public final class LimaCoreAttributes
         ATTRIBUTES.register(bus);
     }
 
-    public static final DeferredHolder<Attribute, RangedAttribute> DAMAGE_MULTIPLIER = ATTRIBUTES.registerAttribute("damage_multiplier", 1, 0, 2048, true, Attribute.Sentiment.POSITIVE);
-    public static final DeferredHolder<Attribute, RangedAttribute> KNOCKBACK_MULTIPLIER = ATTRIBUTES.registerAttribute("knockback_multiplier", 1, 0, 512, true, Attribute.Sentiment.NEGATIVE);
+    public static final DeferredHolder<Attribute, RangedAttribute> DAMAGE_MULTIPLIER = ATTRIBUTES.registerRanged("damage_multiplier", Attribute.Sentiment.POSITIVE, true, 1, 0, 2048);
+    public static final DeferredHolder<Attribute, RangedAttribute> KNOCKBACK_MULTIPLIER = ATTRIBUTES.registerRanged("knockback_multiplier", Attribute.Sentiment.NEGATIVE, true, 1, 0, 512);
 }
