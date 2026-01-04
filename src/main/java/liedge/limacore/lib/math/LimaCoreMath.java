@@ -69,7 +69,7 @@ public final class LimaCoreMath
         return RANDOM.nextDouble() <= chance;
     }
 
-    public static int valueOf(boolean bool)
+    public static int boolAsInt(boolean bool)
     {
         return bool ? 1 : 0;
     }
@@ -99,14 +99,14 @@ public final class LimaCoreMath
      */
     public static int roundRandomly(double value)
     {
-        // Return early if value is an integer
-        int base = (int) value;
-        if (base == value) return base;
+        int nearest = (int) Math.round(value);
+        double diff = value - nearest;
+        double rng = Math.abs(diff);
 
-        double d = value - base;
-        int n = valueOf(rollRandomChance(Math.abs(d))) * Mth.sign(d);
+        if (rng < 1e-5) return nearest;
 
-        return base + n;
+        int delta = boolAsInt(rollRandomChance(rng)) * Mth.sign(diff);
+        return nearest + delta;
     }
 
     public static int round(double value)

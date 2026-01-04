@@ -75,7 +75,6 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> DISTANCE_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("distance", () -> new LootNumberProviderType(DistanceNumberProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ROUNDING_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("rounding", () -> new LootNumberProviderType(RoundingNumberProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ATTRIBUTE_VALUE_PROVIDER = NUMBER_PROVIDERS.register("entity_attribute_value", () -> new LootNumberProviderType(EntityAttributeValueProvider.CODEC));
-    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ENCHANTMENT_LEVEL_PROVIDER = NUMBER_PROVIDERS.register("entity_enchantment_level", () -> new LootNumberProviderType(EntityEnchantmentLevelProvider.CODEC));
+    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> ENTITY_ENCHANTMENT_VALUE_PROVIDER = NUMBER_PROVIDERS.register("entity_enchantment_value", () -> new LootNumberProviderType(EntityEnchantmentValueProvider.CODEC));
     public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> MATH_OPS_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("math_ops", () -> new LootNumberProviderType(MathOpsNumberProvider.CODEC));
-    public static final DeferredHolder<LootNumberProviderType, LootNumberProviderType> LEVEL_BASED_NUMBER_PROVIDER = NUMBER_PROVIDERS.register("level_based", () -> new LootNumberProviderType(LevelBasedNumberProvider.CODEC));
 }

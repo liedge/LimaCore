@@ -50,7 +50,7 @@ public final class LimaLootUtil
             if (reporter.getReport().isEmpty())
                 return DataResult.success(value);
             else
-                return DataResult.error(() -> String.format("Validation error in %s: %s", contextName, reporter.getReport().get()));
+                return DataResult.error(() -> String.format("Validation error in %s %s", contextName, reporter.getReport().get()));
         });
     }
 
