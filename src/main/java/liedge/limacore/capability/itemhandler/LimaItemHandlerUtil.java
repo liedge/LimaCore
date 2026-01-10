@@ -1,7 +1,7 @@
 package liedge.limacore.capability.itemhandler;
 
-import liedge.limacore.util.LimaItemUtil;
 import liedge.limacore.lib.math.LimaCoreMath;
+import liedge.limacore.util.LimaItemUtil;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
@@ -76,48 +76,28 @@ public final class LimaItemHandlerUtil
         return toInsert;
     }
 
-    public static void transferItemsBetween(IItemHandler source, IItemHandler destination, Predicate<ItemStack> predicate)
-    {
-        for (int i = 0; i < source.getSlots(); i++)
-        {
-            ItemStack sourceItem = source.getStackInSlot(i);
-            if (sourceItem.isEmpty() || !predicate.test(sourceItem)) continue;
-
-            ItemStack inserted = ItemHandlerHelper.insertItem(destination, sourceItem, false);
-
-            int insertCount = sourceItem.getCount() - inserted.getCount();
-            if (insertCount > 0) source.extractItem(i, insertCount, false);
-        }
-    }
-
-    public static void transferItemsBetween(IItemHandler source, IItemHandler destination)
-    {
-        transferItemsBetween(source, destination, LimaItemUtil.ALWAYS_TRUE);
-    }
-
-    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlotStart, int sourceSlotEnd)
+    public static void transferItemsBetween(IItemHandler source, IItemHandler destination, int sourceSlotStart, int sourceSlotEnd, Predicate<ItemStack> predicate)
     {
         LimaCoreMath.validateOpenIndexRange(sourceSlotStart, sourceSlotEnd, source.getSlots());
 
         for (int i = sourceSlotStart; i < sourceSlotEnd; i++)
         {
-            ItemStack sourceItem = source.getStackInSlot(i);
-            if (sourceItem.isEmpty()) continue;
+            ItemStack sourceStack = source.extractItem(i, source.getSlotLimit(i), true);
+            if (sourceStack.isEmpty() || !predicate.test(sourceStack)) continue;
 
-            ItemStack inserted = ItemHandlerHelper.insertItem(destination, sourceItem, false);
-
-            int insertCount = sourceItem.getCount() - inserted.getCount();
+            ItemStack inserted = ItemHandlerHelper.insertItem(destination, sourceStack, false);
+            int insertCount = sourceStack.getCount() - inserted.getCount();
             if (insertCount > 0) source.extractItem(i, insertCount, false);
         }
     }
 
-    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination, int sourceSlot)
+    public static void transferItemsBetween(IItemHandler source, IItemHandler destination, Predicate<ItemStack> predicate)
     {
-        transferBetweenInventories(source, destination, sourceSlot, 1);
+        transferItemsBetween(source, destination, 0, source.getSlots(), predicate);
     }
 
-    public static void transferBetweenInventories(IItemHandler source, IItemHandler destination)
+    public static void transferItemsBetween(IItemHandler source, IItemHandler destination)
     {
-        transferBetweenInventories(source, destination, 0, source.getSlots());
+        transferItemsBetween(source, destination, LimaItemUtil.ALWAYS_TRUE);
     }
 }
