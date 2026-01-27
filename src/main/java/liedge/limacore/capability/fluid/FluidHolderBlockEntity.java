@@ -1,9 +1,14 @@
 package liedge.limacore.capability.fluid;
 
+import liedge.limacore.LimaCommonConstants;
+import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
-import liedge.limacore.blockentity.BlockContentsType;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -68,6 +73,39 @@ public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
             case OUTPUT_ONLY -> fluidWrapper(BlockContentsType.OUTPUT, blockAccessLevel);
             case INPUT_AND_OUTPUT -> new CombinedFluidsWrapper(fluidWrapper(BlockContentsType.INPUT, blockAccessLevel), fluidWrapper(BlockContentsType.OUTPUT, blockAccessLevel));
         };
+    }
+
+    default void loadFluidContainers(CompoundTag tag, HolderLookup.Provider registries)
+    {
+        CompoundTag containersTag = tag.getCompound(LimaCommonConstants.KEY_FLUID_TANKS);
+        if (containersTag.isEmpty()) return;
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            LimaBlockEntityFluidHandler handler = getFluidHandler(type);
+            if (handler != null && containersTag.contains(type.getSerializedName(), Tag.TAG_LIST))
+            {
+                ListTag handlerTag = containersTag.getList(type.getSerializedName(), Tag.TAG_COMPOUND);
+                handler.deserializeNBT(registries, handlerTag);
+            }
+        }
+    }
+
+    default void saveFluidContainers(CompoundTag tag, HolderLookup.Provider registries)
+    {
+        CompoundTag containersTag = new CompoundTag();
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            LimaBlockEntityFluidHandler handler = getFluidHandler(type);
+            if (handler != null)
+            {
+                ListTag handlerTag = handler.serializeNBT(registries);
+                containersTag.put(type.getSerializedName(), handlerTag);
+            }
+        }
+
+        if (!containersTag.isEmpty()) tag.put(LimaCommonConstants.KEY_FLUID_TANKS, containersTag);
     }
 
     private FluidHandlerIOWrapper fluidWrapper(BlockContentsType contentsType, IOAccess blockAccessLevel)

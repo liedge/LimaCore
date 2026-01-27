@@ -1,9 +1,13 @@
 package liedge.limacore.capability.itemhandler;
 
+import liedge.limacore.LimaCommonConstants;
+import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
-import liedge.limacore.blockentity.BlockContentsType;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -117,6 +121,39 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
             case OUTPUT_ONLY -> itemWrapper(BlockContentsType.OUTPUT, blockAccessLevel);
             case INPUT_AND_OUTPUT -> new CombinedInvWrapper(itemWrapper(BlockContentsType.INPUT, blockAccessLevel), itemWrapper(BlockContentsType.OUTPUT, blockAccessLevel));
         };
+    }
+
+    default void loadItemContainers(CompoundTag tag, HolderLookup.Provider registries)
+    {
+        CompoundTag containersTag = tag.getCompound(LimaCommonConstants.KEY_ITEM_CONTAINER);
+        if (containersTag.isEmpty()) return;
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            LimaBlockEntityItemHandler handler = getItemHandler(type);
+            if (handler != null && containersTag.contains(type.getSerializedName(), Tag.TAG_COMPOUND))
+            {
+                CompoundTag handlerTag = containersTag.getCompound(type.getSerializedName());
+                handler.deserializeNBT(registries, handlerTag);
+            }
+        }
+    }
+
+    default void saveItemContainers(CompoundTag tag, HolderLookup.Provider registries)
+    {
+        CompoundTag containersTag = new CompoundTag();
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            LimaBlockEntityItemHandler handler = getItemHandler(type);
+            if (handler != null)
+            {
+                CompoundTag handlerTag = handler.serializeNBT(registries);
+                containersTag.put(type.getSerializedName(), handlerTag);
+            }
+        }
+
+        if (!containersTag.isEmpty()) tag.put(LimaCommonConstants.KEY_ITEM_CONTAINER, containersTag);
     }
 
     private ItemHandlerIOWrapper itemWrapper(BlockContentsType contentsType, IOAccess blockAccessLevel)
