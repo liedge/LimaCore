@@ -1,7 +1,7 @@
 package liedge.limacore.lib;
 
 import liedge.limacore.registry.LimaDeferredAttributes;
-import liedge.limacore.registry.LimaDeferredBlocksWithItems;
+import liedge.limacore.registry.LimaDeferredItems;
 import liedge.limacore.registry.LimaDeferredNetworkSerializers;
 import liedge.limacore.registry.LimaDeferredRecipeSerializers;
 import net.minecraft.core.Registry;
@@ -102,19 +102,14 @@ public record ModResources(String modid)
         return DeferredRegister.create(registryResourceKey(registryName), modid);
     }
 
-    public DeferredRegister.Items deferredItems()
+    public LimaDeferredItems deferredItems()
     {
-        return DeferredRegister.createItems(modid);
+        return LimaDeferredItems.create(modid);
     }
 
     public DeferredRegister.Blocks deferredBlocks()
     {
         return DeferredRegister.createBlocks(modid);
-    }
-
-    public LimaDeferredBlocksWithItems deferredBlocksWithItems()
-    {
-        return LimaDeferredBlocksWithItems.create(modid);
     }
 
     public DeferredRegister.DataComponents deferredDataComponents(ResourceKey<Registry<DataComponentType<?>>> componentRegistryKey)
