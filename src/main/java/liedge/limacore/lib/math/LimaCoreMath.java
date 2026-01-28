@@ -287,14 +287,24 @@ public final class LimaCoreMath
         return new Vec3((sinY * cosX + triangle(0, inaccuracy)) * length, (sinX + triangle(0, inaccuracy)) * length, (cosY * cosX + triangle(0, inaccuracy)) * length);
     }
 
+    public static float getXRot(double dx, double dy, double dz)
+    {
+        return toDeg(-Mth.atan2(dy, vec2Length(dx, dz)));
+    }
+
+    public static float getYRot(double dx, double dz)
+    {
+        return toDeg(Mth.atan2(dz, dx)) - 90f;
+    }
+
     public static float getXRot(Vec3 direction)
     {
-        return toDeg(-Mth.atan2(direction.y(), vec2Length(direction)));
+        return getXRot(direction.x, direction.y, direction.z);
     }
 
     public static float getYRot(Vec3 direction)
     {
-        return toDeg(Mth.atan2(direction.z(), direction.x())) - 90f;
+        return getYRot(direction.x, direction.z);
     }
 
     public static Vector2f xyRotBetweenPoints(double x1, double y1, double z1, double x2, double y2, double z2)
@@ -303,10 +313,7 @@ public final class LimaCoreMath
         double dy = y2 - y1;
         double dz = z2 - z1;
 
-        float xRot = toDeg(-Mth.atan2(dy, vec2Length(dx, dz)));
-        float yRot = toDeg(Mth.atan2(dz, dx)) - 90f;
-
-        return new Vector2f(xRot, yRot);
+        return new Vector2f(getXRot(dx, dy, dz), getYRot(dx, dz));
     }
 
     public static Vector2f xyRotBetweenPoints(Vec3 a, Vec3 b)
