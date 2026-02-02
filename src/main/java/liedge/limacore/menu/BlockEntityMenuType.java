@@ -40,7 +40,7 @@ public class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends Lim
     @Override
     public void encodeContext(BE menuContext, RegistryFriendlyByteBuf net)
     {
-        net.writeBlockPos(menuContext.getAsLimaBlockEntity().getBlockPos());
+        net.writeBlockPos(menuContext.getBlockPos());
     }
 
     @Override

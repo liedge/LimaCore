@@ -1,7 +1,9 @@
 package liedge.limacore.blockentity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -11,6 +13,10 @@ import org.jetbrains.annotations.Nullable;
 public interface LimaBlockEntityAccess
 {
     LimaBlockEntity getAsLimaBlockEntity();
+
+    BlockPos getBlockPos();
+
+    BlockState getBlockState();
 
     void setChanged();
 
