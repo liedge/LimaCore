@@ -16,7 +16,7 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaCollectionsUtil;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -202,7 +202,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     public ServerPlayer getServerUser()
     {
-        return LimaCoreUtil.castOrThrow(ServerPlayer.class, playerInventory.player, "Attempted to access server menu user on client.");
+        return LimaCoreObjects.cast(ServerPlayer.class, playerInventory.player, "Attempted to access server menu user on client.");
     }
 
     public void sendSoundToPlayer(ServerPlayer player, Holder<SoundEvent> sound, float volume, float pitch)

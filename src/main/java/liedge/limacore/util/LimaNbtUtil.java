@@ -1,30 +1,21 @@
 package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
-import com.google.common.hash.Hashing;
-import com.google.common.hash.HashingOutputStream;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import liedge.limacore.data.LimaCoreCodecs;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataProvider;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public final class LimaNbtUtil
 {
@@ -179,24 +170,4 @@ public final class LimaNbtUtil
         if (resourceLocation != null) tag.putString(key, resourceLocation.toString());
     }
     //#endregion
-
-    // For use in data generation
-    @SuppressWarnings("UnstableApiUsage,deprecation")
-    public static CompletableFuture<?> saveCompressedNbt(CachedOutput cache, CompoundTag tag, Path path)
-    {
-        return CompletableFuture.runAsync(() -> {
-            try
-            {
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                HashingOutputStream hashStream = new HashingOutputStream(Hashing.sha1(), byteStream);
-                NbtIo.writeCompressed(tag, hashStream);
-                hashStream.close();
-                cache.writeIfNeeded(path, byteStream.toByteArray(), hashStream.hash());
-            }
-            catch (IOException ex)
-            {
-                DataProvider.LOGGER.error("Failed to save file to {}", path, ex);
-            }
-        }, Util.backgroundExecutor());
-    }
 }

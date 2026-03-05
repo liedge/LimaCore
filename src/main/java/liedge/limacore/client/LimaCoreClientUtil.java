@@ -1,7 +1,7 @@
 package liedge.limacore.client;
 
 import liedge.limacore.util.LimaBlockUtil;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -75,7 +75,7 @@ public final class LimaCoreClientUtil
 
     public static <T> @Nullable T getClientPlayerMenu(int containerId, Class<T> menuClass)
     {
-        return LimaCoreUtil.castOrNull(menuClass, getClientPlayerMenu(containerId));
+        return LimaCoreObjects.tryCast(menuClass, getClientPlayerMenu(containerId));
     }
 
     public static @Nullable BlockEntity getClientSafeBlockEntity(BlockPos blockPos)
@@ -113,7 +113,7 @@ public final class LimaCoreClientUtil
 
     public static <T extends Entity> @Nullable T getClientEntity(int remoteEntityId, Class<T> entityClass)
     {
-        return LimaCoreUtil.castOrNull(entityClass, getClientEntity(remoteEntityId));
+        return LimaCoreObjects.tryCast(entityClass, getClientEntity(remoteEntityId));
     }
 
     public static @Nullable Player getClientPlayer()

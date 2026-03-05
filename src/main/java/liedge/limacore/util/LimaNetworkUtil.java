@@ -79,7 +79,7 @@ public final class LimaNetworkUtil
     {
         registrar.playToServer(type, streamCodec, (payload, context) ->
         {
-            ServerPlayer sender = LimaCoreUtil.castOrThrow(ServerPlayer.class, context.player(), "Received server packet without sender.");
+            ServerPlayer sender = LimaCoreObjects.cast(ServerPlayer.class, context.player(), "Received server packet without sender.");
             payload.handleServer(sender, context);
         });
     }

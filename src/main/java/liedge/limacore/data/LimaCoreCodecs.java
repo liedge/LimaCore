@@ -13,7 +13,7 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.lib.math.LimaCoreMath;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
@@ -207,7 +207,7 @@ public final class LimaCoreCodecs
 
     public static <R, T extends R> Codec<T> classCastRegistryCodec(Registry<R> registry, Class<T> valueClass)
     {
-        return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreUtil.castOrNull(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
+        return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreObjects.tryCast(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
     }
 
     public static <A, L extends A, R extends A> DataResult<Either<L, R>> xorSubclassDataResult(A value, Class<L> leftClass, Class<R> rightClass)

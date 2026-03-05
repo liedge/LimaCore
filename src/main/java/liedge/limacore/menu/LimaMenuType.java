@@ -2,7 +2,7 @@ package liedge.limacore.menu;
 
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.lib.Translatable;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -69,7 +69,7 @@ public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuTyp
 
     protected CTX checkContext(Object uncheckedContext)
     {
-        return LimaCoreUtil.castOrThrow(contextClass, uncheckedContext, () -> new IllegalArgumentException(String.format("Invalid context type '%s' for menu type '%s'", uncheckedContext.getClass().getSimpleName(), LimaRegistryUtil.getNonNullRegistryId(this, BuiltInRegistries.MENU))));
+        return LimaCoreObjects.cast(contextClass, uncheckedContext, () -> new IllegalArgumentException(String.format("Invalid context type '%s' for menu type '%s'", uncheckedContext.getClass().getSimpleName(), LimaRegistryUtil.getNonNullRegistryId(this, BuiltInRegistries.MENU))));
     }
 
     @Override

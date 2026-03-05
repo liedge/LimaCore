@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static liedge.limacore.util.LimaCoreUtil.castOrNull;
+import static liedge.limacore.util.LimaCoreObjects.tryCast;
 
 public final class LimaBlockUtil
 {
@@ -104,16 +104,16 @@ public final class LimaBlockUtil
 
     /**
      * Convenience method that wraps the result of {@link LimaBlockUtil#getSafeBlockEntity(LevelReader, BlockPos)} with a call to
-     * {@link LimaCoreUtil#castOrNull(Class, Object)}
+     * {@link LimaCoreObjects#tryCast(Class, Object)}
      */
     public static <BE> @Nullable BE getSafeBlockEntity(@Nullable LevelReader level, BlockPos blockPos, Class<BE> beClass)
     {
-        return castOrNull(beClass, getSafeBlockEntity(level, blockPos));
+        return tryCast(beClass, getSafeBlockEntity(level, blockPos));
     }
 
     public static <BE> @Nullable BE getBlockEntity(@Nullable BlockGetter level, BlockPos pos, Class<BE> beClass)
     {
-        return level != null ? castOrNull(beClass, level.getBlockEntity(pos)) : null;
+        return level != null ? tryCast(beClass, level.getBlockEntity(pos)) : null;
     }
 
     @SuppressWarnings("deprecation")
@@ -121,7 +121,7 @@ public final class LimaBlockUtil
     {
         if (level != null && level.hasChunk(chunkX, chunkZ))
         {
-            return castOrNull(LevelChunk.class, level.getChunk(chunkX, chunkZ));
+            return tryCast(LevelChunk.class, level.getChunk(chunkX, chunkZ));
         }
         else
         {

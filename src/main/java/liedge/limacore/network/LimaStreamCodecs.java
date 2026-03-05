@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.LimaCoreClientUtil;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -144,7 +144,7 @@ public final class LimaStreamCodecs
 
     public static <B extends ByteBuf, T, I extends T> StreamCodec.CodecOperation<B, T, I> classCastMap(Class<I> iClass)
     {
-        return baseCodec -> baseCodec.map(t -> LimaCoreUtil.castOrThrow(iClass, t), Function.identity());
+        return baseCodec -> baseCodec.map(t -> LimaCoreObjects.cast(iClass, t), Function.identity());
     }
 
     public static <B extends ByteBuf, E, C extends Collection<E>> StreamCodec.CodecOperation<B, E, C> asClampedCollection(IntFunction<? extends C> factory, int minInclusive, int maxInclusive)

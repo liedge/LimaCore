@@ -7,7 +7,7 @@ import liedge.limacore.network.packet.ClientboundBlockEntityDataWatcherPacket;
 import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -109,14 +109,14 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
 
         if (level != null)
         {
-            if (level.isClientSide)
+            if (level instanceof ServerLevel serverLevel)
             {
-                PacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
-                onLoadClient(level);
+                onLoadServer(serverLevel);
             }
             else
             {
-                onLoadServer(LimaCoreUtil.castOrThrow(ServerLevel.class, level));
+                PacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
+                onLoadClient(level);
             }
         }
     }
@@ -168,7 +168,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     @Override
     public final ServerLevel nonNullServerLevel()
     {
-        return LimaCoreUtil.castOrThrow(ServerLevel.class, level, () ->
+        return LimaCoreObjects.cast(ServerLevel.class, level, () ->
                 new IllegalStateException(String.format("Attempted to access server level for block entity at %s on the client or before it has been assigned.", worldPosition.toShortString())));
     }
 

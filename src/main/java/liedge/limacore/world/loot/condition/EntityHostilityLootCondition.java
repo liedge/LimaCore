@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.advancement.ComparableBounds;
 import liedge.limacore.lib.MobHostility;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,7 +40,7 @@ public final class EntityHostilityLootCondition extends EntityComparisonLootCond
     @Override
     protected boolean testEntities(Entity firstEntity, Entity secondEntity)
     {
-        LivingEntity livingSecond = LimaCoreUtil.castOrNull(LivingEntity.class, secondEntity);
+        LivingEntity livingSecond = LimaCoreObjects.tryCast(LivingEntity.class, secondEntity);
         return bounds.test(LimaEntityUtil.getEntityHostility(firstEntity, livingSecond));
     }
 

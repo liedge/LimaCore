@@ -4,7 +4,7 @@ import liedge.limacore.blockentity.LimaBlockEntity;
 import liedge.limacore.blockentity.LimaBlockEntityType;
 import liedge.limacore.menu.LimaMenuProvider;
 import liedge.limacore.util.LimaBlockUtil;
-import liedge.limacore.util.LimaCoreUtil;
+import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -143,7 +143,7 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         if (blockEntityType == null)
         {
             ResourceLocation id = LimaRegistryUtil.getBlockId(this);
-            blockEntityType = LimaCoreUtil.castOrThrow(LimaBlockEntityType.class, LimaRegistryUtil.getNonNullRegistryValue(id, BuiltInRegistries.BLOCK_ENTITY_TYPE),
+            blockEntityType = LimaCoreObjects.cast(LimaBlockEntityType.class, LimaRegistryUtil.getNonNullRegistryValue(id, BuiltInRegistries.BLOCK_ENTITY_TYPE),
                     () -> new IllegalStateException("No valid block entity type matches block id '" + id + "'"));
         }
 
