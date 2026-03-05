@@ -33,6 +33,13 @@ public final class LimaCoreObjects
         return cast(type, o, () -> new ClassCastException("Object is not an instance of " + type.getSimpleName()));
     }
 
+    //#region Comparison helpers
+    @Contract("_,null->true")
+    public static <T extends Comparable<T>> boolean greaterThan(T value, @Nullable T bound)
+    {
+        return bound == null || value.compareTo(bound) > 0;
+    }
+
     @Contract("_,null->true")
     public static <T extends Comparable<T>> boolean greaterThanOrEquals(T value, @Nullable T bound)
     {
@@ -40,8 +47,15 @@ public final class LimaCoreObjects
     }
 
     @Contract("_,null->true")
+    public static <T extends Comparable<T>> boolean lessThan(T value, @Nullable T bound)
+    {
+        return bound == null || value.compareTo(bound) < 0;
+    }
+
+    @Contract("_,null->true")
     public static <T extends Comparable<T>> boolean lessThanOrEquals(T value, @Nullable T bound)
     {
         return bound == null || value.compareTo(bound) <= 0;
     }
+    //#endregion
 }

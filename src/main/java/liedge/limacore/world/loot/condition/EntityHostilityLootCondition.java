@@ -2,7 +2,7 @@ package liedge.limacore.world.loot.condition;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.advancement.ComparableBounds;
+import liedge.limacore.lib.MinMaxRange;
 import liedge.limacore.lib.MobHostility;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaCoreObjects;
@@ -19,19 +19,19 @@ public final class EntityHostilityLootCondition extends EntityComparisonLootCond
             .and(MobHostility.BOUNDS_CODEC.fieldOf("bounds").forGetter(o -> o.bounds))
             .apply(instance, EntityHostilityLootCondition::new));
 
-    public static LootItemCondition.Builder create(LootContext.EntityTarget attacker, LootContext.EntityTarget targeted, ComparableBounds<MobHostility> bounds)
+    public static LootItemCondition.Builder create(LootContext.EntityTarget attacker, LootContext.EntityTarget targeted, MinMaxRange<MobHostility> bounds)
     {
         return () -> new EntityHostilityLootCondition(attacker, targeted, bounds);
     }
 
-    public static LootItemCondition.Builder create(ComparableBounds<MobHostility> bounds)
+    public static LootItemCondition.Builder create(MinMaxRange<MobHostility> bounds)
     {
         return create(LootContext.EntityTarget.THIS, LootContext.EntityTarget.ATTACKER, bounds);
     }
 
-    private final ComparableBounds<MobHostility> bounds;
+    private final MinMaxRange<MobHostility> bounds;
 
-    public EntityHostilityLootCondition(LootContext.EntityTarget attacker, LootContext.EntityTarget targeted, ComparableBounds<MobHostility> bounds)
+    public EntityHostilityLootCondition(LootContext.EntityTarget attacker, LootContext.EntityTarget targeted, MinMaxRange<MobHostility> bounds)
     {
         super(attacker, targeted);
         this.bounds = bounds;
