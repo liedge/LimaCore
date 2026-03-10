@@ -3,14 +3,8 @@ package liedge.limacore.data;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Function3;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.PrimitiveCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.util.LimaCoreObjects;
@@ -19,19 +13,13 @@ import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
-import org.joml.AxisAngle4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
-
-import static liedge.limacore.lib.math.LimaCoreMath.toDeg;
-import static liedge.limacore.lib.math.LimaCoreMath.toRad;
 
 public final class LimaCoreCodecs
 {
@@ -39,89 +27,67 @@ public final class LimaCoreCodecs
 
     private LimaCoreCodecs() {}
 
-    // Map codec common keys
-
-    /**
-     * Float codec for decoding into radians for code use and encoding into degrees for readability.
-     */
-    public static final Codec<Float> DEG_TO_RAD_FLOAT = new PrimitiveCodec<>()
+    private static DataResult<Integer> parseHexadecimal(String rawString)
     {
-        @Override
-        public <T> DataResult<Float> read(DynamicOps<T> ops, T input)
+        try
         {
-            return ops.getNumberValue(input).map(n -> toRad(n.floatValue()));
+            return DataResult.success(LimaCoreMath.parseHexadecimal(rawString));
         }
+        catch (NumberFormatException ignored)
+        {
+            return DataResult.error(() -> rawString + " is not a hexadecimal number.");
+        }
+    }
 
-        @Override
-        public <T> T write(DynamicOps<T> ops, Float value)
-        {
-            return ops.createFloat(toDeg(value));
-        }
+    private static DataResult<Float> parseAngle(String rawString)
+    {
+        String input = rawString.trim();
+        if (!input.endsWith("deg")) return DataResult.error(() -> "Invalid angle input: " + input);
 
-        @Override
-        public String toString()
+        String numString = input.substring(0, input.length() - 3);
+        try
         {
-            return "Degrees to Radians Float";
+            float value = Float.parseFloat(numString);
+            return DataResult.success(LimaCoreMath.toRad(value));
         }
-    };
+        catch (NumberFormatException ignored)
+        {
+            return DataResult.error(() -> rawString + " is not a decimal number.");
+        }
+    }
 
     /**
      * Hexadecimal integer codec. Encoded values will be prefixed with '#'. Decoded values
      * do not need the '#' prefix but may contain it.
      */
-    public static final Codec<Integer> HEXADECIMAL_INT = new PrimitiveCodec<>()
-    {
-        @Override
-        public <T> DataResult<Integer> read(DynamicOps<T> ops, T input)
-        {
-            return ops.getStringValue(input).flatMap(string -> {
-                try
-                {
-                    return DataResult.success(LimaCoreMath.parseHexadecimal(string));
-                }
-                catch (NumberFormatException ex)
-                {
-                    return DataResult.error(() -> "Not a valid hexadecimal string: " + ex.getMessage());
-                }
-            });
-        }
+    public static final Codec<Integer> HEXADECIMAL_INT = Codec.STRING.comapFlatMap(LimaCoreCodecs::parseHexadecimal, num -> "#" + Integer.toHexString(num));
 
-        @Override
-        public <T> T write(DynamicOps<T> ops, Integer value)
-        {
-            return ops.createString("#" + Integer.toHexString(value));
-        }
-
-        @Override
-        public String toString()
-        {
-            return "Hexadecimal Int";
-        }
-    };
+    /**
+     * Float codec for radians. Can optionally fix degree inputs into radians.
+     */
+    public static final Codec<Float> ANGLE_FLOAT = Codec.either(Codec.FLOAT, Codec.STRING).comapFlatMap(
+            either -> either.map(DataResult::success, LimaCoreCodecs::parseAngle),
+            Either::left);
 
     /**
      * Strict {@link Direction} codec with {@link LimaEnumCodec} convenience extensions.
      */
     public static final LimaEnumCodec<Direction> STRICT_DIRECTION = LimaEnumCodec.create(Direction.class);
 
-    /**
-     * Vector codec that scales decoded values down by 16x and encoded values up by 16x. Useful for baked models.
-     */
-    public static final Codec<Vector3f> VECTOR3F_16X = ExtraCodecs.VECTOR3F.xmap(vec -> vec.mul(0.0625f), vec -> vec.mul(16));
+    public static final Codec<Vector3f> MODEL_VECTOR = decodeOnly(ExtraCodecs.VECTOR3F.map(vec -> vec.mul(0.0625f)));
 
-    public static Codec<Vector3f> AXIS_VECTOR = Codec.withAlternative(ExtraCodecs.VECTOR3F, Direction.Axis.CODEC, LimaCoreMath::unitVecForAxis);
-
-    public static final MapCodec<AxisAngle4f> UNIT_AXIS_ANGLE4F = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            DEG_TO_RAD_FLOAT.fieldOf("angle").forGetter(o -> o.angle),
-            AXIS_VECTOR.fieldOf("axis").forGetter(o -> new Vector3f(o.x, o.y, o.z))).apply(instance, AxisAngle4f::new));
-
-    public static final MapCodec<Quaternionf> UNIT_QUATERNION = UNIT_AXIS_ANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new);
+    public static <A> Codec<A> decodeOnly(Decoder<A> decoder)
+    {
+        String name = decoder + "[readOnly]";
+        Encoder<A> encoder = Encoder.error(name + " is a decode-only codec.");
+        return Codec.of(encoder, decoder, name);
+    }
 
     public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
     {
         return baseCodec.validate(num ->
         {
-            if (num.compareTo(minExclusive) > 0 && num.compareTo(maxInclusive) <= 0)
+            if (LimaCoreObjects.inRangeOpenStart(num, minExclusive, maxInclusive))
                 return DataResult.success(num);
             else
                 return DataResult.error(() -> String.format("Value %s outside of valid range (%s,%s]", num, minExclusive, maxInclusive));
@@ -132,7 +98,7 @@ public final class LimaCoreCodecs
     {
         return baseCodec.validate(num ->
         {
-            if (num.compareTo(minInclusive) >= 0 && num.compareTo(maxExclusive) < 0)
+            if (LimaCoreObjects.inRangeOpenEnd(num, minInclusive, maxExclusive))
                 return DataResult.success(num);
             else
                 return DataResult.error(() -> String.format("Value %s outside of valid range [%s,%s)", num, minInclusive, maxExclusive));
@@ -143,7 +109,7 @@ public final class LimaCoreCodecs
     {
         return baseCodec.validate(num ->
         {
-            if (num.compareTo(minExclusive) > 0 && num.compareTo(maxExclusive) < 0)
+            if (LimaCoreObjects.inRangeOpen(num, minExclusive, maxExclusive))
                 return DataResult.success(num);
             else
                 return DataResult.error(() -> String.format("Value %s outside of valid range (%s,%s)", num, minExclusive, maxExclusive));
@@ -261,39 +227,9 @@ public final class LimaCoreCodecs
         return minInclusive == 0 ? listCodec.optionalFieldOf(fieldName, List.of()) : listCodec.fieldOf(fieldName);
     }
 
-    public static <E, A> DataResult<A> fixedListFlatMap(List<E> list, int expectedSize, Function<IntFunction<E>, ? extends A> elementAccessor)
-    {
-        if (list.size() == expectedSize)
-        {
-            try
-            {
-                A result = elementAccessor.apply(list::get);
-                return DataResult.success(result);
-            }
-            catch (IndexOutOfBoundsException ignored)
-            {
-                return DataResult.error(() -> "Input mapping function accesses index outside valid range [0," + expectedSize + ")");
-            }
-        }
-        else
-        {
-            return DataResult.error(() -> "Input is not a list of " + expectedSize + " elements.");
-        }
-    }
-
     public static <T> DataResult<T> nullableDataResult(@Nullable T value, Supplier<String> errorMessageSupplier)
     {
         return value != null ? DataResult.success(value) : DataResult.error(errorMessageSupplier);
-    }
-
-    public static <E, A> Codec<A> fixedListComapFlatMap(Codec<E> elementCodec, int size, Function<IntFunction<E>, ? extends A> to, Function<? super A, ? extends List<E>> from)
-    {
-        return elementCodec.listOf().comapFlatMap(rawList -> fixedListFlatMap(rawList, size, to), from);
-    }
-
-    public static <E, T> Codec<T> triComapFlatMap(Codec<E> elementCodec, Function3<E, E, E, ? extends T> to, Function<? super T, ? extends List<E>> from)
-    {
-        return fixedListComapFlatMap(elementCodec, 3, list -> to.apply(list.apply(0), list.apply(1), list.apply(2)), from);
     }
 
     public static <A, S> MapCodec<S> comapFlatMapMapCodec(MapCodec<A> baseCodec, Function<? super S, ? extends A> to, Function<? super A, ? extends DataResult<? extends S>> from)

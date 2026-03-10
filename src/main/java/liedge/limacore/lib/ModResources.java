@@ -20,6 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -100,6 +101,11 @@ public record ModResources(String modid)
     public <T> DeferredRegister <T> deferredRegister(String registryName)
     {
         return DeferredRegister.create(registryResourceKey(registryName), modid);
+    }
+
+    public <R, T extends R> DeferredHolder<R, T> deferredHolder(ResourceKey<? extends Registry<R>> registryKey, String name)
+    {
+        return DeferredHolder.create(registryKey, location(name));
     }
 
     public LimaDeferredItems deferredItems()

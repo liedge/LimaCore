@@ -1,7 +1,7 @@
 package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCore;
-import liedge.limacore.advancement.CustomRecipeTypeTrigger;
+import liedge.limacore.advancement.RecipeTypeTrigger;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,5 +21,5 @@ public final class LimaCoreTriggerTypes
     }
 
     public static final DeferredHolder<CriterionTrigger<?>, PlayerTrigger> PLAYER_LOGGED_IN = TRIGGER_TYPES.register("player_logged_in", PlayerTrigger::new);
-    public static final DeferredHolder<CriterionTrigger<?>, CustomRecipeTypeTrigger> CUSTOM_RECIPE_TYPE_USED = TRIGGER_TYPES.register("custom_recipe_type_used", CustomRecipeTypeTrigger::new);
+    public static final DeferredHolder<CriterionTrigger<?>, RecipeTypeTrigger> CUSTOM_RECIPE_TYPE_USED = TRIGGER_TYPES.register("custom_recipe_type_used", RecipeTypeTrigger::new);
 }

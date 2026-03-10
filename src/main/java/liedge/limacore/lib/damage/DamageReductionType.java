@@ -15,6 +15,7 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
  */
 public enum DamageReductionType implements StringRepresentable, Translatable
 {
+    INVULNERABILITY("invulnerability", DamageContainer.Reduction.INVULNERABILITY),
     ARMOR("armor", DamageContainer.Reduction.ARMOR),
     ENCHANTMENTS("enchantments", DamageContainer.Reduction.ENCHANTMENTS),
     MOB_EFFECTS("mob_effects", DamageContainer.Reduction.MOB_EFFECTS),

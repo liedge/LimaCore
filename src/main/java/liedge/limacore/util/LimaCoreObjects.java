@@ -57,5 +57,25 @@ public final class LimaCoreObjects
     {
         return bound == null || value.compareTo(bound) <= 0;
     }
+
+    public static <T extends Comparable<T>> boolean inRangeClosed(T value, T min, T max)
+    {
+        return greaterThanOrEquals(value, min) && lessThanOrEquals(value, max);
+    }
+
+    public static <T extends Comparable<T>> boolean inRangeOpen(T value, T min, T max)
+    {
+        return greaterThan(value, min) && lessThan(value, max);
+    }
+
+    public static <T extends Comparable<T>> boolean inRangeOpenStart(T value, T min, T max)
+    {
+        return greaterThan(value, min) && lessThanOrEquals(value, max);
+    }
+
+    public static <T extends Comparable<T>> boolean inRangeOpenEnd(T value, T min, T max)
+    {
+        return greaterThanOrEquals(value, min) && lessThan(value, max);
+    }
     //#endregion
 }

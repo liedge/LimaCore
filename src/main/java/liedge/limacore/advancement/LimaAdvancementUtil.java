@@ -1,7 +1,5 @@
 package liedge.limacore.advancement;
 
-import com.mojang.datafixers.Products;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
@@ -9,9 +7,7 @@ import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.Nullable;
@@ -21,22 +17,6 @@ import java.util.Optional;
 public final class LimaAdvancementUtil
 {
     private LimaAdvancementUtil() {}
-
-    public static <T extends SimpleCriterionTrigger.SimpleInstance> Products.P1<RecordCodecBuilder.Mu<T>, Optional<ContextAwarePredicate>> playerCodecStart(RecordCodecBuilder.Instance<T> instance)
-    {
-        return instance.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(SimpleCriterionTrigger.SimpleInstance::player));
-    }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public static boolean testEntityPredicate(Optional<ContextAwarePredicate> optional, ServerPlayer serverPlayer, Entity toTest)
-    {
-        return optional.map(predicate -> testEntityPredicate(predicate, serverPlayer, toTest)).orElse(true);
-    }
-
-    public static boolean testEntityPredicate(ContextAwarePredicate predicate, ServerPlayer serverPlayer, Entity toTest)
-    {
-        return predicate.matches(EntityPredicate.createContext(serverPlayer, toTest));
-    }
 
     public static Criterion<PlayerTrigger.TriggerInstance> playerLoggedIn(@Nullable EntityPredicate.Builder playerPredicate)
     {

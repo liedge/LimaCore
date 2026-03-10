@@ -13,9 +13,9 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-public final class ItemBrokenTrigger extends SimpleCriterionTrigger<ItemBrokenTrigger.TriggerInstance>
+public final class PlayerEquipmentTrigger extends SimpleCriterionTrigger<PlayerEquipmentTrigger.TriggerInstance>
 {
-    public ItemBrokenTrigger() {}
+    public PlayerEquipmentTrigger() {}
 
     @Override
     public Codec<TriggerInstance> codec()
@@ -23,12 +23,12 @@ public final class ItemBrokenTrigger extends SimpleCriterionTrigger<ItemBrokenTr
         return TriggerInstance.CODEC;
     }
 
-    public void trigger(ServerPlayer player, ItemStack stack, EquipmentSlot slot)
+    public void triggerCriterion(ServerPlayer player, ItemStack stack, EquipmentSlot slot)
     {
         trigger(player, o -> o.matches(stack, slot));
     }
 
-    public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, EquipmentSlotGroup slots) implements SimpleCriterionTrigger.SimpleInstance
+    public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, EquipmentSlotGroup slots) implements SimpleInstance
     {
         public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
@@ -38,7 +38,7 @@ public final class ItemBrokenTrigger extends SimpleCriterionTrigger<ItemBrokenTr
 
         private boolean matches(ItemStack stack, EquipmentSlot slot)
         {
-            return item.map(o -> o.test(stack)).orElse(true) && slots.test(slot);
+            return slots.test(slot) && (item.isEmpty() || item.get().test(stack));
         }
     }
 }
