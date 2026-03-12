@@ -5,35 +5,30 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.ParticleOptions;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.util.RandomSource;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import org.jspecify.annotations.Nullable;
 
-public record SpriteParticleProvider<T extends ParticleOptions>(SpriteSet spriteSet, ParticleFactory<T> factory) implements ParticleProvider<T>
+import java.util.function.Supplier;
+
+public record SpriteParticleProvider<T extends ParticleOptions>(SpriteSet sprites, Factory<T> factory) implements ParticleProvider<T>
 {
-    @Nullable
+    public static <T extends ParticleOptions> void register(RegisterParticleProvidersEvent event, Supplier<? extends ParticleType<T>> typeSupplier, Factory<T> factory)
+    {
+        event.registerSpriteSet(typeSupplier.get(), sprites -> new SpriteParticleProvider<>(sprites, factory));
+    }
+
     @Override
-    public Particle createParticle(T type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
+    public @Nullable Particle createParticle(T particleType, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random)
     {
-        return factory.create(type, level, spriteSet, x, y, z, xSpeed, ySpeed, zSpeed);
+        return factory.create(particleType, level, sprites, x, y, z, xSpeed, ySpeed, zSpeed, random);
     }
 
     @FunctionalInterface
-    public interface ParticleFactory<T extends ParticleOptions>
+    public interface Factory<T extends ParticleOptions>
     {
         @Nullable
-        Particle create(T type, ClientLevel level, SpriteSet spriteSet, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed);
-    }
-
-    @FunctionalInterface
-    public interface PositionOnlyParticleFactory<T extends ParticleOptions> extends ParticleFactory<T>
-    {
-        @Override
-        @Nullable
-        default Particle create(T type, ClientLevel level, SpriteSet spriteSet, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
-        {
-            return create(type, level, spriteSet, x, y, z);
-        }
-
-        @Nullable
-        Particle create(T type, ClientLevel level, SpriteSet spriteSet, double x, double y, double z);
+        Particle create(T type, ClientLevel level, SpriteSet sprites, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random);
     }
 }

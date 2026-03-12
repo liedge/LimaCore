@@ -1,15 +1,17 @@
 package liedge.limacore.world.loot.number;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
@@ -40,7 +42,7 @@ public record EntityEnchantmentValueProvider(LootContext.EntityTarget target, Ho
     @Override
     public float getFloat(LootContext context)
     {
-        int level = LimaEntityUtil.getEnchantmentLevel(context.getParamOrNull(target.getParam()), enchantment);
+        int level = LimaEntityUtil.getEnchantmentLevel(context.getOptionalParameter(target.contextParam()), enchantment);
         if (level < 1)
             return unenchanted.getFloat(context);
         else
@@ -54,11 +56,12 @@ public record EntityEnchantmentValueProvider(LootContext.EntityTarget target, Ho
     }
 
     @Override
-    public Set<LootContextParam<?>> getReferencedContextParams()
+    public Set<ContextKey<?>> getReferencedContextParams()
     {
-        Set<LootContextParam<?>> unenchantedParams = unenchanted.getReferencedContextParams();
-        Set<LootContextParam<?>> targetParams = Set.of(target.getParam());
+        ObjectSet<ContextKey<?>> usedKeys = new ObjectOpenHashSet<>();
+        usedKeys.addAll(unenchanted.getReferencedContextParams());
+        usedKeys.add(target.contextParam());
 
-        return unenchantedParams.isEmpty() ? targetParams : Sets.union(unenchantedParams, targetParams);
+        return ObjectSets.unmodifiable(usedKeys);
     }
 }

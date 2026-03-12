@@ -1,4 +1,4 @@
-@AllNotNull
+@NullMarked
 package liedge.limacore.client.renderer;
 
-import liedge.limacore.AllNotNull;
+import org.jspecify.annotations.NullMarked;

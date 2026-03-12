@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.lib.MinMaxRange;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;

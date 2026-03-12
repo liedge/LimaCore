@@ -2,7 +2,6 @@ package liedge.limacore.data.generation.recipe;
 
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -23,7 +22,7 @@ public class LimaShapelessRecipeBuilder extends StandardRecipeBuilder<ShapelessR
     }
 
     @Override
-    protected String defaultFolderPrefix(ShapelessRecipe recipe, ResourceLocation recipeId)
+    protected String defaultFolderPrefix(ShapelessRecipe recipe)
     {
         return "shapeless_recipes/";
     }

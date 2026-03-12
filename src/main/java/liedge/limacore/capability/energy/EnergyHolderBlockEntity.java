@@ -3,7 +3,6 @@ package liedge.limacore.capability.energy;
 import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
-import liedge.limacore.util.LimaNbtUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

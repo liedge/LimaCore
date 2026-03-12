@@ -1,9 +1,10 @@
 package liedge.limacore.blockentity;
 
-import liedge.limacore.util.LimaNbtUtil;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -29,13 +30,13 @@ public interface OwnableBlockEntity extends LimaBlockEntityAccess
         setOwnerUUID(uuid);
     }
 
-    default void saveOwnerID(CompoundTag tag)
+    default void saveOwnerID(ValueOutput output)
     {
-        LimaNbtUtil.putOptionalUUID(tag, KEY_OWNER, getOwnerUUID());
+        output.storeNullable(KEY_OWNER, UUIDUtil.CODEC, getOwnerUUID());
     }
 
-    default void loadOwnerID(CompoundTag tag)
+    default void loadOwnerID(ValueInput input)
     {
-        setOwnerUUID(LimaNbtUtil.getOptionalUUID(tag, KEY_OWNER));
+        input.read(KEY_OWNER, UUIDUtil.CODEC).ifPresent(this::setOwnerUUID);
     }
 }

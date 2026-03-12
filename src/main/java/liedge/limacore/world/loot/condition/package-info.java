@@ -1,4 +1,4 @@
-@AllNotNull
+@NullMarked
 package liedge.limacore.world.loot.condition;
 
-import liedge.limacore.AllNotNull;
+import org.jspecify.annotations.NullMarked;

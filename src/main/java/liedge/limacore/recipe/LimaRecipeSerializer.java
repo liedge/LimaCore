@@ -4,16 +4,16 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 /**
  * Simple implementation of {@link RecipeSerializer} for a single codec/stream codec pair.
  */
-public record LimaRecipeSerializer<R extends Recipe<?>>(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec) implements RecipeSerializer<R>
+public record LimaRecipeSerializer<R extends Recipe<?>>(Identifier id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec) implements RecipeSerializer<R>
 {
-    public static <R extends Recipe<?>> LimaRecipeSerializer<R> of(ResourceLocation id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec)
+    public static <R extends Recipe<?>> LimaRecipeSerializer<R> of(Identifier id, MapCodec<R> codec, StreamCodec<RegistryFriendlyByteBuf, R> streamCodec)
     {
         return new LimaRecipeSerializer<>(id, codec, streamCodec);
     }
@@ -33,7 +33,7 @@ public record LimaRecipeSerializer<R extends Recipe<?>>(ResourceLocation id, Map
         }
 
         @Override
-        public LimaRecipeSerializer<R> build(ResourceLocation id)
+        public LimaRecipeSerializer<R> build(Identifier id)
         {
             MapCodec<R> mapCodec = RecordCodecBuilder.<R>mapCodec(instance -> commonFields(instance).apply(instance, factory))
                     .validate(LimaCustomRecipe::checkNotEmpty);

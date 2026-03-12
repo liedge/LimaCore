@@ -13,10 +13,10 @@ import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -284,23 +284,17 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return true;
     }
 
-    @Deprecated
     @Override
-    public boolean isIncomplete()
+    public boolean showNotification()
     {
-        // Seems like only the client recipe book uses this?
-        return itemIngredients.isEmpty() || itemIngredients.stream().map(LimaSizedItemIngredient::getIngredient).anyMatch(Ingredient::hasNoItems);
+        return false;
     }
 
-    /**
-     * @deprecated Use {@link LimaCustomRecipe#getItemIngredients()} for the recipe's item ingredients and {@link LimaCustomRecipe#getFluidIngredients()}
-     * for the fluid ingredients.
-     */
     @Deprecated
     @Override
-    public NonNullList<Ingredient> getIngredients()
+    public PlacementInfo placementInfo()
     {
-        return Recipe.super.getIngredients();
+        return PlacementInfo.NOT_PLACEABLE;
     }
 
     /**
@@ -312,26 +306,6 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     public ItemStack assemble(T input, HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
-    }
-
-    /**
-     * @deprecated Use {@link LimaCustomRecipe#getItemResults()} for item recipe outputs.
-     */
-    @Deprecated
-    @Override
-    public ItemStack getResultItem(HolderLookup.Provider registries)
-    {
-        return ItemStack.EMPTY;
-    }
-
-    /**
-     * @deprecated Not used or compatible with custom recipes.
-     */
-    @Deprecated
-    @Override
-    public boolean canCraftInDimensions(int width, int height)
-    {
-        return false;
     }
 
     @FunctionalInterface

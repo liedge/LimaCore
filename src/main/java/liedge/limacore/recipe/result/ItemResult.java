@@ -41,7 +41,7 @@ public final class ItemResult extends StackBaseResult<Item, ItemStack>
 
     public static ItemResult create(ItemLike itemLike, @Nullable DataComponentPatch components, ResultCount count, float chance, ResultPriority priority)
     {
-        return create(LimaRegistryUtil.getHolder(itemLike), components, count, chance, priority);
+        return create(LimaRegistryUtil.builtInHolder(itemLike), components, count, chance, priority);
     }
 
     public static ItemResult create(ItemStack stack, float chance, ResultPriority priority, @Nullable ResultCount count)

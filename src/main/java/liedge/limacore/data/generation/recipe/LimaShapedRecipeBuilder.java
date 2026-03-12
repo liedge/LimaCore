@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.util.LimaRegistryUtil;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -59,9 +59,9 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
         return input(key, Ingredient.of(item));
     }
 
-    public LimaShapedRecipeBuilder input(char key, TagKey<Item> itemTag)
+    public LimaShapedRecipeBuilder input(char key, HolderGetter<Item> holders, TagKey<Item> itemTag)
     {
-        return input(key, Ingredient.of(itemTag));
+        return input(key, Ingredient.of(holders.getOrThrow(itemTag)));
     }
 
     public LimaShapedRecipeBuilder showsNotification(boolean showNotification)
@@ -77,7 +77,7 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     }
 
     @Override
-    protected String defaultFolderPrefix(ShapedRecipe recipe, ResourceLocation recipeId)
+    protected String defaultFolderPrefix(ShapedRecipe recipe)
     {
         return "shaped_recipes/";
     }

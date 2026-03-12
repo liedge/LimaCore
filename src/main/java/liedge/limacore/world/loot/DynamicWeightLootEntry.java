@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -57,7 +58,7 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
     public void validate(ValidationContext validationContext)
     {
         super.validate(validationContext);
-        child.validate(validationContext.forChild(".child_entry"));
+        child.validate(validationContext.forChild(new ProblemReporter.FieldPathElement("child_entry")));
     }
 
     @Override

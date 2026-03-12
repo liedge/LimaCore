@@ -47,7 +47,7 @@ public final class LimaBootstrapUtil
     // Damage type helpers
     public static void registerDamageType(BootstrapContext<DamageType> context, ResourceKey<DamageType> key, Function<String, DamageType> fromNameConstructor)
     {
-        context.register(key, fromNameConstructor.apply(ModResources.idLangKey(key.location())));
+        context.register(key, fromNameConstructor.apply(ModResources.idLangKey(key.identifier())));
     }
 
     public static void registerDamageType(BootstrapContext<DamageType> context, ResourceKey<DamageType> key, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType messageType)
@@ -58,7 +58,7 @@ public final class LimaBootstrapUtil
     // Enchantment
     public static void registerEnchantment(BootstrapContext<Enchantment> context, ResourceKey<Enchantment> key, Enchantment.Builder builder)
     {
-        context.register(key, builder.build(key.location()));
+        context.register(key, builder.build(key.identifier()));
     }
 
     // Commonly used objects
@@ -69,7 +69,7 @@ public final class LimaBootstrapUtil
 
     public static BlockPredicate matchesBlocks(Direction side, Block... blocks)
     {
-        return BlockPredicate.matchesBlocks(side.getNormal(), blocks);
+        return BlockPredicate.matchesBlocks(side.getUnitVec3i(), blocks);
     }
 
     public static BlockPredicate isAir(Direction side)
@@ -84,12 +84,12 @@ public final class LimaBootstrapUtil
 
     public static BlockPredicate replaceable(Direction side)
     {
-        return BlockPredicate.replaceable(side.getNormal());
+        return BlockPredicate.replaceable(side.getUnitVec3i());
     }
 
     public static BlockPredicate noFluids(Direction side)
     {
-        return BlockPredicate.noFluid(side.getNormal());
+        return BlockPredicate.noFluid(side.getUnitVec3i());
     }
 
     private static BlockPredicate replaceableSturdyFace(Direction side, boolean allowFluids)

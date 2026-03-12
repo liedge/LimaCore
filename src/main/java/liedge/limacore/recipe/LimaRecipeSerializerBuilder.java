@@ -10,7 +10,7 @@ import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import java.util.List;
@@ -97,7 +97,7 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
         return withFluidResults(0, max);
     }
 
-    public abstract S build(ResourceLocation id);
+    public abstract S build(Identifier id);
 
     protected Products.P4<RecordCodecBuilder.Mu<R>, List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidResult>> commonFields(RecordCodecBuilder.Instance<R> instance)
     {

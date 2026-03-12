@@ -11,6 +11,7 @@ import liedge.limacore.recipe.result.ResultCount;
 import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -80,19 +81,19 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return randomInput(Ingredient.of(itemLike), count, consumeChance);
     }
 
-    public B input(TagKey<Item> tagKey)
+    public B input(HolderGetter<Item> holders, TagKey<Item> tagKey)
     {
-        return input(Ingredient.of(tagKey));
+        return input(holders, tagKey, 1);
     }
 
-    public B input(TagKey<Item> tagKey, int count)
+    public B input(HolderGetter<Item> holders, TagKey<Item> tagKey, int count)
     {
-        return input(Ingredient.of(tagKey), count);
+        return input(Ingredient.of(holders.getOrThrow(tagKey)), count);
     }
 
-    public B randomInput(TagKey<Item> tagKey, int count, float consumeChance)
+    public B randomInput(HolderGetter<Item> holders, TagKey<Item> tagKey, int count, float consumeChance)
     {
-        return randomInput(Ingredient.of(tagKey), count, consumeChance);
+        return randomInput(Ingredient.of(holders.getOrThrow(tagKey)), count, consumeChance);
     }
 
     public B fluidInput(LimaSizedFluidIngredient ingredient)
@@ -113,22 +114,22 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B fluidInput(FluidStack fluidStack)
     {
-        return fluidInput(FluidIngredient.single(fluidStack), fluidStack.getAmount());
+        return fluidInput(FluidIngredient.of(fluidStack), fluidStack.getAmount());
     }
 
     public B randomFluidInput(FluidStack fluidStack, float consumeChance)
     {
-        return randomFluidInput(FluidIngredient.single(fluidStack), fluidStack.getAmount(), consumeChance);
+        return randomFluidInput(FluidIngredient.of(fluidStack), fluidStack.getAmount(), consumeChance);
     }
 
     public B fluidInput(Fluid fluid, int amount)
     {
-        return fluidInput(FluidIngredient.single(fluid), amount);
+        return fluidInput(FluidIngredient.of(fluid), amount);
     }
 
     public B randomFluidInput(Fluid fluid, int amount, float consumeChance)
     {
-        return randomFluidInput(FluidIngredient.single(fluid), amount, consumeChance);
+        return randomFluidInput(FluidIngredient.of(fluid), amount, consumeChance);
     }
 
     public B fluidInput(Holder<Fluid> fluidHolder, int amount)
@@ -141,14 +142,14 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return randomFluidInput(fluidHolder.value(), amount, consumeChance);
     }
 
-    public B fluidInput(TagKey<Fluid> tagKey, int amount)
+    public B fluidInput(HolderGetter<Fluid> holders, TagKey<Fluid> tagKey, int amount)
     {
-        return fluidInput(FluidIngredient.tag(tagKey), amount);
+        return fluidInput(FluidIngredient.of(holders.getOrThrow(tagKey)), amount);
     }
 
-    public B randomFluidInput(TagKey<Fluid> tagKey, int amount, float consumeChance)
+    public B randomFluidInput(HolderGetter<Fluid> holders, TagKey<Fluid> tagKey, int amount, float consumeChance)
     {
-        return randomFluidInput(FluidIngredient.tag(tagKey), amount, consumeChance);
+        return randomFluidInput(FluidIngredient.of(holders.getOrThrow(tagKey)), amount, consumeChance);
     }
 
     //#region Item results

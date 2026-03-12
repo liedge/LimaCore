@@ -6,7 +6,7 @@ import liedge.limacore.data.LimaCoreCodecs;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.FastColor.ARGB32;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.ApiStatus;
 
 public record LimaColor(int argb32, float red, float green, float blue, Style chatStyle)
@@ -19,17 +19,17 @@ public record LimaColor(int argb32, float red, float green, float blue, Style ch
 
     public static LimaColor createOpaque(int rgb)
     {
-        int argb32 = ARGB32.opaque(rgb);
-        float red = ARGB32.red(argb32) / 255f;
-        float green = ARGB32.green(argb32) / 255f;
-        float blue = ARGB32.blue(argb32) / 255f;
+        int argb32 = ARGB.opaque(rgb);
+        float red = ARGB.red(argb32) / 255f;
+        float green = ARGB.green(argb32) / 255f;
+        float blue = ARGB.blue(argb32) / 255f;
 
         return new LimaColor(argb32, red, green, blue);
     }
 
     public static LimaColor createOpaque(float red, float green, float blue)
     {
-        int argb32 = ARGB32.colorFromFloat(1f, red, green, blue);
+        int argb32 = ARGB.colorFromFloat(1f, red, green, blue);
 
         return new LimaColor(argb32, red, green, blue);
     }

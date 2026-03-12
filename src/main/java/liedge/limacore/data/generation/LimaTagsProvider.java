@@ -11,14 +11,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -33,9 +32,9 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
 {
     private final Map<TagKey<T>, LimaTagHelper<T>> helpers = new Object2ObjectOpenHashMap<>();
 
-    protected LimaTagsProvider(PackOutput packOutput, ResourceKey<? extends Registry<T>> registryKey, String modid, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper helper)
+    protected LimaTagsProvider(PackOutput packOutput, ResourceKey<? extends Registry<T>> registryKey, String modid, CompletableFuture<HolderLookup.Provider> lookupProvider)
     {
-        super(packOutput, registryKey, lookupProvider, modid, helper);
+        super(packOutput, registryKey, lookupProvider, modid);
     }
 
     protected @Nullable Registry<T> getTagRegistry()
@@ -57,7 +56,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
     @SafeVarargs
     protected final void reverseElementToTags(ResourceKey<T> resourceKey, TagKey<T>... tags)
     {
-        Stream.of(tags).forEach(tag -> getOrCreateRawBuilder(tag).addElement(resourceKey.location()));
+        Stream.of(tags).forEach(tag -> getOrCreateRawBuilder(tag).addElement(resourceKey.identifier()));
     }
 
     @SafeVarargs
@@ -82,9 +81,9 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
     {
         private final Registry<T> registry;
 
-        protected RegistryTags(PackOutput packOutput, Registry<T> registry, String modid, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper helper)
+        protected RegistryTags(PackOutput packOutput, Registry<T> registry, String modid, CompletableFuture<HolderLookup.Provider> lookupProvider)
         {
-            super(packOutput, registry.key(), modid, lookupProvider, helper);
+            super(packOutput, registry.key(), modid, lookupProvider);
             this.registry = registry;
         }
 
@@ -100,9 +99,9 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
         private final CompletableFuture<TagLookup<Block>> blockTagsLookup;
         private final Map<TagKey<Block>, TagKey<Item>> copyOps = new Object2ObjectOpenHashMap<>();
 
-        protected ItemTags(PackOutput packOutput, String modid, CompletableFuture<TagLookup<Block>> blockTagsLookup, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper helper)
+        protected ItemTags(PackOutput packOutput, String modid, CompletableFuture<TagLookup<Block>> blockTagsLookup, CompletableFuture<HolderLookup.Provider> lookupProvider)
         {
-            super(packOutput, BuiltInRegistries.ITEM, modid, lookupProvider, helper);
+            super(packOutput, BuiltInRegistries.ITEM, modid, lookupProvider);
             this.blockTagsLookup = blockTagsLookup;
         }
 
@@ -131,7 +130,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
             copyOps.forEach((blockTag, itemTag) ->
             {
                 TagBuilder itemBuilder = getOrCreateRawBuilder(itemTag);
-                TagBuilder blockBuilder = blockTags.apply(blockTag).orElseThrow(() -> new IllegalStateException("Can't copy non-existent block tag " + blockTag.location())).getRawBuilder();
+                TagBuilder blockBuilder = blockTags.apply(blockTag).orElseThrow(() -> new IllegalStateException("Can't copy non-existent block tag " + blockTag.location()));
 
                 List<TagEntry> built = blockBuilder.build();
                 for (TagEntry entry : built)
@@ -149,7 +148,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
     {
         private final LimaTagsProvider<T> parent;
         private final TagBuilder rawBuilder;
-        private final List<ResourceLocation> elements = new ObjectArrayList<>();
+        private final List<Identifier> elements = new ObjectArrayList<>();
 
         public LimaTagHelper(LimaTagsProvider<T> parent, TagKey<T> tag)
         {
@@ -157,7 +156,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
             this.rawBuilder = parent.getOrCreateRawBuilder(tag);
         }
 
-        private LimaTagHelper<T> addInternal(ResourceLocation location)
+        private LimaTagHelper<T> addInternal(Identifier location)
         {
             rawBuilder.addElement(location);
             elements.add(location);
@@ -172,7 +171,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
 
         public LimaTagHelper<T> add(ResourceKey<T> key)
         {
-            return addInternal(key.location());
+            return addInternal(key.identifier());
         }
 
         public LimaTagHelper<T> add(T value)
@@ -189,7 +188,7 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
         @SafeVarargs
         public final LimaTagHelper<T> add(ResourceKey<T>... keys)
         {
-            Stream.of(keys).map(ResourceKey::location).forEach(this::addInternal);
+            Stream.of(keys).map(ResourceKey::identifier).forEach(this::addInternal);
             return this;
         }
 
@@ -245,13 +244,13 @@ public abstract class LimaTagsProvider<T> extends TagsProvider<T>
             return this;
         }
 
-        public LimaTagHelper<T> addOptional(ResourceLocation element)
+        public LimaTagHelper<T> addOptional(Identifier element)
         {
             rawBuilder.addOptionalElement(element);
             return this;
         }
 
-        public LimaTagHelper<T> addOptional(ResourceLocation... elements)
+        public LimaTagHelper<T> addOptional(Identifier... elements)
         {
             Stream.of(elements).forEach(rawBuilder::addOptionalElement);
             return this;

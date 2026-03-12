@@ -7,12 +7,13 @@ import liedge.limacore.lib.ModResources;
 import liedge.limacore.recipe.LimaCustomRecipe;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.advancements.*;
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
@@ -35,14 +36,14 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
 
     private final List<ICondition> conditions = new ObjectArrayList<>();
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
-    protected final ModResources modResources;
+    protected final ModResources resources;
 
     private String group;
     private AdvancementRequirements.Strategy strategy = AdvancementRequirements.Strategy.OR;
 
-    protected LimaRecipeBuilder(ModResources modResources)
+    protected LimaRecipeBuilder(ModResources resources)
     {
-        this.modResources = modResources;
+        this.resources = resources;
     }
 
     public B condition(ICondition condition)
@@ -64,10 +65,10 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
         return unlockedBy(name, InventoryChangeTrigger.TriggerInstance.hasItems(item));
     }
 
-    public B unlockedBy(TagKey<Item> tag)
+    public B unlockedBy(HolderGetter<Item> items, TagKey<Item> tag)
     {
         String name = "has_any_" + tag.location().getPath().replace("/", "_");
-        return unlockedBy(name, LimaAdvancementUtil.playerHasItems(tag));
+        return unlockedBy(name, LimaAdvancementUtil.playerHasTagItems(items, tag));
     }
 
     public B unlockStrategy(AdvancementRequirements.Strategy strategy)
@@ -120,46 +121,42 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
         return LimaRegistryUtil.getNonNullRegistryId(recipe.getSerializer(), BuiltInRegistries.RECIPE_SERIALIZER).getPath() + '/';
     }
 
-    protected String defaultFolderPrefix(R recipe, ResourceLocation recipeId)
+    protected String defaultFolderPrefix(R recipe)
     {
         return makeSerializerPrefix(recipe);
     }
 
-    protected @Nullable AdvancementHolder buildAdvancement(Advancement.Builder builder, ResourceLocation id, Map<String, Criterion<?>> criteria)
+    protected @Nullable AdvancementHolder buildAdvancement(Advancement.Builder builder, ResourceKey<Recipe<?>> key, Map<String, Criterion<?>> criteria)
     {
         if (criteria.isEmpty()) return null;
 
-        builder.addCriterion(DEFAULT_CRITERION_KEY, RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id))
+        builder.addCriterion(DEFAULT_CRITERION_KEY, RecipeUnlockedTrigger.unlocked(key))
+                .rewards(AdvancementRewards.Builder.recipe(key))
                 .requirements(strategy);
         criteria.forEach(builder::addCriterion);
 
-        return builder.build(id.withPrefix("recipes/"));
+        return builder.build(key.identifier().withPrefix("recipes/"));
     }
 
-    private void save(RecipeOutput recipeOutput, ResourceLocation id, boolean appendFolderPrefix)
+    private void save(RecipeOutput recipeOutput, R recipe, ResourceKey<Recipe<?>> key)
     {
-        // Build recipe & append prefix to id if necessary
-        R recipe = buildRecipe();
-        if (appendFolderPrefix) id = id.withPrefix(defaultFolderPrefix(recipe, id));
-
-        // Build advancement
-        AdvancementHolder advancement = buildAdvancement(recipeOutput.advancement(), id, this.criteria);
-
-        // Save recipe
-        recipeOutput.accept(id, recipe, advancement, conditions.toArray(ICondition[]::new));
+        AdvancementHolder advancement = buildAdvancement(recipeOutput.advancement(), key, criteria);
+        recipeOutput.accept(key, recipe, advancement, conditions.toArray(ICondition[]::new));
     }
 
     @Override
-    public final void save(RecipeOutput recipeOutput, ResourceLocation id)
+    public final void save(RecipeOutput recipeOutput, ResourceKey<Recipe<?>> key)
     {
-        save(recipeOutput, id, false);
+        save(recipeOutput, buildRecipe(), key);
     }
 
     @Override
     public final void save(RecipeOutput recipeOutput, String name)
     {
-        save(recipeOutput, modResources.location(name), true);
+        R recipe = buildRecipe();
+        ResourceKey<Recipe<?>> key = resources.recipeKey(defaultFolderPrefix(recipe) + name);
+
+        save(recipeOutput, recipe, key);
     }
 
     @Override

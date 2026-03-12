@@ -10,8 +10,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.damagesource.DamageType;
@@ -68,7 +68,7 @@ public abstract class LimaLanguageProvider extends LanguageProvider
         add(LimaSoundDefinitionsProvider.defaultSubtitleKey(soundEvent), translation);
     }
 
-    protected void advancement(ResourceLocation id, String titleTranslation, String descriptionTranslation)
+    protected void advancement(Identifier id, String titleTranslation, String descriptionTranslation)
     {
         add(LimaAdvancementUtil.defaultAdvancementTitleKey(id), titleTranslation);
         add(LimaAdvancementUtil.defaultAdvancementDescriptionKey(id), descriptionTranslation);
@@ -76,7 +76,7 @@ public abstract class LimaLanguageProvider extends LanguageProvider
 
     protected void enchantment(ResourceKey<Enchantment> enchantmentKey, String translation)
     {
-        add("enchantment", enchantmentKey.location().getPath(), translation);
+        add("enchantment", enchantmentKey.identifier().getPath(), translation);
     }
 
     protected void creativeTab(Supplier<? extends CreativeModeTab> tabSupplier, String value)
@@ -112,7 +112,7 @@ public abstract class LimaLanguageProvider extends LanguageProvider
 
     protected void damageTypeVariants(ResourceKey<DamageType> damageTypeKey, Consumer<BiConsumer<String, String>> collector)
     {
-        String baseKey = prefixedIdLangKey("death.attack", damageTypeKey.location());
+        String baseKey = prefixedIdLangKey("death.attack", damageTypeKey.identifier());
         collector.accept((variant, value) -> {
             String key = StringUtils.isNotBlank(variant) ? baseKey + '.' + variant : baseKey;
             add(key, value);

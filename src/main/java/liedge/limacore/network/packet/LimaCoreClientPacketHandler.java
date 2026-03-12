@@ -37,7 +37,7 @@ final class LimaCoreClientPacketHandler
             Vec3 pos = packet.pos();
             Vec3 speed = packet.speed();
 
-            Minecraft.getInstance().level.addParticle(options, options.getType().getOverrideLimiter(), pos.x, pos.y, pos.z, speed.x, speed.y, speed.z);
+            Minecraft.getInstance().level.addParticle(options, options.getType().getOverrideLimiter(), true, pos.x, pos.y, pos.z, speed.x, speed.y, speed.z);
         }
     }
 }

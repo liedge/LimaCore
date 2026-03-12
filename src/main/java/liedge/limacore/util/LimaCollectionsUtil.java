@@ -3,9 +3,7 @@ package liedge.limacore.util;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.Nullable;
 
@@ -144,13 +142,6 @@ public final class LimaCollectionsUtil
         }
 
         return result;
-    }
-
-    public static Stream<CompoundTag> streamCompoundList(ListTag tag)
-    {
-        if (tag.isEmpty()) return Stream.empty();
-        Preconditions.checkArgument(tag.getElementType() == Tag.TAG_COMPOUND, "NBT tag list is not a compound tag list");
-        return tag.stream().map(t -> (CompoundTag) t);
     }
 
     public static IntList toIntList(IntStream stream)

@@ -8,8 +8,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
@@ -17,6 +17,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
@@ -39,51 +40,56 @@ public record ModResources(String modid)
         return Arrays.stream(components).filter(StringUtils::isNotBlank).reduce((s1, s2) -> s1 + delimiter + s2).orElseThrow(() -> new IllegalArgumentException("Path must have at least 1 non-blank component."));
     }
 
-    public static String idLangKey(ResourceLocation id)
+    public static String idLangKey(Identifier id)
     {
         return idLangKey(id, "{n}.{p}");
     }
 
-    public static String idLangKey(ResourceLocation id, String keyTemplate)
+    public static String idLangKey(Identifier id, String keyTemplate)
     {
         return keyTemplate.replace("{n}", id.getNamespace()).replace("{p}", id.getPath()).replace('/', '.');
     }
 
-    public static String idLangKey(ResourceLocation id, String... keyComponents)
+    public static String idLangKey(Identifier id, String... keyComponents)
     {
         return idLangKey(id, joinComponents('.', keyComponents));
     }
 
-    public static String prefixedIdLangKey(String prefix, ResourceLocation id)
+    public static String prefixedIdLangKey(String prefix, Identifier id)
     {
         return idLangKey(id, prefix, "{n}.{p}");
     }
 
     public static String registryPrefixedIdLangKey(ResourceKey<?> key)
     {
-        return prefixedIdLangKey(key.registry().getPath(), key.location());
+        return prefixedIdLangKey(key.registry().getPath(), key.identifier());
     }
 
-    public static String prefixedVariantIdLangKey(String prefix, String suffix, ResourceLocation id)
+    public static String prefixedVariantIdLangKey(String prefix, String suffix, Identifier id)
     {
         return idLangKey(id, prefix, "{n}.{p}", suffix);
     }
 
     public static String registryPrefixVariantIdLangKey(ResourceKey<?> key, String suffix)
     {
-        return prefixedVariantIdLangKey(key.registry().getPath(), suffix, key.location());
+        return prefixedVariantIdLangKey(key.registry().getPath(), suffix, key.identifier());
     }
     //#endregion
 
     //#region Resource keys
     public <T> ResourceKey<T> resourceKey(ResourceKey<? extends Registry<T>> registryKey, String name)
     {
-        return ResourceKey.create(registryKey, location(name));
+        return ResourceKey.create(registryKey, id(name));
     }
 
     public <T> ResourceKey<Registry<T>> registryResourceKey(String name)
     {
-        return ResourceKey.createRegistryKey(location(name));
+        return ResourceKey.createRegistryKey(id(name));
+    }
+
+    public ResourceKey<Recipe<?>> recipeKey(String name)
+    {
+        return resourceKey(Registries.RECIPE, name);
     }
     //#endregion
 
@@ -105,7 +111,7 @@ public record ModResources(String modid)
 
     public <R, T extends R> DeferredHolder<R, T> deferredHolder(ResourceKey<? extends Registry<R>> registryKey, String name)
     {
-        return DeferredHolder.create(registryKey, location(name));
+        return DeferredHolder.create(registryKey, id(name));
     }
 
     public LimaDeferredItems deferredItems()
@@ -157,22 +163,22 @@ public record ModResources(String modid)
     //#region Tags
     public <T> TagKey<T> tagKey(ResourceKey<? extends Registry<T>> registryKey, String name)
     {
-        return TagKey.create(registryKey, location(name));
+        return TagKey.create(registryKey, id(name));
     }
 
     public TagKey<Block> blockTag(String name)
     {
-        return BlockTags.create(location(name));
+        return BlockTags.create(id(name));
     }
 
     public TagKey<Item> itemTag(String name)
     {
-        return ItemTags.create(location(name));
+        return ItemTags.create(id(name));
     }
 
     public TagKey<Fluid> fluidTag(String name)
     {
-        return FluidTags.create(location(name));
+        return FluidTags.create(id(name));
     }
 
     public TagKey<BlockEntityType<?>> blockEntityTag(String name)
@@ -191,30 +197,30 @@ public record ModResources(String modid)
     }
     //#endregion
 
-    //#region Resource locations
-    public ResourceLocation location(String path)
+    //#region Identifiers
+    public Identifier id(String path)
     {
-        return ResourceLocation.fromNamespaceAndPath(modid, path);
+        return Identifier.fromNamespaceAndPath(modid, path);
     }
 
-    public ResourceLocation extensionLocation(String path, String extension)
+    public Identifier idWithExtension(String path, String extension)
     {
-        return location(path + '.' + extension);
+        return id(path + '.' + extension);
     }
 
-    public ResourceLocation formatLocation(String... components)
+    public Identifier formatLocation(String... components)
     {
-        return location(joinModComponents('/', components));
+        return id(joinModComponents('/', components));
     }
 
-    public ResourceLocation formatExtensionLocation(String extension, String... components)
+    public Identifier formatExtensionLocation(String extension, String... components)
     {
-        return extensionLocation(joinModComponents('/', components), extension);
+        return idWithExtension(joinModComponents('/', components), extension);
     }
     //#endregion
 
     //#region Commonly used location formats
-    public ResourceLocation textureLocation(String folder, String path)
+    public Identifier textureLocation(String folder, String path)
     {
         return formatExtensionLocation("png", "textures", folder, path);
     }
@@ -251,7 +257,7 @@ public record ModResources(String modid)
     //#region Misc resources
     public <T extends CustomPacketPayload> CustomPacketPayload.Type<T> packetType(String name)
     {
-        return new CustomPacketPayload.Type<>(location(name));
+        return new CustomPacketPayload.Type<>(id(name));
     }
     //#endregion
 }

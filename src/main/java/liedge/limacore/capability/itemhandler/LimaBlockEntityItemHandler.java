@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.BlockContentsType;
-import liedge.limacore.util.LimaNbtUtil;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;

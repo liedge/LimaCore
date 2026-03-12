@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.data.LimaEnumCodec;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +55,7 @@ public interface LootPositionSource extends LootContextUser
         @Override
         public @Nullable Vec3 get(LootContext context)
         {
-            Entity entity = context.getParamOrNull(target.getParam());
+            Entity entity = context.getOptionalParameter(target.contextParam());
             return entity != null ? entity.position() : null;
         }
 
@@ -66,9 +66,9 @@ public interface LootPositionSource extends LootContextUser
         }
 
         @Override
-        public Set<LootContextParam<?>> getReferencedContextParams()
+        public Set<ContextKey<?>> getReferencedContextParams()
         {
-            return Set.of(target.getParam());
+            return Set.of(target.contextParam());
         }
     }
 

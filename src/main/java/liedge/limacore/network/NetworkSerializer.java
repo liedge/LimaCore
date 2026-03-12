@@ -4,13 +4,13 @@ import liedge.limacore.registry.LimaCoreRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record NetworkSerializer<T>(ResourceLocation id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) implements StreamCodec<RegistryFriendlyByteBuf, T>
+public record NetworkSerializer<T>(Identifier id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) implements StreamCodec<RegistryFriendlyByteBuf, T>
 {
     public static final StreamCodec<RegistryFriendlyByteBuf, NetworkSerializer<?>> REGISTRY_STREAM_CODEC = ByteBufCodecs.registry(LimaCoreRegistries.Keys.NETWORK_SERIALIZERS);
 
-    public static <T> NetworkSerializer<T> create(ResourceLocation id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    public static <T> NetworkSerializer<T> create(Identifier id, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
     {
         return new NetworkSerializer<>(id, streamCodec);
     }

@@ -5,9 +5,8 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.common.data.ParticleDescriptionProvider;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.data.ParticleDescriptionProvider;
 
 import java.util.Iterator;
 
@@ -15,20 +14,20 @@ public abstract class LimaParticleDescriptionProvider extends ParticleDescriptio
 {
     private final ModResources resources;
 
-    protected LimaParticleDescriptionProvider(PackOutput output, ModResources resources, ExistingFileHelper fileHelper)
+    protected LimaParticleDescriptionProvider(PackOutput output, ModResources resources)
     {
-        super(output, fileHelper);
+        super(output);
         this.resources = resources;
     }
 
     protected void sprite(ParticleType<?> type, String modTexture)
     {
-        sprite(type, resources.location(modTexture));
+        spriteSet(type, resources.id(modTexture));
     }
 
-    protected void sprite(Holder<ParticleType<?>> typeHolder, ResourceLocation texture)
+    protected void sprite(Holder<ParticleType<?>> typeHolder, Identifier texture)
     {
-        sprite(typeHolder.value(), texture);
+        spriteSet(typeHolder.value(), texture);
     }
 
     protected void sprite(Holder<ParticleType<?>> typeHolder, String modTexture)
@@ -36,14 +35,14 @@ public abstract class LimaParticleDescriptionProvider extends ParticleDescriptio
         sprite(typeHolder.value(), modTexture);
     }
 
-    protected void spriteSet(Holder<ParticleType<?>> typeHolder, ResourceLocation baseTexture, int numOfSprites, boolean reverse)
+    protected void spriteSet(Holder<ParticleType<?>> typeHolder, Identifier baseTexture, int numOfSprites, boolean reverse)
     {
         spriteSet(typeHolder.value(), baseTexture, numOfSprites, reverse);
     }
 
     protected void spriteSet(ParticleType<?> type, String modTextureName, int numOfSprites, boolean reverse)
     {
-        spriteSet(type, resources.location(modTextureName), numOfSprites, reverse);
+        spriteSet(type, resources.id(modTextureName), numOfSprites, reverse);
     }
 
     protected void spriteSet(Holder<ParticleType<?>> typeHolder, String modTextureName, int numOfSprites, boolean reverse)
@@ -51,19 +50,19 @@ public abstract class LimaParticleDescriptionProvider extends ParticleDescriptio
         spriteSet(typeHolder.value(), modTextureName, numOfSprites, reverse);
     }
 
-    protected void spriteSet(ParticleType<?> type, ResourceLocation baseTexture, int startInclusive, int endExclusive, boolean reverse)
+    protected void spriteSet(ParticleType<?> type, Identifier baseTexture, int startInclusive, int endExclusive, boolean reverse)
     {
         spriteSet(type, textures(baseTexture, startInclusive, endExclusive, reverse));
     }
 
-    protected void spriteSet(Holder<ParticleType<?>> typeHolder, ResourceLocation baseTexture, int startInclusive, int endExclusive, boolean reverse)
+    protected void spriteSet(Holder<ParticleType<?>> typeHolder, Identifier baseTexture, int startInclusive, int endExclusive, boolean reverse)
     {
         spriteSet(typeHolder.value(), baseTexture, startInclusive, endExclusive, reverse);
     }
 
     protected void spriteSet(ParticleType<?> type, String modTextureName, int startInclusive, int endExclusive, boolean reverse)
     {
-        spriteSet(type, resources.location(modTextureName), startInclusive, endExclusive, reverse);
+        spriteSet(type, resources.id(modTextureName), startInclusive, endExclusive, reverse);
     }
 
     protected void spriteSet(Holder<ParticleType<?>> typeHolder, String modTextureName, int startInclusive, int endExclusive, boolean reverse)
@@ -71,7 +70,7 @@ public abstract class LimaParticleDescriptionProvider extends ParticleDescriptio
         spriteSet(typeHolder.value(), modTextureName, startInclusive, endExclusive, reverse);
     }
 
-    protected Iterable<ResourceLocation> textures(ResourceLocation baseTexture, int startInclusive, int endExclusive, boolean reverse)
+    protected Iterable<Identifier> textures(Identifier baseTexture, int startInclusive, int endExclusive, boolean reverse)
     {
         Preconditions.checkArgument(startInclusive >= 0, "Particle sprites must start at or higher than 0");
         Preconditions.checkArgument((endExclusive - startInclusive) > 1, "Sprite end index must be greater than start index by more than 1");
@@ -88,7 +87,7 @@ public abstract class LimaParticleDescriptionProvider extends ParticleDescriptio
             }
 
             @Override
-            public ResourceLocation next()
+            public Identifier next()
             {
                 int n = reverse ? endExclusive - counter - 1 : startInclusive + counter;
                 counter++;

@@ -11,7 +11,6 @@ import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -45,7 +44,6 @@ public final class LimaStreamCodecs
     public static final StreamCodec<ByteBuf, Unit> UNIT = NeoForgeStreamCodecs.uncheckedUnit(Unit.INSTANCE);
     public static final StreamCodec<ByteBuf, Integer> NON_NEGATIVE_VAR_INT = varIntRange(0, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
-    public static final StreamCodec<ByteBuf, StringTag> STRING_NBT_TAG = ByteBufCodecs.STRING_UTF8.map(StringTag::valueOf, StringTag::getAsString);
     public static final StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
 
     public static final StreamCodec<ByteBuf, IntList> INT_LIST = new StreamCodec<>()

@@ -10,9 +10,7 @@ import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -25,8 +23,10 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,12 +91,6 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider)
-    {
-        handleUpdateTag(pkt.getTag(), lookupProvider);
-    }
-
-    @Override
     public LimaBlockEntityType<?> getType()
     {
         return (LimaBlockEntityType<?>) super.getType();
@@ -115,7 +109,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
             }
             else
             {
-                PacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
+                ClientPacketDistributor.sendToServer(new ServerboundBlockEntityDataRequestPacket(this.getBlockPos()));
                 onLoadClient(level);
             }
         }
@@ -128,7 +122,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     // Override here to avoid needing warning suppression in subclasses
     @SuppressWarnings("deprecation")
     @Override
-    public void removeComponentsFromTag(CompoundTag tag) {}
+    public void removeComponentsFromTag(ValueOutput output) {}
 
     //#region Block/level interaction helpers
     protected <T> BlockCapabilityCache<T, Direction> createCapabilityCache(BlockCapability<T, Direction> capability, ServerLevel level, Direction side, Runnable invalidationListener)
@@ -146,8 +140,6 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     {
         if (this instanceof OwnableBlockEntity ownable) ownable.setOwner(player);
     }
-
-    public void onRemovedFromLevel(Level level, BlockPos pos, BlockState oldState, BlockState newState) {}
 
     /**
      * Called by {@link liedge.limacore.block.LimaEntityBlock} in {@link liedge.limacore.block.LimaEntityBlock#onBlockStateChange(LevelReader, BlockPos, BlockState, BlockState)}

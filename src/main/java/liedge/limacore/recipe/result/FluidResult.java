@@ -40,7 +40,7 @@ public final class FluidResult extends StackBaseResult<Fluid, FluidStack>
 
     public static FluidResult create(Fluid fluid, @Nullable DataComponentPatch components, ResultCount count, float chance, ResultPriority priority)
     {
-        return create(LimaRegistryUtil.getHolder(fluid), components, count, chance, priority);
+        return create(LimaRegistryUtil.builtInHolder(fluid), components, count, chance, priority);
     }
 
     public static FluidResult create(FluidStack stack, float chance, ResultPriority priority, @Nullable ResultCount count)

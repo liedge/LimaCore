@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.game.LimaCoreTriggerTypes;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +53,7 @@ public final class RecipeTypeTrigger extends SimpleCriterionTrigger<RecipeTypeTr
 
         public static Criterion<TriggerInstance> customItemCrafted(RecipeType<?> recipeType, ItemLike... items)
         {
-            return customItemCrafted(null, recipeType, ItemPredicate.Builder.item().of(items));
+            return customItemCrafted(null, recipeType, LimaAdvancementUtil.matchingItems(items));
         }
 
         private boolean matches(RecipeType<?> type, ItemStack stack)

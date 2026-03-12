@@ -62,7 +62,7 @@ public class RecipeOutputSlot extends LimaHandlerSlot
     {
         if (removeCount > 0)
         {
-            stack.onCraftedBy(player.level(), player, removeCount);
+            stack.onCraftedBy(player, removeCount);
             if (player instanceof ServerPlayer serverPlayer)
             {
                 LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().triggerCriterion(serverPlayer, recipeType, stack);

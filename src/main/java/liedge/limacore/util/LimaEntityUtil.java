@@ -2,8 +2,12 @@ package liedge.limacore.util;
 
 import liedge.limacore.lib.MobHostility;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Targeting;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -57,12 +61,12 @@ public final class LimaEntityUtil
         return entity != null ? entity.getId() : 0;
     }
 
-    public static MobHostility getEntityHostility(Entity target, @Nullable LivingEntity attacker)
+    public static MobHostility getEntityHostility(ServerLevel level, Entity target, @Nullable LivingEntity attacker)
     {
         return switch (target)
         {
-            case NeutralMob neutralMob when target instanceof Enemy -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_ENEMY;
-            case NeutralMob neutralMob -> attacker != null && neutralMob.isAngryAt(attacker) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_MOB;
+            case NeutralMob neutralMob when target instanceof Enemy -> attacker != null && neutralMob.isAngryAt(attacker, level) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_ENEMY;
+            case NeutralMob neutralMob -> attacker != null && neutralMob.isAngryAt(attacker, level) ? MobHostility.HOSTILE : MobHostility.NEUTRAL_MOB;
             case Enemy enemy -> MobHostility.HOSTILE;
             case Targeting targetingEntity -> attacker != null && targetingEntity.getTarget() == attacker ? MobHostility.HOSTILE : MobHostility.PASSIVE;
             default -> MobHostility.PASSIVE;
@@ -82,7 +86,7 @@ public final class LimaEntityUtil
         strength *= (1 - resist);
         if (strength > 0)
         {
-            entity.hasImpulse = true;
+            entity.needsSync = true;
             Vec3 vec3 = entity.getDeltaMovement();
 
             while (ratioX * ratioX + ratioZ * ratioZ < 1.0e-5f)

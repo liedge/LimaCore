@@ -7,9 +7,9 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 
 import java.util.List;
 import java.util.Set;
@@ -27,7 +27,7 @@ public abstract class LimaLootTableProvider extends LootTableProvider
 
     protected abstract void createSubProviders();
 
-    protected void addSubProvider(Function<HolderLookup.Provider, ? extends LootTableSubProvider> function, LootContextParamSet paramSet)
+    protected void addSubProvider(Function<HolderLookup.Provider, ? extends LootTableSubProvider> function, ContextKeySet paramSet)
     {
         subProviders.add(new SubProviderEntry(function::apply, paramSet));
     }

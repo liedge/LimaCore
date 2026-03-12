@@ -2,13 +2,19 @@ package liedge.limacore.advancement;
 
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.registry.game.LimaCoreTriggerTypes;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.*;
+import net.minecraft.advancements.criterion.*;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +23,22 @@ import java.util.Optional;
 public final class LimaAdvancementUtil
 {
     private LimaAdvancementUtil() {}
+
+    public static EntityTypePredicate matchingEntityType(Holder<EntityType<?>> typeHolder)
+    {
+        return new EntityTypePredicate(HolderSet.direct(typeHolder));
+    }
+
+    public static EntityTypePredicate matchingEntityType(EntityType<?> entityType)
+    {
+        return matchingEntityType(LimaRegistryUtil.builtInHolder(entityType));
+    }
+
+    public static ItemPredicate matchingItems(ItemLike... items)
+    {
+        HolderSet<Item> set = HolderSet.direct(LimaRegistryUtil::builtInHolder, items);
+        return new ItemPredicate(Optional.of(set), MinMaxBounds.Ints.ANY, DataComponentMatchers.ANY);
+    }
 
     public static Criterion<PlayerTrigger.TriggerInstance> playerLoggedIn(@Nullable EntityPredicate.Builder playerPredicate)
     {
@@ -29,23 +51,23 @@ public final class LimaAdvancementUtil
         return playerLoggedIn(null);
     }
 
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> playerHasItems(TagKey<Item> tagKey)
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> playerHasTagItems(HolderGetter<Item> holders, TagKey<Item> tagKey)
     {
-        ItemPredicate predicate = ItemPredicate.Builder.item().of(tagKey).build();
+        ItemPredicate.Builder predicate = ItemPredicate.Builder.item().of(holders, tagKey);
         return InventoryChangeTrigger.TriggerInstance.hasItems(predicate);
     }
 
-    public static String defaultAdvancementTitleKey(ResourceLocation id)
+    public static String defaultAdvancementTitleKey(Identifier id)
     {
         return ModResources.prefixedIdLangKey("advancement", id);
     }
 
-    public static String defaultAdvancementDescriptionKey(ResourceLocation id)
+    public static String defaultAdvancementDescriptionKey(Identifier id)
     {
         return ModResources.prefixedVariantIdLangKey("advancement", "desc", id);
     }
 
-    public static ResourceKey<LootTable> defaultAdvancementLootTable(ResourceLocation id)
+    public static ResourceKey<LootTable> defaultAdvancementLootTable(Identifier id)
     {
         return ResourceKey.create(Registries.LOOT_TABLE, id.withPrefix("advancement/"));
     }

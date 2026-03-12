@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSets;
 import liedge.limacore.menu.BlockEntityMenuProvider;
 import liedge.limacore.menu.BlockEntityMenuType;
 import liedge.limacore.menu.LimaMenuProvider;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
@@ -36,16 +37,15 @@ public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntity
 
     private final @Nullable Holder<MenuType<?>> menuTypeHolder;
 
-    @SuppressWarnings("ConstantConditions")
     protected LimaBlockEntityType(BlockEntitySupplier<BE> factory, Set<Block> validBlocks, @Nullable Holder<MenuType<?>> menuTypeHolder)
     {
-        super(factory, validBlocks, null);
+        super(factory, validBlocks);
         this.menuTypeHolder = menuTypeHolder;
     }
 
     public @Nullable <T> T getDataMap(DataMapType<BlockEntityType<?>, T> dataMapType)
     {
-        return Objects.requireNonNull(builtInRegistryHolder()).getData(dataMapType);
+        return LimaRegistryUtil.builtInHolder(this).getData(dataMapType);
     }
 
     public <T> T getDataMapOrDefault(DataMapType<BlockEntityType<?>, T> dataMapType, T fallback)

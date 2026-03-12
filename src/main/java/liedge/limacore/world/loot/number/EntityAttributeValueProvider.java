@@ -6,10 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
@@ -36,7 +36,7 @@ public record EntityAttributeValueProvider(LootContext.EntityTarget target, Hold
     @Override
     public float getFloat(LootContext ctx)
     {
-        Entity entity = ctx.getParamOrNull(target.getParam());
+        Entity entity = ctx.getOptionalParameter(target.contextParam());
         double value = base ? LimaEntityUtil.getAttributeBaseValueSafe(entity, attribute) : LimaEntityUtil.getAttributeValueSafe(entity, attribute);
         return (float) value;
     }
@@ -48,8 +48,8 @@ public record EntityAttributeValueProvider(LootContext.EntityTarget target, Hold
     }
 
     @Override
-    public Set<LootContextParam<?>> getReferencedContextParams()
+    public Set<ContextKey<?>> getReferencedContextParams()
     {
-        return Set.of(target.getParam());
+        return Set.of(target.contextParam());
     }
 }

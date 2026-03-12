@@ -2,11 +2,11 @@ package liedge.limacore.world.loot.number;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.lib.math.LimaRoundingMode;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
-import liedge.limacore.lib.math.LimaCoreMath;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -44,7 +44,7 @@ public record RoundingNumberProvider(NumberProvider child, LimaRoundingMode mode
     }
 
     @Override
-    public Set<LootContextParam<?>> getReferencedContextParams()
+    public Set<ContextKey<?>> getReferencedContextParams()
     {
         return child.getReferencedContextParams();
     }

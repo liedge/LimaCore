@@ -2,12 +2,12 @@ package liedge.limacore.util;
 
 import liedge.limacore.lib.ModResources;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 
 import java.util.function.Predicate;
 
@@ -51,13 +51,8 @@ public final class LimaItemUtil
         return canMergeItemStacks(existing, other, false);
     }
 
-    public static <T> InteractionResultHolder<T> sidedFail(T stack, boolean isClientSide)
-    {
-        return isClientSide ? InteractionResultHolder.fail(stack) : InteractionResultHolder.consume(stack);
-    }
-
     //#region Creative tab helpers
-    public static CreativeModeTab.Builder tabBuilderWithTitle(ResourceLocation id)
+    public static CreativeModeTab.Builder tabBuilderWithTitle(Identifier id)
     {
         return CreativeModeTab.builder()
                 .title(Component.translatable(ModResources.prefixedIdLangKey("creative_tab", id)));
@@ -65,24 +60,24 @@ public final class LimaItemUtil
     //#endregion
 
     //#region Capability check helpers
-    public static boolean hasValidCapability(ItemCapability<?, Void> capability, ItemStack stack)
+    public static boolean hasValidCapability(ItemCapability<?, ItemAccess> capability, ItemStack stack, ItemAccess context)
     {
-        return stack.getCapability(capability) != null;
+        return stack.getCapability(capability, context) != null;
     }
 
-    public static boolean hasEnergyCapability(ItemStack stack)
+    public static boolean hasEnergyCapability(ItemStack stack, ItemAccess context)
     {
-        return hasValidCapability(Capabilities.EnergyStorage.ITEM, stack);
+        return hasValidCapability(Capabilities.Energy.ITEM, stack, context);
     }
 
-    public static boolean hasItemHandlerCapability(ItemStack stack)
+    public static boolean hasItemHandlerCapability(ItemStack stack, ItemAccess context)
     {
-        return hasValidCapability(Capabilities.ItemHandler.ITEM, stack);
+        return hasValidCapability(Capabilities.Item.ITEM, stack, context);
     }
 
-    public static boolean hasFluidHandlerCapability(ItemStack stack)
+    public static boolean hasFluidHandlerCapability(ItemStack stack, ItemAccess context)
     {
-        return hasValidCapability(Capabilities.FluidHandler.ITEM, stack);
+        return hasValidCapability(Capabilities.Fluid.ITEM, stack, context);
     }
     //#endregion
 }

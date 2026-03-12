@@ -3,31 +3,31 @@ package liedge.limacore.client.gui;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.GuiLayer;
 
-public abstract class LimaGuiLayer implements LayeredDraw.Layer
+public abstract class LimaGuiLayer implements GuiLayer
 {
-    private final ResourceLocation guiLayerId;
+    private final Identifier guiLayerId;
 
-    protected LimaGuiLayer(ResourceLocation guiLayerId)
+    protected LimaGuiLayer(Identifier guiLayerId)
     {
         this.guiLayerId = guiLayerId;
     }
 
-    public void registerAbove(RegisterGuiLayersEvent event, ResourceLocation otherLayer)
+    public void registerAbove(RegisterGuiLayersEvent event, Identifier otherLayer)
     {
         event.registerAbove(otherLayer, guiLayerId, this);
     }
 
-    public void registerBelow(RegisterGuiLayersEvent event, ResourceLocation otherLayer)
+    public void registerBelow(RegisterGuiLayersEvent event, Identifier otherLayer)
     {
         event.registerBelow(otherLayer, guiLayerId, this);
     }
 
-    public ResourceLocation getGuiLayerId()
+    public Identifier getGuiLayerId()
     {
         return guiLayerId;
     }

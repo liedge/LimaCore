@@ -21,6 +21,6 @@ final class LimaCoreDatagen
         // Server data
 
         // Client assets
-        generator.addProvider(event.includeClient(), new LanguageGen(output));
+        event.addProvider(new LanguageGen(output));
     }
 }

@@ -3,7 +3,7 @@ package liedge.limacore.registry.game;
 import liedge.limacore.LimaCore;
 import liedge.limacore.advancement.RecipeTypeTrigger;
 import net.minecraft.advancements.CriterionTrigger;
-import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.advancements.criterion.PlayerTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;

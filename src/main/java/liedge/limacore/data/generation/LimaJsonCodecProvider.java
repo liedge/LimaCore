@@ -11,11 +11,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.server.packs.PackType;
 import net.neoforged.neoforge.common.conditions.ConditionalOps;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.WithConditions;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.JsonCodecProvider;
 
 import java.nio.file.Path;
@@ -31,13 +29,11 @@ public abstract class LimaJsonCodecProvider<T> extends JsonCodecProvider<T>
     protected LimaJsonCodecProvider(PackOutput packOutput,
                                     PackOutput.Target target,
                                     String directory,
-                                    PackType packType,
                                     Codec<T> codec,
                                     CompletableFuture<HolderLookup.Provider> registries,
-                                    ModResources resources,
-                                    ExistingFileHelper helper)
+                                    ModResources resources)
     {
-        super(packOutput, target, directory, packType, codec, registries, resources.modid(), helper);
+        super(packOutput, target, directory, codec, registries, resources.modid());
         this.resources = resources;
     }
 
@@ -76,11 +72,11 @@ public abstract class LimaJsonCodecProvider<T> extends JsonCodecProvider<T>
 
     protected void unconditional(String name, T value)
     {
-        unconditional(resources.location(name), value);
+        unconditional(resources.id(name), value);
     }
 
     protected void conditionally(String name, Consumer<WithConditions.Builder<T>> configurator)
     {
-        conditionally(resources.location(name), configurator);
+        conditionally(resources.id(name), configurator);
     }
 }

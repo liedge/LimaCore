@@ -8,7 +8,7 @@ import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,13 +17,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class LimaEntityBlock extends Block implements EntityBlock
@@ -74,24 +72,6 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player)
-    {
-        ItemStack stack = super.getCloneItemStack(state, target, level, pos, player);
-        LimaBlockEntityType<?> type = getBlockEntityType(state);
-
-        if (type != null)
-        {
-            LimaBlockEntity blockEntity = type.getBlockEntity(level, pos);
-            if (blockEntity != null)
-            {
-                blockEntity.saveToItem(stack, level.registryAccess());
-            }
-        }
-
-        return stack;
-    }
-
-    @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack)
     {
         if (placer instanceof Player player)
@@ -111,26 +91,6 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         }
     }
 
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston)
-    {
-        // TODO: This will be replaced by native method.
-        if (state.hasBlockEntity() && !state.is(newState.getBlock()))
-        {
-            LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
-            if (blockEntity != null) blockEntity.onRemovedFromLevel(level, pos, state, newState);
-            level.removeBlockEntity(pos);
-        }
-    }
-
-    // Override here to avoid needing warning suppression in subclasses
-    @SuppressWarnings("deprecation")
-    @Override
-    protected RenderShape getRenderShape(BlockState state)
-    {
-        return RenderShape.MODEL;
-    }
-
     /**
      * Gets the {@link LimaBlockEntityType} that should be created for the given {@link BlockState}. By default,
      * this function ignores state and tries to find a type matching this block's registry ID.
@@ -142,7 +102,7 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     {
         if (blockEntityType == null)
         {
-            ResourceLocation id = LimaRegistryUtil.getBlockId(this);
+            Identifier id = LimaRegistryUtil.getBlockId(this);
             blockEntityType = LimaCoreObjects.cast(LimaBlockEntityType.class, LimaRegistryUtil.getNonNullRegistryValue(id, BuiltInRegistries.BLOCK_ENTITY_TYPE),
                     () -> new IllegalStateException("No valid block entity type matches block id '" + id + "'"));
         }

@@ -3,6 +3,7 @@ package liedge.limacore.data.generation.recipe;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.util.LimaRegistryUtil;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,9 +35,9 @@ public abstract class StandardRecipeBuilder<R extends Recipe<?>, B extends Stand
         return input(Ingredient.of(item));
     }
 
-    public B input(TagKey<Item> tagKey)
+    public B input(HolderGetter<Item> holders, TagKey<Item> tagKey)
     {
-        return input(Ingredient.of(tagKey));
+        return input(Ingredient.of(holders.getOrThrow(tagKey)));
     }
 
     @Override

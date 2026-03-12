@@ -2,8 +2,10 @@ package liedge.limacore.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public abstract class FillBarWidget extends BaseLimaRenderable
@@ -20,21 +22,21 @@ public abstract class FillBarWidget extends BaseLimaRenderable
 
     protected abstract float getFillPercentage();
 
-    protected abstract ResourceLocation getBackgroundSprite();
+    protected abstract Identifier getBackgroundSprite();
 
-    protected abstract ResourceLocation getForegroundSprite(float fillPercentage);
+    protected abstract Identifier getForegroundSprite(float fillPercentage);
 
     protected void renderBackground(GuiGraphics graphics)
     {
-        graphics.blitSprite(getBackgroundSprite(), getX(), getY(), getWidth(), getHeight());
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(), getX(), getY(), getWidth(), getHeight());
     }
 
     protected void renderHorizontalBar(GuiGraphics graphics, float fillPercentage)
     {
         if (fillPercentage > 0)
         {
-            TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(getForegroundSprite(fillPercentage));
-            LimaGuiUtil.partialHorizontalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), sprite);
+            TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.GUI).getSprite(getForegroundSprite(fillPercentage));
+            LimaGuiUtil.partialHorizontalBlit(graphics, RenderPipelines.GUI_TEXTURED, sprite, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), -1);
         }
     }
 
@@ -42,8 +44,8 @@ public abstract class FillBarWidget extends BaseLimaRenderable
     {
         if (fillPercentage > 0)
         {
-            TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(getForegroundSprite(fillPercentage));
-            LimaGuiUtil.partialVerticalBlit(graphics, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), sprite);
+            TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.GUI).getSprite(getForegroundSprite(fillPercentage));
+            LimaGuiUtil.partialVerticalBlit(graphics, RenderPipelines.GUI_TEXTURED, sprite, getX() + 1, getY() + 1, foregroundWidth, foregroundHeight, Mth.clamp(fillPercentage, 0f, 1f), -1);
         }
     }
 

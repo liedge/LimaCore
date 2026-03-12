@@ -3,8 +3,8 @@ package liedge.limacore.util;
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
@@ -81,45 +81,45 @@ public final class LimaJsonUtil
     //#endregion
 
     //#region Helper serializers/deserializers
-    public static ResourceLocation getAsResourceLocation(JsonObject json, String key)
+    public static Identifier getAsIdentifier(JsonObject json, String key)
     {
-        return getAsResourceLocation(json.get(key));
+        return getAsIdentifier(json.get(key));
     }
 
-    public static ResourceLocation getAsResourceLocation(JsonElement element)
+    public static Identifier getAsIdentifier(JsonElement element)
     {
         if (!GsonHelper.isStringValue(element))
             throw new JsonParseException("Invalid json element type. Excepted string, got: " + GsonHelper.getType(element));
 
-        return ResourceLocation.parse(element.getAsString());
+        return Identifier.parse(element.getAsString());
     }
 
     public static <T> ResourceKey<T> getAsResourceKey(ResourceKey<? extends Registry<T>> registryKey, JsonObject json, String key)
     {
-        ResourceLocation location = getAsResourceLocation(json, key);
-        return ResourceKey.create(registryKey, location);
+        Identifier id = getAsIdentifier(json, key);
+        return ResourceKey.create(registryKey, id);
     }
 
     public static <T> ResourceKey<T> getAsResourceKey(ResourceKey<? extends Registry<T>> registryKey, JsonElement element)
     {
-        ResourceLocation location = getAsResourceLocation(element);
-        return ResourceKey.create(registryKey, location);
+        Identifier id = getAsIdentifier(element);
+        return ResourceKey.create(registryKey, id);
     }
 
     public static JsonElement serializeResourceKey(ResourceKey<?> key)
     {
-        return new JsonPrimitive(key.location().toString());
+        return new JsonPrimitive(key.identifier().toString());
     }
 
     public static <T> JsonElement serializeRegistryValue(T value, Registry<T> registry)
     {
-        ResourceLocation key = LimaRegistryUtil.getNonNullRegistryId(value, registry);
+        Identifier key = LimaRegistryUtil.getNonNullRegistryId(value, registry);
         return new JsonPrimitive(key.toString());
     }
 
     public static <T> T deserializeRegistryValue(JsonElement element, Registry<T> registry)
     {
-        ResourceLocation key = getAsResourceLocation(element);
+        Identifier key = getAsIdentifier(element);
         return LimaRegistryUtil.getNonNullRegistryValue(key, registry);
     }
     //#endregion

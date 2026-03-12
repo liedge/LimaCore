@@ -11,14 +11,16 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 
 public final class PlaceOnSideFeature extends Feature<PlaceOnSideFeature.Configuration>
@@ -56,7 +58,7 @@ public final class PlaceOnSideFeature extends Feature<PlaceOnSideFeature.Configu
         BlockPos origin = context.origin();
 
         BlockState toPlace = config.toPlace.getState(context.random(), origin);
-        DirectionProperty facingProperty = findProperty(toPlace, config.facingProperty);
+        EnumProperty<Direction> facingProperty = findProperty(toPlace, config.facingProperty);
 
         if (facingProperty == null) return false;
 
@@ -84,24 +86,31 @@ public final class PlaceOnSideFeature extends Feature<PlaceOnSideFeature.Configu
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
-    private static DirectionProperty findProperty(BlockState state, String propertyName)
+    private static EnumProperty<Direction> findProperty(BlockState state, String propertyName)
     {
-        return state.getProperties().stream()
-                .filter(p -> p.getName().equals(propertyName))
-                .filter(p -> p instanceof DirectionProperty)
-                .map(p -> (DirectionProperty) p).findAny().orElse(null);
+        Collection<Property<?>> properties = state.getProperties();
+        for (Property<?> property : properties)
+        {
+            if (property.getName().equals(propertyName) && property instanceof EnumProperty<?> && property.getValueClass().equals(Direction.class))
+            {
+                return (EnumProperty<Direction>) property;
+            }
+        }
+
+        return null;
     }
 
     public record Configuration(BlockStateProvider toPlace, String facingProperty, List<Direction> validFaces) implements FeatureConfiguration
     {
         private static final Codec<Configuration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                        BlockStateProvider.CODEC.fieldOf("to_place").forGetter(Configuration::toPlace),
-                        Codec.STRING.fieldOf("facing_property").forGetter(Configuration::facingProperty),
-                        Direction.CODEC.listOf(1, 6).fieldOf("valid_faces").forGetter(Configuration::validFaces))
+                BlockStateProvider.CODEC.fieldOf("to_place").forGetter(Configuration::toPlace),
+                Codec.STRING.optionalFieldOf("facing_property", "facing").forGetter(Configuration::facingProperty),
+                Direction.CODEC.listOf(1, 6).fieldOf("valid_faces").forGetter(Configuration::validFaces))
                 .apply(instance, Configuration::new));
 
-        public Configuration(BlockStateProvider toPlace, DirectionProperty property, List<Direction> validFaces)
+        public Configuration(BlockStateProvider toPlace, EnumProperty<Direction> property, List<Direction> validFaces)
         {
             this(toPlace, property.getName(), validFaces);
         }

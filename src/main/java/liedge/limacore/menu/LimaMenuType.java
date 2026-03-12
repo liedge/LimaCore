@@ -6,7 +6,7 @@ import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlags;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class LimaMenuType<CTX, M extends LimaMenu<CTX>> extends MenuType<M>
 {
-    public static Translatable defaultMenuTitle(ResourceLocation id)
+    public static Translatable defaultMenuTitle(Identifier id)
     {
         return Translatable.standalone(ModResources.prefixedIdLangKey("container", id));
     }

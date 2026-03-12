@@ -4,9 +4,8 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.SoundDefinition;
 import net.neoforged.neoforge.common.data.SoundDefinitionsProvider;
 
@@ -16,7 +15,7 @@ import static liedge.limacore.util.LimaRegistryUtil.getNonNullRegistryId;
 
 public abstract class LimaSoundDefinitionsProvider extends SoundDefinitionsProvider
 {
-    public static String defaultSubtitleKey(ResourceLocation id)
+    public static String defaultSubtitleKey(Identifier id)
     {
         return ModResources.prefixedIdLangKey("subtitle", id);
     }
@@ -28,9 +27,9 @@ public abstract class LimaSoundDefinitionsProvider extends SoundDefinitionsProvi
 
     private final ModResources resources;
 
-    protected LimaSoundDefinitionsProvider(PackOutput output, ModResources resources, ExistingFileHelper helper)
+    protected LimaSoundDefinitionsProvider(PackOutput output, ModResources resources)
     {
-        super(output, resources.modid(), helper);
+        super(output, resources.modid());
         this.resources = resources;
     }
 
@@ -46,17 +45,17 @@ public abstract class LimaSoundDefinitionsProvider extends SoundDefinitionsProvi
 
     protected SoundDefinition.Sound beginSound(String soundFilePath, SoundDefinition.SoundType soundType)
     {
-        return sound(resources.location(soundFilePath), soundType);
+        return sound(resources.id(soundFilePath), soundType);
     }
 
-    protected SoundDefinition beginDefinition(ResourceLocation soundEventId)
+    protected SoundDefinition beginDefinition(Identifier soundEventId)
     {
         return SoundDefinition.definition().subtitle(defaultSubtitleKey(soundEventId));
     }
 
     protected SoundDefinition beginDefinition(String soundEventName)
     {
-        return beginDefinition(resources.location(soundEventName));
+        return beginDefinition(resources.id(soundEventName));
     }
 
     protected SoundDefinition beginDefinition(SoundEvent soundEvent)

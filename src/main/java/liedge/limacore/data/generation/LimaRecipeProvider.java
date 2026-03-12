@@ -6,36 +6,29 @@ import liedge.limacore.data.generation.recipe.LimaShapelessRecipeBuilder;
 import liedge.limacore.data.generation.recipe.LimaStonecuttingRecipeBuilder;
 import liedge.limacore.lib.ModResources;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.BlastingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.ItemLike;
-
-import java.util.concurrent.CompletableFuture;
 
 public abstract class LimaRecipeProvider extends RecipeProvider
 {
-    protected final ModResources modResources;
+    protected final ModResources resources;
 
-    public LimaRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, ModResources modResources)
+    public LimaRecipeProvider(HolderLookup.Provider registries, RecipeOutput output, ModResources resources)
     {
-        super(output, registries);
-        this.modResources = modResources;
+        super(registries, output);
+        this.resources = resources;
     }
-
-    @Override
-    protected abstract void buildRecipes(RecipeOutput output, HolderLookup.Provider registries);
-
-    @Deprecated
-    @Override
-    protected final void buildRecipes(RecipeOutput output) {}
 
     //#region Standard/Vanilla recipe builders
     protected LimaShapedRecipeBuilder shaped(ItemStack result)
     {
-        return new LimaShapedRecipeBuilder(modResources, result);
+        return new LimaShapedRecipeBuilder(resources, result);
     }
 
     protected LimaShapedRecipeBuilder shaped(ItemLike item, int count)
@@ -50,7 +43,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaShapelessRecipeBuilder shapeless(ItemStack result)
     {
-        return new LimaShapelessRecipeBuilder(modResources, result);
+        return new LimaShapelessRecipeBuilder(resources, result);
     }
 
     protected LimaShapelessRecipeBuilder shapeless(ItemLike item, int count)
@@ -65,7 +58,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaStonecuttingRecipeBuilder stonecutting(ItemStack result)
     {
-        return new LimaStonecuttingRecipeBuilder(modResources, result);
+        return new LimaStonecuttingRecipeBuilder(resources, result);
     }
 
     protected LimaStonecuttingRecipeBuilder stonecutting(ItemLike item, int count)
@@ -80,7 +73,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smelting(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(modResources, result, 200, SmeltingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, result, 200, SmeltingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder smelting(ItemLike item)
@@ -90,7 +83,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder blasting(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(modResources, result, 100, BlastingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, result, 100, BlastingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder blasting(ItemLike item)
@@ -100,7 +93,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smoking(ItemStack result)
     {
-        return new LimaCookingRecipeBuilder(modResources, result, 100, SmokingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, result, 100, SmokingRecipe::new);
     }
 
     protected LimaCookingRecipeBuilder smoking(ItemLike item)

@@ -5,7 +5,7 @@ import liedge.limacore.lib.Translatable;
 import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ public class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends Lim
         return new BlockEntityMenuType<>(contextClass, factory, defaultTitle);
     }
 
-    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(ResourceLocation id, Class<BE> contextClass, MenuFactory<BE, M> factory)
+    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(Identifier id, Class<BE> contextClass, MenuFactory<BE, M> factory)
     {
         return create(contextClass, factory, defaultMenuTitle(id));
     }

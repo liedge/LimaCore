@@ -1,9 +1,10 @@
 package liedge.limacore.client.gui;
 
-import com.mojang.datafixers.util.Either;
+import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
 import liedge.limacore.capability.fluid.LimaFluidUtil;
+import liedge.limacore.lib.ModResources;
 import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.network.IndexedStreamData;
@@ -18,20 +19,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Optional;
@@ -117,7 +120,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
 
                 lines.add(Component.literal(LimaFluidUtil.formatStoredFluidMillibucket(stack.getAmount(), hoveredFluidSlot.getCapacity())).withStyle(ChatFormatting.GRAY));
 
-                graphics.renderTooltip(font, lines, Optional.empty(), x, y);
+                graphics.setTooltipForNextFrame(font, lines, Optional.empty(), x, y);
             }
         }
 
@@ -126,9 +129,9 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         {
             if (widget.isMouseOver(x, y) && widget.hasTooltip())
             {
-                List<Either<FormattedText, TooltipComponent>> list = new ObjectArrayList<>();
-                widget.createWidgetTooltip(list::add);
-                graphics.renderComponentTooltipFromElements(font, list, x, y, ItemStack.EMPTY);
+                List<Component> lines = new ObjectArrayList<>();
+                widget.createWidgetTooltip(lines);
+                graphics.setTooltipForNextFrame(font, lines, Optional.empty(), ItemStack.EMPTY, x, y);
             }
         }
     }
@@ -141,41 +144,36 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick)
     {
-        if (hoveredFluidSlot != null && LimaItemUtil.hasFluidHandlerCapability(menu.getCarried()) && isHovering(hoveredFluidSlot.x(), hoveredFluidSlot.y(), 16, 16, mouseX, mouseY))
+        Player player = minecraft.player;
+
+        if (player != null && hoveredFluidSlot != null && LimaItemUtil.hasFluidHandlerCapability(menu.getCarried(), ItemAccess.forPlayerCursor(player, menu)) && isHovering(hoveredFluidSlot.x(), hoveredFluidSlot.y(), 16, 16, event.x(), event.y()))
         {
-            LimaFluidSlot.ClickAction action = switch (button)
+            LimaFluidSlot.ClickAction action = switch (event.button())
             {
-                case GLFW.GLFW_MOUSE_BUTTON_LEFT -> LimaFluidSlot.ClickAction.DRAIN;
-                case GLFW.GLFW_MOUSE_BUTTON_RIGHT -> LimaFluidSlot.ClickAction.FILL;
+                case InputConstants.MOUSE_BUTTON_LEFT -> LimaFluidSlot.ClickAction.DRAIN;
+                case InputConstants.MOUSE_BUTTON_RIGHT -> LimaFluidSlot.ClickAction.FILL;
                 default -> null;
             };
 
-            if (action != null)
-                PacketDistributor.sendToServer(new ServerboundFluidSlotClickPacket(menu.containerId, hoveredFluidSlot.index(), action));
+            if (action != null) ClientPacketDistributor.sendToServer(new ServerboundFluidSlotClickPacket(menu.containerId, hoveredFluidSlot.index(), action));
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, isDoubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY)
+    public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY)
     {
-        if (getFocused() != null && isDragging() && button == 0)
+        if (getFocused() != null && isDragging() && event.button() == InputConstants.MOUSE_BUTTON_LEFT)
         {
-            return getFocused().mouseDragged(mouseX, mouseY, button, dragX, dragY);
+            return getFocused().mouseDragged(event, mouseX, mouseY);
         }
         else
         {
-            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+            return super.mouseDragged(event, mouseX, mouseY);
         }
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
-    {
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     protected void positionLabels()
@@ -193,7 +191,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     public <T> void sendCustomButtonData(int buttonId, T value, NetworkSerializer<T> serializer)
     {
         ServerboundCustomMenuButtonPacket packet = new ServerboundCustomMenuButtonPacket(menu.containerId, new IndexedStreamData<>(buttonId, serializer, value));
-        PacketDistributor.sendToServer(packet);
+        ClientPacketDistributor.sendToServer(packet);
     }
 
     public <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
@@ -235,6 +233,9 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     {
         private FluidSlotRenderer() {}
 
+        private static final Identifier HIGHLIGHT_BACK_SPRITE = ModResources.MC.id("container/slot_highlight_back");
+        private static final Identifier HIGHLIGHT_FRONT_SPRITE = ModResources.MC.id("container/slot_highlight_front");
+
         @SubscribeEvent
         public static void renderFluidSlots(final ContainerScreenEvent.Render.Foreground event)
         {
@@ -250,15 +251,20 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                     LimaFluidSlot fluidSlot = limaScreen.menu.getFluidSlots().get(i);
                     int slotX = fluidSlot.x();
                     int slotY = fluidSlot.y();
-                    FluidStack stack = fluidSlot.getFluid();
 
-                    if (!stack.isEmpty()) LimaGuiUtil.renderFluidWithAmount(graphics, stack, slotX, slotY);
+                    boolean hovering = limaScreen.isHovering(slotX, slotY, 16, 16, mouseX, mouseY);
 
-                    if (limaScreen.isHovering(slotX, slotY, 16, 16, mouseX, mouseY))
+                    if (hovering)
                     {
                         limaScreen.hoveredFluidSlot = fluidSlot;
-                        renderSlotHighlight(graphics, slotX, slotY, 0);
+                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_BACK_SPRITE, slotX - 4, slotY - 4, 24, 24);
                     }
+
+                    FluidStack stack = fluidSlot.getFluid();
+                    if (!stack.isEmpty()) LimaGuiUtil.renderFluidWithAmount(graphics, stack, slotX, slotY);
+
+                    if (hovering)
+                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_FRONT_SPRITE, slotX - 4, slotY - 4, 24, 24);
                 }
             }
         }

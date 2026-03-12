@@ -7,6 +7,7 @@ import liedge.limacore.lib.MobHostility;
 import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaEntityUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -38,10 +39,10 @@ public final class EntityHostilityLootCondition extends EntityComparisonLootCond
     }
 
     @Override
-    protected boolean testEntities(Entity firstEntity, Entity secondEntity)
+    protected boolean testEntities(ServerLevel level, Entity firstEntity, Entity secondEntity)
     {
         LivingEntity livingSecond = LimaCoreObjects.tryCast(LivingEntity.class, secondEntity);
-        return bounds.test(LimaEntityUtil.getEntityHostility(firstEntity, livingSecond));
+        return bounds.test(LimaEntityUtil.getEntityHostility(level, firstEntity, livingSecond));
     }
 
     @Override

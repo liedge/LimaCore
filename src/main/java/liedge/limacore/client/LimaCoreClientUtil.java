@@ -2,63 +2,23 @@ package liedge.limacore.client;
 
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
-import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.stream.Collectors;
 
 public final class LimaCoreClientUtil
 {
     private LimaCoreClientUtil() {}
-
-    public static ModelResourceLocation blockStateModelPath(BlockState state)
-    {
-        String variant = state.getValues().entrySet().stream().map(e -> e.getKey().getName() + "=" + e.getValue().toString()).collect(Collectors.joining(","));
-        ResourceLocation id = LimaRegistryUtil.getBlockId(state.getBlock());
-        return new ModelResourceLocation(id, variant);
-    }
-
-    public static ModelResourceLocation inventoryModelPath(ItemLike itemLike)
-    {
-        ResourceLocation id = LimaRegistryUtil.getItemId(itemLike.asItem());
-        return ModelResourceLocation.inventory(id);
-    }
-
-    public static <T extends BakedModel> T getCustomBakedModel(ModelResourceLocation modelPath, Class<T> modelClass)
-    {
-        BakedModel model = Minecraft.getInstance().getModelManager().getModel(modelPath);
-
-        if (model.equals(Minecraft.getInstance().getModelManager().getMissingModel()))
-        {
-            throw new NullPointerException("Baked model '" + modelPath + "' not found");
-        }
-        if (modelClass.isInstance(model))
-        {
-            return modelClass.cast(model);
-        }
-        else
-        {
-            throw new ClassCastException("Expected baked model class '" + modelClass.getSimpleName() + ", got '" + model.getClass().getSimpleName() + "' instead");
-        }
-    }
 
     public static @Nullable AbstractContainerMenu getClientPlayerMenu(int containerId)
     {
@@ -136,18 +96,6 @@ public final class LimaCoreClientUtil
     public static ItemStack getClientMainHandItem()
     {
         return getClientHeldItem(InteractionHand.MAIN_HAND);
-    }
-
-    public static boolean isHoldingShiftGUI(@Nullable Level level)
-    {
-        if (level != null && level.isClientSide())
-        {
-            return Screen.hasShiftDown();
-        }
-        else
-        {
-            return false;
-        }
     }
     //#endregion
 }

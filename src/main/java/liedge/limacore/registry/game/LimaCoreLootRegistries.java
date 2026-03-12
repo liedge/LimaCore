@@ -10,7 +10,7 @@ import liedge.limacore.world.loot.condition.NumberComparisonLootCondition;
 import liedge.limacore.world.loot.level.MathOpsLevelBasedValue;
 import liedge.limacore.world.loot.level.RangedLookupLevelBasedValue;
 import liedge.limacore.world.loot.number.*;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;

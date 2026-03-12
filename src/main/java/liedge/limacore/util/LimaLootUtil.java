@@ -4,12 +4,16 @@ import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
+import liedge.limacore.advancement.LimaAdvancementUtil;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKey;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -17,8 +21,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.*;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -39,7 +41,7 @@ public final class LimaLootUtil
 {
     private LimaLootUtil() {}
 
-    public static <T extends LootContextUser> Codec<T> contextUserCodec(Codec<T> unvalidatedCodec, LootContextParamSet params, String contextName)
+    public static <T extends LootContextUser> Codec<T> contextUserCodec(Codec<T> unvalidatedCodec, ContextKeySet params, String contextName)
     {
         return unvalidatedCodec.validate(value ->
         {
@@ -50,16 +52,16 @@ public final class LimaLootUtil
             if (reporter.getReport().isEmpty())
                 return DataResult.success(value);
             else
-                return DataResult.error(() -> String.format("Validation error in %s %s", contextName, reporter.getReport().get()));
+                return DataResult.error(() -> String.format("Validation error in %s %s", contextName, reporter.getReport()));
         });
     }
 
-    public static Codec<LootItemCondition> conditionsCodec(LootContextParamSet params, String contextName)
+    public static Codec<LootItemCondition> conditionsCodec(ContextKeySet params, String contextName)
     {
         return contextUserCodec(LootItemCondition.DIRECT_CODEC, params, contextName);
     }
 
-    public static Set<LootContextParam<?>> joinReferencedParams(LootContextUser... users)
+    public static Set<ContextKey<?>> joinReferencedParams(LootContextUser... users)
     {
         return switch (users.length)
         {
@@ -126,12 +128,12 @@ public final class LimaLootUtil
 
     public static LootItemCondition.Builder specificLootTable(ResourceKey<LootTable> lootTableKey)
     {
-        return LootTableIdCondition.builder(lootTableKey.location());
+        return LootTableIdCondition.builder(lootTableKey.identifier());
     }
 
     public static LootItemCondition.Builder blockLootTable(Block block)
     {
-        return specificLootTable(block.getLootTable());
+        return specificLootTable(block.getLootTable().orElseThrow());
     }
 
     public static LootItemCondition.Builder blockLootTable(Holder<Block> holder)
@@ -141,7 +143,7 @@ public final class LimaLootUtil
 
     public static LootItemCondition.Builder defaultEntityLootTable(EntityType<?> type)
     {
-        return specificLootTable(type.getDefaultLootTable());
+        return specificLootTable(type.getDefaultLootTable().orElseThrow());
     }
 
     public static LootItemCondition.Builder defaultEntityLootTable(Holder<EntityType<?>> holder)
@@ -151,12 +153,12 @@ public final class LimaLootUtil
 
     public static LootItemCondition.Builder needsEntityType(EntityType<?> type)
     {
-        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().of(type));
+        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(LimaAdvancementUtil.matchingEntityType(type)));
     }
 
-    public static LootItemCondition.Builder needsEntityTag(TagKey<EntityType<?>> tagKey)
+    public static LootItemCondition.Builder needsEntityTag(HolderGetter<EntityType<?>> holders, TagKey<EntityType<?>> tagKey)
     {
-        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().of(tagKey));
+        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().of(holders, tagKey));
     }
 
     public static NumberProvider linearEnchantmentLevel()

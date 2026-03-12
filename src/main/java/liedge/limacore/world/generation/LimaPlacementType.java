@@ -1,13 +1,13 @@
 package liedge.limacore.world.generation;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 
 import java.util.Objects;
 
-public record LimaPlacementType<T extends PlacementModifier>(ResourceLocation id, MapCodec<T> codec) implements PlacementModifierType<T>
+public record LimaPlacementType<T extends PlacementModifier>(Identifier id, MapCodec<T> codec) implements PlacementModifierType<T>
 {
     @Override
     public boolean equals(Object o)
