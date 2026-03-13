@@ -1,4 +1,4 @@
 @NullMarked
-package liedge.limacore.capability.itemhandler;
+package liedge.limacore.transfer.item;
 
 import org.jspecify.annotations.NullMarked;

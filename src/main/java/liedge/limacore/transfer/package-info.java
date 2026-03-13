@@ -1,4 +1,4 @@
 @NullMarked
-package liedge.limacore.capability.energy;
+package liedge.limacore.transfer;
 
 import org.jspecify.annotations.NullMarked;

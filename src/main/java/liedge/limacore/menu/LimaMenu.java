@@ -1,20 +1,20 @@
 package liedge.limacore.menu;
 
+import com.google.common.base.Predicates;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
-import liedge.limacore.capability.fluid.LimaFluidHandler;
 import liedge.limacore.menu.slot.LimaFluidSlot;
-import liedge.limacore.menu.slot.LimaHandlerSlot;
-import liedge.limacore.menu.slot.RecipeOutputSlot;
+import liedge.limacore.menu.slot.LimaItemSlot;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
+import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Holder;
@@ -33,13 +33,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
-import net.neoforged.neoforge.transfer.ItemAccessResourceHandler;
+import net.neoforged.neoforge.transfer.RangedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.BucketResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -115,8 +112,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
             if (!quickMoveInternal(index, stack1)) return ItemStack.EMPTY;
 
+            // TODO Reimplement ???
             // Recipe trigger must be called here for quick transfer
-            if (slot instanceof RecipeOutputSlot recipeSlot) recipeSlot.onQuickCraft(stack1, stack);
+            //if (slot instanceof RecipeOutputSlot recipeSlot) recipeSlot.onQuickCraft(stack1, stack);
 
             if (stack1.isEmpty())
             {
@@ -125,8 +123,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             else
             {
                 slot.setChanged();
-                if (slot instanceof LimaHandlerSlot limaSlot) limaSlot.setBaseContainerChanged();
             }
+
+            slot.onTake(player, stack1);
         }
 
         return stack;
@@ -165,41 +164,27 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     public void fluidSlotClicked(ServerPlayer sender, int slotIndex, LimaFluidSlot.ClickAction action)
     {
-        if (getCarried().getCapability(Capabilities.FluidHandler.ITEM) instanceof IFluidHandlerItem itemFluids)
+        ResourceHandler<FluidResource> carriedFluids = getCarried().getCapability(Capabilities.Fluid.ITEM, ItemAccess.forPlayerCursor(sender, this));
+        if (carriedFluids != null)
         {
             LimaFluidSlot slot = getFluidSlots().get(slotIndex);
-            LimaFluidHandler menuFluids = slot.fluidHandler();
-            int capacity = slot.getCapacity();
+            int slotCapacity = slot.getCapacity();
+            ResourceHandler<FluidResource> slotFluids = RangedResourceHandler.ofSingleIndex(slot.fluids(), slot.resourceIndex());
 
             if (action == LimaFluidSlot.ClickAction.FILL)
             {
-                FluidStack sourceFluid = itemFluids.drain(capacity, IFluidHandler.FluidAction.SIMULATE);
-                if (!slot.mayPlace(sourceFluid)) return;
-                int accepted = menuFluids.fillTank(slot.tank(), sourceFluid, IFluidHandler.FluidAction.SIMULATE, true);
-                if (accepted == 0) return;
-
-                sourceFluid = itemFluids.drain(accepted, IFluidHandler.FluidAction.EXECUTE);
-                accepted = menuFluids.fillTank(slot.tank(), sourceFluid, IFluidHandler.FluidAction.EXECUTE, true);
-
-                if (accepted > 0)
+                int inserted = ResourceHandlerUtil.move(carriedFluids, slotFluids, slot::mayPlace, slotCapacity, null);
+                if (inserted > 0)
                 {
                     sendSoundToPlayer(sender, SoundEvents.BUCKET_EMPTY, 1f, 1f);
-                    setCarried(itemFluids.getContainer());
                 }
             }
             else
             {
-                FluidStack sourceFluid = menuFluids.drainTank(slot.tank(), capacity, IFluidHandler.FluidAction.SIMULATE, true);
-                int accepted = itemFluids.fill(sourceFluid, IFluidHandler.FluidAction.SIMULATE);
-                if (accepted == 0) return;
-
-                sourceFluid = menuFluids.drainTank(slot.tank(), accepted, IFluidHandler.FluidAction.EXECUTE, true);
-                accepted = itemFluids.fill(sourceFluid, IFluidHandler.FluidAction.EXECUTE);
-
-                if (accepted > 0)
+                int extracted = ResourceHandlerUtil.move(slotFluids, carriedFluids, Predicates.alwaysTrue(), slotCapacity, null);
+                if (extracted > 0)
                 {
                     sendSoundToPlayer(sender, SoundEvents.BUCKET_FILL, 1f, 1f);
-                    setCarried(itemFluids.getContainer());
                 }
             }
         }
@@ -241,14 +226,14 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     //#region Quick move functions
     protected boolean quickMoveInternal(int index, ItemStack stack)
     {
-        if (index < inventoryStart && slots.get(index) instanceof LimaHandlerSlot limaSlot)
+        if (index < inventoryStart && slots.get(index) instanceof LimaItemSlot limaSlot)
         {
             // Transfer from container slots to inventory.
             return quickMoveToAllInventory(stack, limaSlot.reverseQuickTransfer());
         }
         else if (index >= inventoryStart)
         {
-            // Transfer from inventory to container, filtration handled automatically by slots themselves
+            // Transfer from inventory to container
             return quickMoveToContainer(stack);
         }
         else
@@ -257,6 +242,8 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
+    // TODO: Maybe reimplement this if needed?
+    /*
     protected boolean quickMoveToContainer(ItemStack stack)
     {
         boolean result = false;
@@ -320,6 +307,12 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
 
         return result;
+    }
+    */
+
+    protected boolean quickMoveToContainer(ItemStack stack)
+    {
+        return moveItemStackTo(stack, 0, inventoryStart, false);
     }
 
     protected boolean quickMoveToInventory(ItemStack stack, boolean reverse)
@@ -387,25 +380,24 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         addPlayerInventoryAndHotbar(DEFAULT_INV_X, DEFAULT_INV_Y);
     }
 
-    protected void addFluidSlot(LimaFluidHandler handler, int tank, int x, int y, boolean allowInsert)
+    protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y, boolean allowInsert)
     {
-        int index = fluidSlots.size();
-        fluidSlots.add(new LimaFluidSlot(handler, index, tank, x, y, allowInsert));
+        fluidSlots.add(new LimaFluidSlot(fluids, fluidSlots.size(), resourceIndex, x, y, allowInsert));
     }
 
-    protected void addFluidSlot(LimaFluidHandler handler, int tank, int x, int y)
+    protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y)
     {
-        addFluidSlot(handler, tank, x, y, true);
+        addFluidSlot(fluids, resourceIndex, x, y, true);
     }
 
-    protected void addFluidSlotsGrid(LimaFluidHandler handler, int tankStart, int xPos, int yPos, int columns, int rows, boolean allowInsert)
+    protected void addFluidSlotsGrid(LimaBlockEntityFluids fluids, int resourceIndexStart, int xPos, int yPos, int columns, int rows, boolean allowInsert)
     {
-        runSlotsGrid(tankStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(handler, i, sx, sy, allowInsert));
+        runSlotsGrid(resourceIndexStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(fluids, i, sx, sy, allowInsert));
     }
 
-    protected void addFluidSlotsGrid(LimaFluidHandler handler, int tankStart, int xPos, int yPos, int columns, int rows)
+    protected void addFluidSlotsGrid(LimaBlockEntityFluids fluids, int resourceIndexStart, int xPos, int yPos, int columns, int rows)
     {
-        runSlotsGrid(tankStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(handler, i, sx, sy, true));
+        runSlotsGrid(resourceIndexStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(fluids, i, sx, sy, true));
     }
 
     @FunctionalInterface

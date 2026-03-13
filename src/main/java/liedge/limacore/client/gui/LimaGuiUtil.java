@@ -2,7 +2,7 @@ package liedge.limacore.client.gui;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import liedge.limacore.capability.fluid.LimaFluidUtil;
+import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -173,7 +173,7 @@ public final class LimaGuiUtil
             Matrix3x2fStack matrixStack = graphics.pose();
             matrixStack.pushMatrix();
 
-            String amountText = LimaFluidUtil.formatCompactFluidAmount(stack.getAmount());
+            String amountText = LimaTransferUtil.formatCompactFluidAmount(stack.getAmount());
             int textWidth = LimaGuiUtil.halfTextWidth(amountText);
             matrixStack.translate(x + 16 - textWidth, y + 16 - FONT_HALF_LINE_HEIGHT);
             matrixStack.scale(0.5f);

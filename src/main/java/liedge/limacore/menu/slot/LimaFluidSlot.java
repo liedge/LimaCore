@@ -1,26 +1,27 @@
 package liedge.limacore.menu.slot;
 
-import liedge.limacore.capability.fluid.LimaFluidHandler;
+import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
-public record LimaFluidSlot(LimaFluidHandler fluidHandler, int index, int tank, int x, int y, boolean allowInsert)
+public record LimaFluidSlot(LimaBlockEntityFluids fluids, int slot, int resourceIndex, int x, int y, boolean allowInsert)
 {
     public FluidStack getFluid()
     {
-        return fluidHandler.getFluidInTank(tank);
+        return fluids.getResource(resourceIndex).toStack(fluids.getAmountAsInt(resourceIndex));
     }
 
     public int getCapacity()
     {
-        return fluidHandler.getTankCapacity(tank);
+        return fluids.getCapacity();
     }
 
-    public boolean mayPlace(FluidStack stack)
+    public boolean mayPlace(FluidResource resource)
     {
-        return allowInsert && fluidHandler.isFluidValid(tank, stack);
+        return allowInsert && fluids.isValid(resourceIndex, resource);
     }
 
     public enum ClickAction

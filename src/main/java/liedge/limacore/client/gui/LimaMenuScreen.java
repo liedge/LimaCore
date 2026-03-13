@@ -3,7 +3,6 @@ package liedge.limacore.client.gui;
 import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
-import liedge.limacore.capability.fluid.LimaFluidUtil;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.menu.slot.LimaFluidSlot;
@@ -12,6 +11,7 @@ import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
 import liedge.limacore.network.packet.ServerboundFluidSlotClickPacket;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
+import liedge.limacore.transfer.LimaTransferUtil;
 import liedge.limacore.util.LimaItemUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.ChatFormatting;
@@ -118,7 +118,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                     lines.add(Component.literal(id).withStyle(ChatFormatting.DARK_GRAY));
                 }
 
-                lines.add(Component.literal(LimaFluidUtil.formatStoredFluidMillibucket(stack.getAmount(), hoveredFluidSlot.getCapacity())).withStyle(ChatFormatting.GRAY));
+                lines.add(Component.literal(LimaTransferUtil.formatStoredFluidMillibucket(stack.getAmount(), hoveredFluidSlot.getCapacity())).withStyle(ChatFormatting.GRAY));
 
                 graphics.setTooltipForNextFrame(font, lines, Optional.empty(), x, y);
             }
@@ -157,7 +157,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                 default -> null;
             };
 
-            if (action != null) ClientPacketDistributor.sendToServer(new ServerboundFluidSlotClickPacket(menu.containerId, hoveredFluidSlot.index(), action));
+            if (action != null) ClientPacketDistributor.sendToServer(new ServerboundFluidSlotClickPacket(menu.containerId, hoveredFluidSlot.slot(), action));
         }
 
         return super.mouseClicked(event, isDoubleClick);

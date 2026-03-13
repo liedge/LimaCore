@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 public final class LimaDeferredItems extends DeferredRegister.Items
 {
@@ -23,23 +24,33 @@ public final class LimaDeferredItems extends DeferredRegister.Items
         super(namespace);
     }
 
-    public <B extends Block, I extends BlockItem> DeferredItem<I> registerBlockItem(String name, Supplier<? extends B> blockSupplier, BiFunction<? super B, Item.Properties, ? extends I> constructor, Item.Properties properties)
+    public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor, Supplier<Item.Properties> properties)
     {
-        return registerItem(name, p -> constructor.apply(blockSupplier.get(), p), properties);
+        return registerItem(name, prop -> constructor.apply(block.get(), prop), properties);
     }
 
-    public <B extends Block, I extends BlockItem> DeferredItem<I> registerBlockItem(String name, Supplier<? extends B> blockSupplier, BiFunction<? super B, Item.Properties, ? extends I> constructor)
+    public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor, UnaryOperator<Item.Properties> properties)
     {
-        return registerBlockItem(name, blockSupplier, constructor, new Item.Properties());
+        return registerItem(name, prop -> constructor.apply(block.get(), prop), properties);
     }
 
-    public <I extends BlockItem> DeferredItem<I> registerBlockItem(Holder<Block> holder, BiFunction<Block, Item.Properties, ? extends I> constructor, Item.Properties properties)
+    public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor)
     {
-        return registerBlockItem(LimaRegistryUtil.getBlockName(holder), holder::value, constructor, properties);
+        return registerCustomBlockItem(name, block, constructor, UnaryOperator.identity());
     }
 
-    public <I extends BlockItem> DeferredItem<I> registerBlockItem(Holder<Block> holder, BiFunction<Block, Item.Properties, ? extends I> constructor)
+    public <I extends BlockItem> DeferredItem<I> registerCustomBlockItem(Holder<Block> holder, BiFunction<Block, Item.Properties, ? extends I> constructor, Supplier<Item.Properties> properties)
     {
-        return registerBlockItem(holder, constructor, new Item.Properties());
+        return registerCustomBlockItem(LimaRegistryUtil.getBlockName(holder), holder::value, constructor, properties);
+    }
+
+    public <I extends BlockItem> DeferredItem<I> registerCustomBlockItem(Holder<Block> holder, BiFunction<Block, Item.Properties, ? extends I> constructor, UnaryOperator<Item.Properties> properties)
+    {
+        return registerCustomBlockItem(LimaRegistryUtil.getBlockName(holder), holder::value, constructor, properties);
+    }
+
+    public <I extends BlockItem> DeferredItem<I> registerCustomBlockItem(Holder<Block> holder, BiFunction<Block, Item.Properties, ? extends I> constructor)
+    {
+        return registerCustomBlockItem(holder, constructor, UnaryOperator.identity());
     }
 }

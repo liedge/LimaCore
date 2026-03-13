@@ -20,10 +20,19 @@ import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.resource.Resource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Recipe<T>
@@ -164,76 +173,57 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     public void consumeItemIngredients(T input, RandomSource random)
     {
-        for (LimaSizedItemIngredient sizedIngredient : itemIngredients)
+        ResourceHandler<ItemResource> items = input.items();
+        if (itemIngredients.isEmpty() || items == null) return;
+
+        try (Transaction tx = Transaction.openRoot())
         {
-            int remaining = sizedIngredient.getSize();
-            Ingredient root = sizedIngredient.getIngredient();
-
-            if (skipIngredient(sizedIngredient, random)) continue;
-
-            for (int slot = 0; slot < input.size(); slot++)
+            for (LimaSizedItemIngredient ingredient : itemIngredients)
             {
-                if (root.test(input.getItem(slot)))
-                {
-                    ItemStack extracted = input.extractItem(slot, remaining, false);
-                    remaining -= extracted.getCount();
+                if (skipIngredient(ingredient, random)) continue;
 
-                    if (remaining == 0) break;
-                }
+                Ingredient root = ingredient.getIngredient();
+                extractIngredient(items, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
             }
+
+            tx.commit();
         }
     }
 
     public void consumeFluidIngredients(T input, RandomSource random)
     {
-        for (LimaSizedFluidIngredient sizedIngredient : fluidIngredients)
+        ResourceHandler<FluidResource> fluids = input.fluids();
+        if (fluidIngredients.isEmpty() || fluids == null) return;
+
+        try (Transaction tx = Transaction.openRoot())
         {
-            int remaining = sizedIngredient.getSize();
-            FluidIngredient root = sizedIngredient.getIngredient();
-
-            if (skipIngredient(sizedIngredient, random)) continue;
-
-            for (int tank = 0; tank < input.tanks(); tank++)
+            for (LimaSizedFluidIngredient ingredient : fluidIngredients)
             {
-                if (root.test(input.getFluid(tank)))
-                {
-                    FluidStack extracted = input.extractFluid(tank, remaining, IFluidHandler.FluidAction.EXECUTE);
-                    remaining -= extracted.getAmount();
+                if (skipIngredient(ingredient, random)) continue;
 
-                    if (remaining == 0) break;
-                }
+                FluidIngredient root = ingredient.getIngredient();
+                extractIngredient(fluids, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
             }
+
+            tx.commit();
         }
     }
 
     private boolean checkItemInputs(T input)
     {
-        if (!input.checkItemInputSize(itemIngredients)) return false;
+        if (itemIngredients.isEmpty()) return true;
 
-        int[] removalTracker = new int[input.size()];
+        ResourceHandler<ItemResource> items = input.items();
+        if (invalidInputSize(items, itemIngredients)) return false;
 
-        for (LimaSizedItemIngredient sizedIngredient : itemIngredients)
+        try (Transaction tx = Transaction.openRoot())
         {
-            int stillNeeded = sizedIngredient.getSize();
-            Ingredient root = sizedIngredient.getIngredient();
-
-            for (int slot = 0; slot < input.size(); slot++)
+            for (LimaSizedItemIngredient ingredient : itemIngredients)
             {
-                if (root.test(input.getItem(slot)))
-                {
-                    int toExtract = Math.max(0, stillNeeded - removalTracker[slot]);
-                    if (toExtract > 0)
-                    {
-                        ItemStack extracted = input.extractItem(slot, toExtract, true);
-                        stillNeeded -= extracted.getCount();
-                        removalTracker[slot] += extracted.getCount();
-
-                        if (stillNeeded == 0) break;
-                    }
-                }
+                Ingredient root = ingredient.getIngredient();
+                boolean pass = extractIngredient(items, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                if (!pass) return false;
             }
-
-            if (stillNeeded > 0) return false;
         }
 
         return true;
@@ -241,35 +231,46 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
 
     private boolean checkFluidInputs(T input)
     {
-        if (!input.checkFluidInputSize(fluidIngredients)) return false;
+        if (fluidIngredients.isEmpty()) return true;
 
-        int[] removalTracker = new int[input.tanks()];
+        ResourceHandler<FluidResource> fluids = input.fluids();
+        if (invalidInputSize(fluids, fluidIngredients)) return false;
 
-        for (LimaSizedFluidIngredient sizedIngredient : fluidIngredients)
+        try (Transaction tx = Transaction.openRoot())
         {
-            int stillNeeded = sizedIngredient.getSize();
-            FluidIngredient root = sizedIngredient.getIngredient();
-
-            for (int tank = 0; tank < input.tanks(); tank++)
+            for (LimaSizedFluidIngredient ingredient : fluidIngredients)
             {
-                if (root.test(input.getFluid(tank)))
-                {
-                    int toDrain = Math.max(0, stillNeeded - removalTracker[tank]);
-                    if (toDrain > 0)
-                    {
-                        FluidStack extracted = input.extractFluid(tank, toDrain, IFluidHandler.FluidAction.SIMULATE);
-                        stillNeeded -= extracted.getAmount();
-                        removalTracker[tank] += extracted.getAmount();
-
-                        if (stillNeeded == 0) break;
-                    }
-                }
+                FluidIngredient root = ingredient.getIngredient();
+                boolean pass = extractIngredient(fluids, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                if (!pass) return false;
             }
-
-            if (stillNeeded > 0) return false;
         }
 
         return true;
+    }
+
+    @Contract("null,_->true")
+    private <R extends Resource> boolean invalidInputSize(@Nullable ResourceHandler<R> handler, List<?> ingredients)
+    {
+        if (handler == null) return true;
+        return ingredients.size() > handler.size() || ResourceHandlerUtil.isEmpty(handler);
+    }
+
+    private <R extends Resource> boolean extractIngredient(ResourceHandler<R> handler, BiPredicate<R, Integer> predicate, int amount, TransactionContext transaction)
+    {
+        if (amount == 0) return true;
+
+        int remaining = amount;
+
+        for (int index = 0; index < handler.size(); index++)
+        {
+            R resource = handler.getResource(index);
+            if (resource.isEmpty() || !predicate.test(resource, handler.getAmountAsInt(index))) continue;
+
+            remaining -= handler.extract(index, resource, remaining, transaction);
+        }
+
+        return remaining <= 0;
     }
 
     @Override

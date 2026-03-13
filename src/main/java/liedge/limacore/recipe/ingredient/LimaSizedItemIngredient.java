@@ -10,13 +10,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import java.util.Arrays;
 import java.util.List;
 
 public final class LimaSizedItemIngredient extends LimaSizedIngredient<Ingredient, ItemStack>
 {
     public static final String MAP_CODEC_KEY = "ingredients";
-    public static final Codec<LimaSizedItemIngredient> CODEC = codec(Ingredient.MAP_CODEC_NONEMPTY, "count", LimaSizedItemIngredient::new);
+    public static final Codec<LimaSizedItemIngredient> CODEC = codec(Ingredient.CODEC, "count", LimaSizedItemIngredient::new);
     public static final StreamCodec<RegistryFriendlyByteBuf, LimaSizedItemIngredient> STREAM_CODEC = streamCodec(Ingredient.CONTENTS_STREAM_CODEC, LimaSizedItemIngredient::new);
     public static final MapCodec<List<LimaSizedItemIngredient>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
 
@@ -38,11 +37,5 @@ public final class LimaSizedItemIngredient extends LimaSizedIngredient<Ingredien
     public LimaSizedItemIngredient(Ingredient ingredient, int count)
     {
         this(ingredient, count, 1);
-    }
-
-    @Override
-    protected ItemStack[] initValues()
-    {
-        return Arrays.stream(ingredient.getItems()).map(o -> o.copyWithCount(size)).toArray(ItemStack[]::new);
     }
 }

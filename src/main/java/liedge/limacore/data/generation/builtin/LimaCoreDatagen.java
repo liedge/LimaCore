@@ -13,7 +13,7 @@ final class LimaCoreDatagen
     private LimaCoreDatagen() {}
 
     @SubscribeEvent
-    public static void runDataGeneration(final GatherDataEvent event)
+    public static void runDataGeneration(final GatherDataEvent.Client event)
     {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();

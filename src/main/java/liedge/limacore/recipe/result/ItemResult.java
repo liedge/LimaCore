@@ -19,7 +19,7 @@ import java.util.Objects;
 
 public final class ItemResult extends StackBaseResult<Item, ItemStack>
 {
-    public static final Codec<ItemResult> CODEC = codec(ItemStack.ITEM_NON_AIR_CODEC, "count", Item.ABSOLUTE_MAX_STACK_SIZE, ItemResult::new);
+    public static final Codec<ItemResult> CODEC = codec(Item.CODEC, "count", Item.ABSOLUTE_MAX_STACK_SIZE, ItemResult::new);
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemResult> STREAM_CODEC = streamCodec(LimaStreamCodecs.ITEM_HOLDER, ItemResult::new);
     public static final String MAP_CODEC_KEY = "item_results";
     public static final MapCodec<List<ItemResult>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);

@@ -74,7 +74,10 @@ public final class LimaCoreCodecs
      */
     public static final LimaEnumCodec<Direction> STRICT_DIRECTION = LimaEnumCodec.create(Direction.class);
 
-    public static final Codec<Vector3f> MODEL_VECTOR = decodeOnly(ExtraCodecs.VECTOR3F.map(vec -> vec.mul(0.0625f)));
+    public static final Codec<Vector3f> MODEL_VECTOR = decodeOnly(ExtraCodecs.VECTOR3F.map(vec -> {
+        Vector3f out = new Vector3f(vec);
+        return out.mul(0.0625f);
+    }));
 
     public static <A> Codec<A> decodeOnly(Decoder<A> decoder)
     {
