@@ -1,18 +1,54 @@
 package liedge.limacore.transfer;
 
+import com.google.common.base.Predicates;
+import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.util.LimaTextUtil;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.resource.Resource;
 import org.jspecify.annotations.Nullable;
+
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public final class LimaTransferUtil
 {
     private LimaTransferUtil() {}
 
+    public static final Predicate<ItemResource> ALL_ITEMS = Predicates.alwaysTrue();
+    public static final Predicate<FluidResource> ALL_FLUIDS = Predicates.alwaysTrue();
+
     public static final String MILLIBUCKET_UNIT = "mB";
     public static final String BUCKET_UNIT = "B";
+
+    public static <T extends ResourceHandler<?> & ValueIOSerializable> void loadBlockResources(ValueInput global, String globalKey, Function<BlockContentsType, @Nullable T> accessor)
+    {
+        ValueInput input = global.child(globalKey).orElse(null);
+        if (input == null) return;
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            T handler = accessor.apply(type);
+            if (handler != null) input.child(type.getSerializedName()).ifPresent(handler::deserialize);
+        }
+    }
+
+    public static <T extends ResourceHandler<?> & ValueIOSerializable> void saveBlockResources(ValueOutput global, String globalKey, Function<BlockContentsType, @Nullable T> accessor)
+    {
+        ValueOutput output = global.child(globalKey);
+
+        for (BlockContentsType type : BlockContentsType.values())
+        {
+            T handler = accessor.apply(type);
+            if (handler != null) handler.serialize(output.child(type.getSerializedName()));
+        }
+    }
 
     public static String formatCompactFluidAmount(int amount)
     {

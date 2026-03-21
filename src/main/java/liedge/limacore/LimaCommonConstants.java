@@ -12,5 +12,5 @@ public final class LimaCommonConstants
     public static final String KEY_ENERGY_TRANSFER_RATE = "energy_transfer_rate";
     public static final String KEY_ENERGY_USAGE = "energy_usage";
     public static final String KEY_ITEM_CONTAINER = "items";
-    public static final String KEY_FLUID_TANKS = "fluid_tanks";
+    public static final String KEY_FLUIDS_CONTAINER = "fluids";
 }

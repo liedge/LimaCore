@@ -5,16 +5,15 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
-import liedge.limacore.transfer.LimitingTransferHandler;
 import net.minecraft.core.component.DataComponentMap;
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 
-public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements LimitingTransferHandler
+public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler implements VariableEnergyHandler
 {
     private final EnergyHolderBlockEntity blockEntity;
 
-    public LimaBlockEntityEnergy(EnergyHolderBlockEntity blockEntity)
+    public AdjustableBlockEntityEnergy(EnergyHolderBlockEntity blockEntity)
     {
         super(blockEntity.getBaseEnergyCapacity(), blockEntity.getBaseEnergyCapacity());
         this.blockEntity = blockEntity;
@@ -64,6 +63,7 @@ public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements 
         this.maxExtract = transferRate;
     }
 
+    @Override
     public void setCapacity(int capacity)
     {
         this.capacity = capacity;

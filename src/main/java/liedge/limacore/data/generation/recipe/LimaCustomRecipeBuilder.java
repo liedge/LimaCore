@@ -176,7 +176,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B output(ItemLike itemLike, ResultCount count, float chance, ResultPriority priority)
     {
-        return output(ItemResult.create(itemLike, null, count, chance, priority));
+        return output(ItemResult.create(itemLike, count, chance, priority));
     }
 
     public B output(ItemLike itemLike, ResultCount count, float chance)
@@ -224,7 +224,7 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
 
     public B fluidOutput(Fluid fluid, ResultCount count, float chance, ResultPriority priority)
     {
-        return fluidOutput(FluidResult.create(fluid, null, count, chance, priority));
+        return fluidOutput(FluidResult.create(fluid, count, chance, priority));
     }
 
     public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count, float chance, ResultPriority priority)

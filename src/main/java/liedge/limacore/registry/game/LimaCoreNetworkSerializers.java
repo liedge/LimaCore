@@ -9,7 +9,6 @@ import liedge.limacore.registry.LimaDeferredNetworkSerializers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -19,6 +18,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.Optional;
 
@@ -49,10 +50,9 @@ public final class LimaCoreNetworkSerializers
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<ResourceKey<Recipe<?>>>>> OPTIONAL_RECIPE_KEY = SERIALIZERS.registerCodec("optional_recipe", () -> ResourceKey.streamCodec(Registries.RECIPE).apply(LimaStreamCodecs.asOptional()));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<BlockPos>> BLOCK_POS = SERIALIZERS.registerCodec("block_pos", () -> BlockPos.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemStack>> ITEM_STACK = SERIALIZERS.registerCodec("item_stack", () -> ItemStack.OPTIONAL_STREAM_CODEC);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemResource>> ITEM_RESOURCE = SERIALIZERS.registerCodec("item_resource", () -> ItemResource.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<FluidStack>> FLUID_STACK = SERIALIZERS.registerCodec("fluid_stack", () -> FluidStack.OPTIONAL_STREAM_CODEC);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<FluidResource>> FLUID_RESOURCE = SERIALIZERS.registerCodec("fluid_resource", () -> FluidResource.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Direction>> DIRECTION = SERIALIZERS.registerCodec("direction", () -> Direction.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<RelativeHorizontalSide>> RELATIVE_SIDE = SERIALIZERS.registerCodec("relative_side", () -> RelativeHorizontalSide.STREAM_CODEC);
-
-    // NBT tags
-    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<CompoundTag>> COMPOUND_TAG = SERIALIZERS.registerCodec("compound_tag", () -> ByteBufCodecs.COMPOUND_TAG);
 }

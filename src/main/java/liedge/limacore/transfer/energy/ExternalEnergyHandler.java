@@ -1,7 +1,7 @@
 package liedge.limacore.transfer.energy;
 
 import liedge.limacore.blockentity.IOAccess;
-import liedge.limacore.transfer.LimitingTransferHandler;
+import liedge.limacore.transfer.VariableRateTransferHandler;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
@@ -18,7 +18,7 @@ public final class ExternalEnergyHandler implements EnergyHandler
 
     private int getTransferRate()
     {
-        if (base instanceof LimitingTransferHandler handler)
+        if (base instanceof VariableRateTransferHandler handler)
         {
             return handler.getTransferRate();
         }

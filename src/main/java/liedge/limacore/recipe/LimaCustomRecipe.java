@@ -11,6 +11,7 @@ import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
 import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.recipe.result.ResultPriority;
+import liedge.limacore.registry.game.LimaCoreRecipes;
 import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.util.RandomSource;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
@@ -26,6 +28,7 @@ import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.resource.Resource;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Contract;
@@ -122,14 +125,9 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return itemResults.getFirst();
     }
 
-    public List<ItemStack> generateItemResults(T input, HolderLookup.Provider registries, RandomSource random)
+    public List<ResourceStack<ItemResource>> generateItemResults(T input, HolderLookup.Provider registries, RandomSource random)
     {
         return itemResults.stream().map(r -> r.generateResult(random)).filter(s -> !s.isEmpty()).collect(LimaStreamsUtil.toObjectList());
-    }
-
-    public List<ItemStack> getPossibleItemResults()
-    {
-        return itemResults.stream().map(ItemResult::getMaxStack).collect(LimaStreamsUtil.toObjectList());
     }
 
     public List<FluidResult> getFluidResults()
@@ -154,14 +152,9 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return fluidResults.getFirst();
     }
 
-    public List<FluidStack> generateFluidResults(T input, HolderLookup.Provider registries, RandomSource random)
+    public List<ResourceStack<FluidResource>> generateFluidResults(T input, HolderLookup.Provider registries, RandomSource random)
     {
         return fluidResults.stream().map(r -> r.generateResult(random)).filter(s -> !s.isEmpty()).collect(LimaStreamsUtil.toObjectList());
-    }
-
-    public List<FluidStack> getPossibleFluidResults()
-    {
-        return fluidResults.stream().map(FluidResult::getMaxStack).collect(LimaStreamsUtil.toObjectList());
     }
     //#endregion
 
@@ -296,6 +289,13 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     public PlacementInfo placementInfo()
     {
         return PlacementInfo.NOT_PLACEABLE;
+    }
+
+    @Deprecated
+    @Override
+    public RecipeBookCategory recipeBookCategory()
+    {
+        return LimaCoreRecipes.CUSTOM_RECIPE_CATEGORY.get();
     }
 
     /**

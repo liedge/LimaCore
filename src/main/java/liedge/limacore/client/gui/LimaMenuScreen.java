@@ -1,6 +1,7 @@
 package liedge.limacore.client.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
 import liedge.limacore.lib.ModResources;
@@ -22,10 +23,12 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -129,9 +132,9 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         {
             if (widget.isMouseOver(x, y) && widget.hasTooltip())
             {
-                List<Component> lines = new ObjectArrayList<>();
-                widget.createWidgetTooltip(lines);
-                graphics.setTooltipForNextFrame(font, lines, Optional.empty(), ItemStack.EMPTY, x, y);
+                List<Either<FormattedText, TooltipComponent>> elements = new ObjectArrayList<>();
+                widget.createWidgetTooltip(elements::add);
+                graphics.setComponentTooltipFromElementsForNextFrame(font, elements, x, y, ItemStack.EMPTY);
             }
         }
     }
@@ -148,7 +151,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     {
         Player player = minecraft.player;
 
-        if (player != null && hoveredFluidSlot != null && LimaItemUtil.hasFluidHandlerCapability(menu.getCarried(), ItemAccess.forPlayerCursor(player, menu)) && isHovering(hoveredFluidSlot.x(), hoveredFluidSlot.y(), 16, 16, event.x(), event.y()))
+        if (player != null && hoveredFluidSlot != null && LimaItemUtil.hasFluidHandlerCapability(ItemAccess.forPlayerCursor(player, menu)) && isHovering(hoveredFluidSlot.x(), hoveredFluidSlot.y(), 16, 16, event.x(), event.y()))
         {
             LimaFluidSlot.ClickAction action = switch (event.button())
             {

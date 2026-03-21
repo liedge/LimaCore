@@ -4,7 +4,7 @@ import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 
-public interface LimitingTransferHandler
+public interface VariableRateTransferHandler
 {
     int getTransferRate();
 

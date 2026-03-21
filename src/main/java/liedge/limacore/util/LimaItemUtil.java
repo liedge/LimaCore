@@ -9,14 +9,9 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 
-import java.util.function.Predicate;
-
 public final class LimaItemUtil
 {
     private LimaItemUtil() {}
-
-    public static final Predicate<ItemStack> ALWAYS_TRUE = stack -> true;
-    public static final Predicate<ItemStack> ALWAYS_FALSE = stack -> false;
 
     public static boolean areItemsMergeCompatible(ItemStack existing, ItemStack other)
     {
@@ -60,24 +55,24 @@ public final class LimaItemUtil
     //#endregion
 
     //#region Capability check helpers
-    public static boolean hasValidCapability(ItemCapability<?, ItemAccess> capability, ItemStack stack, ItemAccess context)
+    public static boolean hasValidCapability(ItemAccess context, ItemCapability<?, ItemAccess> capability)
     {
-        return stack.getCapability(capability, context) != null;
+        return context.getCapability(capability) != null;
     }
 
-    public static boolean hasEnergyCapability(ItemStack stack, ItemAccess context)
+    public static boolean hasItemHandlerCapability(ItemAccess context)
     {
-        return hasValidCapability(Capabilities.Energy.ITEM, stack, context);
+        return hasValidCapability(context, Capabilities.Item.ITEM);
     }
 
-    public static boolean hasItemHandlerCapability(ItemStack stack, ItemAccess context)
+    public static boolean hasEnergyCapability(ItemAccess context)
     {
-        return hasValidCapability(Capabilities.Item.ITEM, stack, context);
+        return hasValidCapability(context, Capabilities.Energy.ITEM);
     }
 
-    public static boolean hasFluidHandlerCapability(ItemStack stack, ItemAccess context)
+    public static boolean hasFluidHandlerCapability(ItemAccess context)
     {
-        return hasValidCapability(Capabilities.Fluid.ITEM, stack, context);
+        return hasValidCapability(context, Capabilities.Fluid.ITEM);
     }
     //#endregion
 }

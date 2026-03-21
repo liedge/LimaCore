@@ -18,6 +18,14 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 {
     @Nullable LimaBlockEntityItems getItems(BlockContentsType contentsType);
 
+    default LimaBlockEntityItems getItemsOrThrow(BlockContentsType contentsType)
+    {
+        LimaBlockEntityItems handler = getItems(contentsType);
+        if (handler == null) throw new IllegalArgumentException("Block entity does not support item contents type " + contentsType.getSerializedName());
+
+        return handler;
+    }
+
     default IOAccess getTopLevelItemIO(@Nullable Direction side)
     {
         return IOAccess.DISABLED;
@@ -60,31 +68,12 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 
     default void loadItemResources(ValueInput global)
     {
-        ValueInput input = global.child(LimaCommonConstants.KEY_ITEM_CONTAINER).orElse(null);
-        if (input == null) return;
-
-        for (BlockContentsType type : BlockContentsType.values())
-        {
-            LimaBlockEntityItems items = getItems(type);
-            if (items != null)
-            {
-                input.child(type.getSerializedName()).ifPresent(items::deserialize);
-            }
-        }
+        LimaTransferUtil.loadBlockResources(global, LimaCommonConstants.KEY_ITEM_CONTAINER, this::getItems);
     }
 
     default void saveItemResources(ValueOutput global)
     {
-        ValueOutput output = global.child(LimaCommonConstants.KEY_ITEM_CONTAINER);
-
-        for (BlockContentsType type : BlockContentsType.values())
-        {
-            LimaBlockEntityItems items = getItems(type);
-            if (items != null)
-            {
-                items.serialize(output.child(type.getSerializedName()));
-            }
-        }
+        LimaTransferUtil.saveBlockResources(global, LimaCommonConstants.KEY_ITEM_CONTAINER, this::getItems);
     }
 
     private @Nullable ResourceHandler<ItemResource> itemsWrapper(BlockContentsType contentsType, IOAccess topLevelAccess)

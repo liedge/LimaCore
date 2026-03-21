@@ -35,6 +35,7 @@ public class LimaCore
         LimaCoreDataComponents.register(modBus);
         LimaCoreLootRegistries.register(modBus);
         LimaCoreNetworkSerializers.register(modBus);
+        LimaCoreRecipes.register(modBus);
         LimaCoreTriggerTypes.register(modBus);
         LimaCoreWorldGen.register(modBus);
 

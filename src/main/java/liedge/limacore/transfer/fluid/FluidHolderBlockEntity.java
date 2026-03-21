@@ -1,10 +1,13 @@
 package liedge.limacore.transfer.fluid;
 
+import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
 import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -14,6 +17,14 @@ import org.jspecify.annotations.Nullable;
 public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
 {
     @Nullable LimaBlockEntityFluids getFluids(BlockContentsType contentsType);
+
+    default LimaBlockEntityFluids getFluidsOrThrow(BlockContentsType contentsType)
+    {
+        LimaBlockEntityFluids handler = getFluids(contentsType);
+        if (handler == null) throw new IllegalArgumentException("Block entity does not support fluid contents type " + contentsType.getSerializedName());
+
+        return handler;
+    }
 
     int getBaseFluidCapacity(BlockContentsType contentsType);
 
@@ -57,6 +68,16 @@ public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
             case OUTPUT_ONLY -> fluidsWrapper(BlockContentsType.OUTPUT, topLevelAccess);
             case INPUT_AND_OUTPUT -> LimaTransferUtil.mergeInputOutputHandlers(fluidsWrapper(BlockContentsType.INPUT, topLevelAccess), fluidsWrapper(BlockContentsType.OUTPUT, topLevelAccess));
         };
+    }
+
+    default void loadFluidResources(ValueInput global)
+    {
+        LimaTransferUtil.loadBlockResources(global, LimaCommonConstants.KEY_FLUIDS_CONTAINER, this::getFluids);
+    }
+
+    default void saveFluidResources(ValueOutput global)
+    {
+        LimaTransferUtil.saveBlockResources(global, LimaCommonConstants.KEY_FLUIDS_CONTAINER, this::getFluids);
     }
 
     private @Nullable ResourceHandler<FluidResource> fluidsWrapper(BlockContentsType contentsType, IOAccess topLevelAccess)

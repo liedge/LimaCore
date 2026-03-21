@@ -7,83 +7,83 @@ import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public interface LimaRecipeCheck<I extends RecipeInput, R extends Recipe<I>> extends RecipeManager.CachedCheck<I, R>
+public final class LimaRecipeCheck<I extends RecipeInput, R extends Recipe<I>> implements RecipeManager.CachedCheck<I, R>, ValueIOSerializable
 {
-    static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(RecipeType<R> type)
+    public static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(RecipeType<R> recipeType)
     {
-        return new SimpleCheck<>(type);
+        return new LimaRecipeCheck<>(recipeType);
     }
 
-    static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(Supplier<? extends RecipeType<R>> typeSupplier)
+    public static <I extends RecipeInput, R extends Recipe<I>> LimaRecipeCheck<I, R> create(Supplier<? extends RecipeType<R>> typeSupplier)
     {
-        return new SimpleCheck<>(typeSupplier.get());
+        return new LimaRecipeCheck<>(typeSupplier.get());
     }
 
-    RecipeType<R> getRecipeType();
+    private final RecipeType<R> recipeType;
+    private @Nullable ResourceKey<Recipe<?>> lastUsedRecipeKey;
 
-    @Nullable ResourceKey<Recipe<?>> getLastUsedRecipeKey();
+    private LimaRecipeCheck(RecipeType<R> recipeType)
+    {
+        this.recipeType = recipeType;
+    }
 
-    void setLastUsedRecipeKey(@Nullable ResourceKey<Recipe<?>> lastUsedRecipeKey);
+    public RecipeType<R> getRecipeType()
+    {
+        return recipeType;
+    }
+
+    public @Nullable ResourceKey<Recipe<?>> getLastUsedRecipeKey()
+    {
+        return lastUsedRecipeKey;
+    }
+
+    public void setLastUsedRecipeKey(@Nullable ResourceKey<Recipe<?>> lastUsedRecipeKey)
+    {
+        this.lastUsedRecipeKey = lastUsedRecipeKey;
+    }
 
     @Override
-    default Optional<RecipeHolder<R>> getRecipeFor(I input, ServerLevel level)
+    public Optional<RecipeHolder<R>> getRecipeFor(I input, ServerLevel level)
     {
-        Optional<RecipeHolder<R>> lookup = level.recipeAccess().getRecipeFor(getRecipeType(), input, level, getLastUsedRecipeKey());
+        Optional<RecipeHolder<R>> lookup = level.recipeAccess().getRecipeFor(recipeType, input, level, lastUsedRecipeKey);
         lookup.ifPresent(o -> setLastUsedRecipeKey(o.id()));
         return lookup;
     }
 
-    default Optional<RecipeHolder<R>> getLastUsedRecipe(ServerLevel level)
+    public Optional<RecipeHolder<R>> getLastUsedRecipe(ServerLevel level)
     {
-        ResourceKey<Recipe<?>> key = getLastUsedRecipeKey();
-        if (key == null) return Optional.empty();
-        return LimaRegistryUtil.getRecipeByKey(level, key, getRecipeType());
+        if (lastUsedRecipeKey == null) return Optional.empty();
+        else return LimaRegistryUtil.getRecipeByKey(level, lastUsedRecipeKey, recipeType);
     }
 
-    default void setLastUsedRecipe(@Nullable RecipeHolder<R> lastUsedRecipe)
+    public void setLastUsedRecipe(@Nullable RecipeHolder<R> lastUsedRecipe)
     {
         ResourceKey<Recipe<?>> key = lastUsedRecipe != null ? lastUsedRecipe.id() : null;
         setLastUsedRecipeKey(key);
     }
 
-    @SuppressWarnings("NullableProblems")
-    default LimaDataWatcher<Optional<ResourceKey<Recipe<?>>>> keepLastUsedSynced()
+    public LimaDataWatcher<Optional<ResourceKey<Recipe<?>>>> keepLastUsedSynced()
     {
         return AutomaticDataWatcher.keepNullableSynced(LimaCoreNetworkSerializers.OPTIONAL_RECIPE_KEY, this::getLastUsedRecipeKey, this::setLastUsedRecipeKey);
     }
 
-    final class SimpleCheck<I extends RecipeInput, R extends Recipe<I>> implements LimaRecipeCheck<I, R>
+    @Override
+    public void serialize(ValueOutput output)
     {
-        private final RecipeType<R> recipeType;
-        @Nullable
-        private ResourceKey<Recipe<?>> lastUsedRecipeKey;
+        output.storeNullable("recipe", Recipe.KEY_CODEC, lastUsedRecipeKey);
+    }
 
-        private SimpleCheck(RecipeType<R> recipeType)
-        {
-            this.recipeType = recipeType;
-        }
-
-        @Override
-        public RecipeType<R> getRecipeType()
-        {
-            return recipeType;
-        }
-
-        @Override
-        public @Nullable ResourceKey<Recipe<?>> getLastUsedRecipeKey()
-        {
-            return lastUsedRecipeKey;
-        }
-
-        @Override
-        public void setLastUsedRecipeKey(@Nullable ResourceKey<Recipe<?>> lastUsedRecipeKey)
-        {
-            this.lastUsedRecipeKey = lastUsedRecipeKey;
-        }
+    @Override
+    public void deserialize(ValueInput input)
+    {
+        this.lastUsedRecipeKey = input.read("recipe", Recipe.KEY_CODEC).orElse(null);
     }
 }

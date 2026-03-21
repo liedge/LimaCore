@@ -7,13 +7,13 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.ExternalResourceHandler;
-import liedge.limacore.transfer.LimitingTransferHandler;
+import liedge.limacore.transfer.VariableRateTransferHandler;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 
-public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements LimitingTransferHandler
+public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements VariableRateTransferHandler
 {
     private final FluidHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
