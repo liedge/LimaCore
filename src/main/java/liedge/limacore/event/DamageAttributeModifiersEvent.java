@@ -1,6 +1,7 @@
 package liedge.limacore.event;
 
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -12,19 +13,26 @@ import java.util.List;
 /**
  * Allows application of transient {@link AttributeModifier} instances to a
  * living entity when it is being attacked. These modifiers are removed at the end of
- * {@link net.minecraft.world.entity.LivingEntity#hurt(DamageSource, float)}.
+ * {@link net.minecraft.world.entity.LivingEntity#hurtServer(ServerLevel, DamageSource, float)}.
  */
 public final class DamageAttributeModifiersEvent extends Event
 {
+    private final ServerLevel level;
     private final DamageSource damageSource;
     private final float damage;
     private final List<Pair<Holder<Attribute>, AttributeModifier>> modifiers;
 
-    public DamageAttributeModifiersEvent(DamageSource damageSource, float damage, List<Pair<Holder<Attribute>, AttributeModifier>> modifiers)
+    public DamageAttributeModifiersEvent(ServerLevel level, DamageSource damageSource, float damage, List<Pair<Holder<Attribute>, AttributeModifier>> modifiers)
     {
+        this.level = level;
         this.damageSource = damageSource;
         this.damage = damage;
         this.modifiers = modifiers;
+    }
+
+    public ServerLevel getLevel()
+    {
+        return level;
     }
 
     public DamageSource getDamageSource()
