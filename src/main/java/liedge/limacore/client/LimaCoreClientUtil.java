@@ -1,10 +1,13 @@
 package liedge.limacore.client;
 
+import liedge.limacore.lib.LimaColor;
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -96,6 +99,16 @@ public final class LimaCoreClientUtil
     public static ItemStack getClientMainHandItem()
     {
         return getClientHeldItem(InteractionHand.MAIN_HAND);
+    }
+
+    public static void setQuadParticleColor(SingleQuadParticle particle, int rgb32)
+    {
+        particle.setColor(ARGB.redFloat(rgb32), ARGB.greenFloat(rgb32), ARGB.blueFloat(rgb32));
+    }
+
+    public static void setQuadParticleColor(SingleQuadParticle particle, LimaColor color)
+    {
+        particle.setColor(color.red(), color.green(), color.blue());
     }
     //#endregion
 }

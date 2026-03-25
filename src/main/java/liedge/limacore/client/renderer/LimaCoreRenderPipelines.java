@@ -12,6 +12,7 @@ public final class LimaCoreRenderPipelines
             .withLocation(LimaCore.RESOURCES.id("pipeline/entity_unlit_cutout"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1f)
             .withShaderDefine("NO_CARDINAL_LIGHTING")
+            .withShaderDefine("EMISSIVE")
             .withSampler("Sampler1")
             .build();
 }
