@@ -10,12 +10,11 @@ import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import java.util.List;
 
-public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>, S extends RecipeSerializer<R>, B extends LimaRecipeSerializerBuilder<R, S, B>>
+public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>, B extends LimaRecipeSerializerBuilder<R, B>>
 {
     protected MapCodec<List<LimaSizedItemIngredient>> itemIngredientCodec = LimaSizedItemIngredient.LIST_UNIT_MAP_CODEC;
     protected MapCodec<List<LimaSizedFluidIngredient>> fluidIngredientCodec = LimaSizedFluidIngredient.LIST_UNIT_MAP_CODEC;
@@ -97,7 +96,15 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
         return withFluidResults(0, max);
     }
 
-    public abstract S build(Identifier id);
+    protected abstract MapCodec<R> buildCodec();
+
+    protected abstract StreamCodec<RegistryFriendlyByteBuf, R> buildStreamCodec();
+
+    public final RecipeSerializer<R> build()
+    {
+        MapCodec<R> mapCodec = buildCodec().validate(LimaCustomRecipe::checkNotEmpty);
+        return new RecipeSerializer<>(mapCodec, buildStreamCodec());
+    }
 
     protected Products.P4<RecordCodecBuilder.Mu<R>, List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidResult>> commonFields(RecordCodecBuilder.Instance<R> instance)
     {

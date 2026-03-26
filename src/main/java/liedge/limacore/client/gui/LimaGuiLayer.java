@@ -2,7 +2,7 @@ package liedge.limacore.client.gui;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -33,7 +33,7 @@ public abstract class LimaGuiLayer implements GuiLayer
     }
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker deltaTracker)
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker)
     {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && isVisible(player))
@@ -47,5 +47,5 @@ public abstract class LimaGuiLayer implements GuiLayer
         return !player.isSpectator() && !Minecraft.getInstance().options.hideGui;
     }
 
-    protected abstract void renderGuiLayer(LocalPlayer player, GuiGraphics graphics, float partialTicks);
+    protected abstract void renderGuiLayer(LocalPlayer player, GuiGraphicsExtractor graphics, float partialTicks);
 }

@@ -20,6 +20,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
@@ -267,6 +268,12 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     @Override
+    public String group()
+    {
+        return EMPTY_GROUP;
+    }
+
+    @Override
     public boolean matches(T input, Level level)
     {
         return checkItemInputs(input) && checkFluidInputs(input);
@@ -298,13 +305,20 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return LimaCoreRecipes.CUSTOM_RECIPE_CATEGORY.get();
     }
 
+    @Deprecated
+    @Override
+    public List<RecipeDisplay> display()
+    {
+        return List.of();
+    }
+
     /**
      * @deprecated Use {@link LimaCustomRecipe#generateItemResults(LimaRecipeInput, HolderLookup.Provider, RandomSource)} to create
      * recipe item outputs.
      */
     @Deprecated
     @Override
-    public ItemStack assemble(T input, HolderLookup.Provider registries)
+    public ItemStack assemble(T input)
     {
         return ItemStack.EMPTY;
     }

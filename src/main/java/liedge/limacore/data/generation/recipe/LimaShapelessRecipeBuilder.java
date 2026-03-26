@@ -1,24 +1,17 @@
 package liedge.limacore.data.generation.recipe;
 
 import liedge.limacore.lib.ModResources;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 
-public class LimaShapelessRecipeBuilder extends StandardRecipeBuilder<ShapelessRecipe, LimaShapelessRecipeBuilder>
+public class LimaShapelessRecipeBuilder extends VanillaRecipeBuilder.StandardIngredients<ShapelessRecipe, CraftingBookCategory, CraftingRecipe.CraftingBookInfo, LimaShapelessRecipeBuilder>
 {
-    private CraftingBookCategory category = CraftingBookCategory.MISC;
-
-    public LimaShapelessRecipeBuilder(ModResources modResources, ItemStack resultItem)
+    public LimaShapelessRecipeBuilder(ModResources modResources, ItemStackTemplate resultItem)
     {
-        super(modResources, resultItem);
-    }
-
-    public LimaShapelessRecipeBuilder bookCategory(CraftingBookCategory category)
-    {
-        this.category = category;
-        return this;
+        super(modResources, resultItem, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
     }
 
     @Override
@@ -28,8 +21,8 @@ public class LimaShapelessRecipeBuilder extends StandardRecipeBuilder<ShapelessR
     }
 
     @Override
-    protected ShapelessRecipe buildRecipe()
+    protected ShapelessRecipe buildRecipe(Recipe.CommonInfo commonInfo, CraftingRecipe.CraftingBookInfo categoryInfo, ItemStackTemplate result)
     {
-        return new ShapelessRecipe(getGroupOrBlank(), category, result, NonNullList.copyOf(ingredients));
+        return new ShapelessRecipe(commonInfo, categoryInfo, result, ingredients);
     }
 }

@@ -17,7 +17,7 @@ import liedge.limacore.util.LimaItemUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -53,31 +53,31 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     protected final int labelColor;
     protected final int primaryWidth;
     protected final int primaryHeight;
-
-    protected int leftPadding;
-    protected int rightPadding;
-    protected int topPadding;
-    protected int bottomPadding;
+    protected final int leftPadding;
+    protected final int rightPadding;
+    protected final int topPadding;
+    protected final int bottomPadding;
 
     protected int bottomPos;
     protected int rightPos;
 
     protected @Nullable LimaFluidSlot hoveredFluidSlot;
 
-    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int primaryWidth, int primaryHeight, int labelColor)
+    protected LimaMenuScreen(M menu, Inventory inventory, Component title, int primaryWidth, int primaryHeight, int leftPadding, int rightPadding, int topPadding, int bottomPadding, int labelColor)
     {
-        super(menu, inventory, title);
+        super(menu, inventory, title, primaryWidth + leftPadding + rightPadding, primaryHeight + topPadding + bottomPadding);
         this.primaryWidth = primaryWidth;
         this.primaryHeight = primaryHeight;
+        this.leftPadding = leftPadding;
+        this.rightPadding = rightPadding;
+        this.topPadding = topPadding;
+        this.bottomPadding = bottomPadding;
         this.labelColor = labelColor;
     }
 
     @Override
     protected void init()
     {
-        this.imageWidth = primaryWidth + leftPadding + rightPadding;
-        this.imageHeight = primaryHeight + topPadding + bottomPadding;
-
         this.leftPos = (this.width - this.imageWidth) / 2 + leftPadding;
         this.topPos = (this.height - this.imageHeight) / 2 + topPadding;
 
@@ -95,16 +95,17 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
     {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+
+        extractTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics graphics, int x, int y)
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int x, int y)
     {
-        super.renderTooltip(graphics, x, y);
+        super.extractTooltip(graphics, x, y);
 
         // Render fluid slot tooltips
         if (hoveredFluidSlot != null)
@@ -117,7 +118,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
 
                 if (Minecraft.getInstance().options.advancedItemTooltips)
                 {
-                    String id = LimaRegistryUtil.getNonNullRegistryId(stack.getFluidHolder()).toString();
+                    String id = LimaRegistryUtil.getNonNullRegistryId(stack.typeHolder()).toString();
                     lines.add(Component.literal(id).withStyle(ChatFormatting.DARK_GRAY));
                 }
 
@@ -140,10 +141,10 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, labelColor, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, labelColor, false);
+        graphics.text(font, title, titleLabelX, titleLabelY, labelColor, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, labelColor, false);
     }
 
     @Override
@@ -244,7 +245,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         {
             if (event.getContainerScreen() instanceof LimaMenuScreen<?> limaScreen)
             {
-                GuiGraphics graphics = event.getGuiGraphics();
+                GuiGraphicsExtractor graphics = event.getGuiGraphics();
                 int mouseX = event.getMouseX();
                 int mouseY = event.getMouseY();
                 limaScreen.hoveredFluidSlot = null;

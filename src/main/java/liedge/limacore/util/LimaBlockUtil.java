@@ -131,7 +131,7 @@ public final class LimaBlockUtil
 
     public static @Nullable LevelChunk getSafeLevelChunk(@Nullable LevelReader level, ChunkPos chunkPos)
     {
-        return getSafeLevelChunk(level, chunkPos.x, chunkPos.z);
+        return getSafeLevelChunk(level, chunkPos.x(), chunkPos.z());
     }
 
     /**

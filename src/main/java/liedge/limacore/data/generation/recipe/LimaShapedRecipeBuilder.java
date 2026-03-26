@@ -8,11 +8,8 @@ import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.ItemLike;
 
 import java.util.List;
@@ -21,12 +18,12 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
 {
     private final List<String> rows = new ObjectArrayList<>();
     private final Char2ObjectMap<Ingredient> ingredients = new Char2ObjectOpenHashMap<>();
-    private final ItemStack resultItem;
+    private final ItemStackTemplate resultItem;
     private CraftingBookCategory category = CraftingBookCategory.MISC;
 
     private boolean showNotification = true;
 
-    public LimaShapedRecipeBuilder(ModResources resources, ItemStack resultItem)
+    public LimaShapedRecipeBuilder(ModResources resources, ItemStackTemplate resultItem)
     {
         super(resources);
         this.resultItem = resultItem;
@@ -86,12 +83,13 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     protected ShapedRecipe buildRecipe()
     {
         ShapedRecipePattern pattern = ShapedRecipePattern.of(ingredients, rows);
-        return new ShapedRecipe(getGroupOrBlank(), category, pattern, resultItem, showNotification);
+
+        return new ShapedRecipe(new Recipe.CommonInfo(showNotification), new CraftingRecipe.CraftingBookInfo(category, getGroupOrBlank()), pattern, resultItem);
     }
 
     @Override
     protected String getDefaultRecipeName()
     {
-        return LimaRegistryUtil.getItemName(resultItem);
+        return LimaRegistryUtil.getNonNullRegistryId(resultItem.typeHolder()).getPath();
     }
 }

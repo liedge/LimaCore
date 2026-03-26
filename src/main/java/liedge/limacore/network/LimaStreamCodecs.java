@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.LimaCoreClientUtil;
 import liedge.limacore.util.LimaCoreObjects;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -21,7 +20,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
@@ -37,8 +37,8 @@ public final class LimaStreamCodecs
 
     // Common registries
     public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_DIRECT = ByteBufCodecs.registry(Registries.ITEM);
-    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_HOLDER = ByteBufCodecs.holderRegistry(Registries.ITEM);
-    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Fluid>> FLUID_HOLDER = ByteBufCodecs.holderRegistry(Registries.FLUID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, List<SlotDisplay>> SLOT_DISPLAYS = SlotDisplay.STREAM_CODEC.apply(ByteBufCodecs.list());
+    public static final StreamCodec<ByteBuf, ResourceKey<Recipe<?>>> RECIPE_KEY = ResourceKey.streamCodec(Registries.RECIPE);
 
     // Extra codecs
     public static final StreamCodec<ByteBuf, Unit> UNIT = NeoForgeStreamCodecs.uncheckedUnit(Unit.INSTANCE);

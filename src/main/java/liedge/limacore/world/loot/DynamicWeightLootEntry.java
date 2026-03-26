@@ -3,16 +3,19 @@ package liedge.limacore.world.loot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.entries.*;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -62,9 +65,9 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
     }
 
     @Override
-    public LootPoolEntryType getType()
+    public MapCodec<? extends LootPoolEntryContainer> codec()
     {
-        return LimaCoreLootRegistries.DYNAMIC_WEIGHT_LOOT_ENTRY.get();
+        return CODEC;
     }
 
     @Override
@@ -97,7 +100,7 @@ public final class DynamicWeightLootEntry extends LootPoolEntryContainer
     {
         private final LootPoolEntryContainer child;
 
-        private NumberProvider dynamicWeight;
+        private @Nullable NumberProvider dynamicWeight;
         private boolean replaceWeight = true;
 
         public Builder(LootPoolEntryContainer child)

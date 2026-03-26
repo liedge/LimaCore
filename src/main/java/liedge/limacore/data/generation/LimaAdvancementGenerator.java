@@ -10,7 +10,7 @@ import net.minecraft.data.advancements.AdvancementProvider;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,34 +39,34 @@ public abstract class LimaAdvancementGenerator implements AdvancementSubProvider
         return Component.translatable(defaultAdvancementDescriptionKey(id));
     }
 
-    protected Advancement.Builder builder(Identifier id, ItemStack icon, AdvancementType type, @Nullable Identifier background, boolean showToast, boolean announceToChat, boolean hidden)
+    protected Advancement.Builder builder(Identifier id, ItemStackTemplate icon, AdvancementType type, @Nullable Identifier background, boolean showToast, boolean announceToChat, boolean hidden)
     {
         return Advancement.Builder.advancement().display(icon, defaultTitle(id), defaultDesc(id), background, type, showToast, announceToChat, hidden);
     }
 
     protected Advancement.Builder builder(Identifier id, ItemLike iconItem, AdvancementType type, @Nullable Identifier background, boolean showToast, boolean announceToChat, boolean hidden)
     {
-        return builder(id, new ItemStack(iconItem.asItem()), type, background, showToast, announceToChat, hidden);
+        return builder(id, new ItemStackTemplate(iconItem.asItem()), type, background, showToast, announceToChat, hidden);
     }
 
-    protected Advancement.Builder rootBuilder(Identifier id, ItemStack icon, AdvancementType type, Identifier background)
+    protected Advancement.Builder rootBuilder(Identifier id, ItemStackTemplate icon, AdvancementType type, Identifier background)
     {
         return builder(id, icon, type, background, false, false, false);
     }
 
     protected Advancement.Builder rootBuilder(Identifier id, ItemLike iconItem, AdvancementType type, Identifier background)
     {
-        return rootBuilder(id, new ItemStack(iconItem.asItem()), type, background);
+        return rootBuilder(id, new ItemStackTemplate(iconItem.asItem()), type, background);
     }
 
-    protected Advancement.Builder normalBuilder(Identifier id, ItemStack icon, AdvancementType type)
+    protected Advancement.Builder normalBuilder(Identifier id, ItemStackTemplate icon, AdvancementType type)
     {
         return builder(id, icon, type, null, true, true, false);
     }
 
     protected Advancement.Builder normalBuilder(Identifier id, ItemLike iconItem, AdvancementType type)
     {
-        return normalBuilder(id, new ItemStack(iconItem.asItem()), type);
+        return normalBuilder(id, new ItemStackTemplate(iconItem.asItem()), type);
     }
 
     protected AdvancementRewards.Builder defaultLootReward(Identifier id)

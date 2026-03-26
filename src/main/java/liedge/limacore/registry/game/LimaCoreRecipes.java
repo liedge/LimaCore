@@ -15,7 +15,7 @@ public final class LimaCoreRecipes
 
     public static void register(IEventBus modBus)
     {
-        modBus.register(BOOK_CATEGORIES);
+        BOOK_CATEGORIES.register(modBus);
     }
 
     public static final DeferredHolder<RecipeBookCategory, RecipeBookCategory> CUSTOM_RECIPE_CATEGORY = BOOK_CATEGORIES.register("custom", RecipeBookCategory::new);

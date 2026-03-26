@@ -3,7 +3,6 @@ package liedge.limacore.lib;
 import liedge.limacore.registry.LimaDeferredAttributes;
 import liedge.limacore.registry.LimaDeferredItems;
 import liedge.limacore.registry.LimaDeferredNetworkSerializers;
-import liedge.limacore.registry.LimaDeferredRecipeSerializers;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -14,6 +13,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -91,6 +91,11 @@ public record ModResources(String modid)
     {
         return resourceKey(Registries.RECIPE, name);
     }
+
+    public <T> ContextKey<T> contextKey(String name)
+    {
+        return new ContextKey<>(id(name));
+    }
     //#endregion
 
     //#region Deferred registers
@@ -124,6 +129,11 @@ public record ModResources(String modid)
         return DeferredRegister.createBlocks(modid);
     }
 
+    public DeferredRegister.Entities deferredEntities()
+    {
+        return DeferredRegister.createEntities(modid);
+    }
+
     public DeferredRegister.DataComponents deferredDataComponents(ResourceKey<Registry<DataComponentType<?>>> componentRegistryKey)
     {
         return DeferredRegister.DataComponents.createDataComponents(componentRegistryKey, modid);
@@ -132,11 +142,6 @@ public record ModResources(String modid)
     public DeferredRegister.DataComponents deferredDataComponents()
     {
         return deferredDataComponents(Registries.DATA_COMPONENT_TYPE);
-    }
-
-    public LimaDeferredRecipeSerializers deferredRecipeSerializers()
-    {
-        return LimaDeferredRecipeSerializers.create(modid);
     }
 
     public LimaDeferredAttributes deferredAttributes()

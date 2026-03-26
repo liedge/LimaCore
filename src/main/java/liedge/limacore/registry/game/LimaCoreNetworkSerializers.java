@@ -8,7 +8,6 @@ import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.registry.LimaDeferredNetworkSerializers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -45,9 +44,10 @@ public final class LimaCoreNetworkSerializers
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<IntList>> INT_LIST = SERIALIZERS.registerCodec("int_list", () -> LimaStreamCodecs.INT_LIST);
 
     // Common data objects
-    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Identifier>> IDENTIFIER = SERIALIZERS.registerCodec("rl", () -> Identifier.STREAM_CODEC);
-    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<Identifier>>> OPTIONAL_IDENTIFIER = SERIALIZERS.registerCodec("optional_rl", () -> Identifier.STREAM_CODEC.apply(LimaStreamCodecs.asOptional()));
-    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<ResourceKey<Recipe<?>>>>> OPTIONAL_RECIPE_KEY = SERIALIZERS.registerCodec("optional_recipe", () -> ResourceKey.streamCodec(Registries.RECIPE).apply(LimaStreamCodecs.asOptional()));
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Identifier>> IDENTIFIER = SERIALIZERS.registerCodec("identifier", () -> Identifier.STREAM_CODEC);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<Identifier>>> OPTIONAL_IDENTIFIER = SERIALIZERS.registerCodec("optional_identifier", () -> Identifier.STREAM_CODEC.apply(LimaStreamCodecs.asOptional()));
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ResourceKey<Recipe<?>>>> RECIPE_KEY = SERIALIZERS.registerCodec("recipe_key", () -> LimaStreamCodecs.RECIPE_KEY);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<ResourceKey<Recipe<?>>>>> OPTIONAL_RECIPE_KEY = SERIALIZERS.registerCodec("optional_recipe_key", () -> LimaStreamCodecs.RECIPE_KEY.apply(LimaStreamCodecs.asOptional()));
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<BlockPos>> BLOCK_POS = SERIALIZERS.registerCodec("block_pos", () -> BlockPos.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemStack>> ITEM_STACK = SERIALIZERS.registerCodec("item_stack", () -> ItemStack.OPTIONAL_STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<ItemResource>> ITEM_RESOURCE = SERIALIZERS.registerCodec("item_resource", () -> ItemResource.STREAM_CODEC);

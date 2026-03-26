@@ -9,7 +9,7 @@ import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 
 import java.util.List;
 import java.util.Set;
@@ -42,5 +42,5 @@ public abstract class LimaLootTableProvider extends LootTableProvider
     }
 
     @Override
-    protected void validate(WritableRegistry<LootTable> registry, ValidationContext validationContext, ProblemReporter.Collector reporter) { }
+    protected void validate(WritableRegistry<LootTable> tables, ValidationContextSource validationContext, ProblemReporter.Collector problems) { }
 }

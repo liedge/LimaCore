@@ -33,8 +33,10 @@ public class LimaCore
     {
         LimaCoreAttributes.register(modBus);
         LimaCoreDataComponents.register(modBus);
+        LimaCoreLootConditions.register(modBus);
         LimaCoreLootRegistries.register(modBus);
         LimaCoreNetworkSerializers.register(modBus);
+        LimaCoreNumberProviders.register(modBus);
         LimaCoreRecipes.register(modBus);
         LimaCoreTriggerTypes.register(modBus);
         LimaCoreWorldGen.register(modBus);

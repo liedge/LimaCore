@@ -36,7 +36,7 @@ public final class LimaAdvancementUtil
 
     public static ItemPredicate matchingItems(ItemLike... items)
     {
-        HolderSet<Item> set = HolderSet.direct(LimaRegistryUtil::builtInHolder, items);
+        HolderSet<Item> set = HolderSet.direct(itemLike -> LimaRegistryUtil.builtInHolder(itemLike.asItem()), items);
         return new ItemPredicate(Optional.of(set), MinMaxBounds.Ints.ANY, DataComponentMatchers.ANY);
     }
 

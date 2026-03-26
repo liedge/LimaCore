@@ -2,28 +2,20 @@ package liedge.limacore.world.loot;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.List;
 import java.util.Set;
 
-/**
- * Runs {@link BlockEntity#saveToItem(ItemStack, HolderLookup.Provider)} on the loot item stack. Only
- * copies data if the loot item is a block item and that block is contained within {@link BlockEntityType#getValidBlocks()}.
- */
 public final class SaveBlockEntityFunction extends LootItemConditionalFunction
 {
     public static final MapCodec<SaveBlockEntityFunction> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, SaveBlockEntityFunction::new));
@@ -39,9 +31,9 @@ public final class SaveBlockEntityFunction extends LootItemConditionalFunction
     }
 
     @Override
-    public LootItemFunctionType<? extends LootItemConditionalFunction> getType()
+    public MapCodec<? extends LootItemConditionalFunction> codec()
     {
-        return LimaCoreLootRegistries.SAVE_BLOCK_ENTITY.get();
+        return CODEC;
     }
 
     @Override

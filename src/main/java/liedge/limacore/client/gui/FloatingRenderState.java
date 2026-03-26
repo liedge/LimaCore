@@ -3,7 +3,7 @@ package liedge.limacore.client.gui;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2f;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +25,7 @@ public abstract class FloatingRenderState implements GuiElementRenderState
         this.pipeline = pipeline;
         this.textureSetup = textureSetup;
         this.scissorArea = scissorArea;
-        this.bounds = LimaGuiUtil.floatBounds(x1, y1, x2, y2, pose, scissorArea);
+        this.bounds = LimaGuiUtil.floatBounds(x1, y1, x2, y2, scissorArea);
 
         this.pose = pose;
         this.x1 = x1;

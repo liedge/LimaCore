@@ -1,7 +1,7 @@
 package liedge.limacore.client.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
@@ -26,12 +26,12 @@ public abstract class FillBarWidget extends BaseLimaRenderable
 
     protected abstract Identifier getForegroundSprite(float fillPercentage);
 
-    protected void renderBackground(GuiGraphics graphics)
+    protected void renderBackground(GuiGraphicsExtractor graphics)
     {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(), getX(), getY(), getWidth(), getHeight());
     }
 
-    protected void renderHorizontalBar(GuiGraphics graphics, float fillPercentage)
+    protected void renderHorizontalBar(GuiGraphicsExtractor graphics, float fillPercentage)
     {
         if (fillPercentage > 0)
         {
@@ -40,7 +40,7 @@ public abstract class FillBarWidget extends BaseLimaRenderable
         }
     }
 
-    protected void renderVerticalBar(GuiGraphics graphics, float fillPercentage)
+    protected void renderVerticalBar(GuiGraphicsExtractor graphics, float fillPercentage)
     {
         if (fillPercentage > 0)
         {
@@ -57,7 +57,7 @@ public abstract class FillBarWidget extends BaseLimaRenderable
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
         {
             renderBackground(graphics);
             renderHorizontalBar(graphics, getFillPercentage());
@@ -72,7 +72,7 @@ public abstract class FillBarWidget extends BaseLimaRenderable
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
         {
             renderBackground(graphics);
             renderVerticalBar(graphics, getFillPercentage());

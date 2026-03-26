@@ -1,6 +1,5 @@
 package liedge.limacore.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 
 public interface LimaRenderable extends Renderable
@@ -12,9 +11,6 @@ public interface LimaRenderable extends Renderable
     int getWidth();
 
     int getHeight();
-
-    @Override
-    void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);
 
     default boolean hasTooltip()
     {

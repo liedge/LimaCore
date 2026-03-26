@@ -19,7 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
     protected final ModResources resources;
 
-    private String group;
+    private String group = "";
     private AdvancementRequirements.Strategy strategy = AdvancementRequirements.Strategy.OR;
 
     protected LimaRecipeBuilder(ModResources resources)
@@ -85,13 +85,6 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     protected final B selfUnchecked()
     {
         return (B) this;
-    }
-
-    @Deprecated
-    @Override
-    public final Item getResult()
-    {
-        throw new UnsupportedOperationException("Use getDefaultRecipeName instead");
     }
 
     @Override
@@ -142,6 +135,12 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     {
         AdvancementHolder advancement = buildAdvancement(recipeOutput.advancement(), key, criteria);
         recipeOutput.accept(key, recipe, advancement, conditions.toArray(ICondition[]::new));
+    }
+
+    @Override
+    public ResourceKey<Recipe<?>> defaultId()
+    {
+        return resources.recipeKey(getDefaultRecipeName());
     }
 
     @Override

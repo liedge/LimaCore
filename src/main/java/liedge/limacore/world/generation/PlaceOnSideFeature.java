@@ -57,7 +57,7 @@ public final class PlaceOnSideFeature extends Feature<PlaceOnSideFeature.Configu
         WorldGenLevel level = context.level();
         BlockPos origin = context.origin();
 
-        BlockState toPlace = config.toPlace.getState(context.random(), origin);
+        BlockState toPlace = config.toPlace.getState(level, context.random(), origin);
         EnumProperty<Direction> facingProperty = findProperty(toPlace, config.facingProperty);
 
         if (facingProperty == null) return false;

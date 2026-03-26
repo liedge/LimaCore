@@ -11,7 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
@@ -129,7 +128,7 @@ public final class LimaRegistryUtil
 
     public static String getFluidName(FluidStack fluid)
     {
-        return getFluidName(fluid.getFluidHolder());
+        return getFluidName(fluid.getFluid());
     }
 
     public static String getFluidName(Fluid fluid)
@@ -157,9 +156,15 @@ public final class LimaRegistryUtil
 
     //#region Built in holder helpers
     @SuppressWarnings("deprecation")
-    public static Holder<Item> builtInHolder(ItemLike itemLike)
+    public static Holder<Item> builtInHolder(Item item)
     {
-        return itemLike.asItem().builtInRegistryHolder();
+        return item.builtInRegistryHolder();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Holder<Block> builtInHolder(Block block)
+    {
+        return block.builtInRegistryHolder();
     }
 
     @SuppressWarnings("deprecation")
