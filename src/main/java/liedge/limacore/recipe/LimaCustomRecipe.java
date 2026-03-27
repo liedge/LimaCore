@@ -1,19 +1,16 @@
 package liedge.limacore.recipe;
 
 import com.google.common.base.Preconditions;
-import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
-import liedge.limacore.recipe.ingredient.LimaSizedIngredient;
-import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
+import liedge.limacore.recipe.input.RecipeFluidInput;
+import liedge.limacore.recipe.input.RecipeItemInput;
+import liedge.limacore.recipe.input.RecipeStackInput;
 import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
-import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.registry.game.LimaCoreRecipes;
 import liedge.limacore.util.LimaStreamsUtil;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -37,69 +34,64 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
-public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Recipe<T>
+public abstract class LimaCustomRecipe<T extends RecipeInputAccess> implements Recipe<T>
 {
     public static final String EMPTY_GROUP = "";
     public static final MapCodec<String> GROUP_MAP_CODEC = Codec.STRING.optionalFieldOf("group", EMPTY_GROUP);
 
     public static <R extends LimaCustomRecipe<?>> DataResult<R> checkNotEmpty(R recipe)
     {
-        if (recipe.getItemIngredients().isEmpty() && recipe.getFluidIngredients().isEmpty())
-            return DataResult.error(() -> "Recipe has no item or fluid ingredients.");
+        if (recipe.getItemInputs().isEmpty() && recipe.getFluidInputs().isEmpty())
+            return DataResult.error(() -> "Recipe has no item or fluid inputs.");
         else if (recipe.getItemResults().isEmpty() && recipe.getFluidResults().isEmpty())
             return DataResult.error(() -> "Recipe has no item or fluid results.");
-        else if (Stream.concat(recipe.getItemResults().stream(), recipe.getFluidResults().stream()).noneMatch(sbr -> sbr.getPriority() == ResultPriority.PRIMARY))
-        {
-            return DataResult.error(() -> "At least one result (item or fluid) must be designated as primary.");
-        }
         else
             return DataResult.success(recipe);
     }
 
     // Ingredients
-    private final List<LimaSizedItemIngredient> itemIngredients;
-    private final List<LimaSizedFluidIngredient> fluidIngredients;
+    private final List<RecipeItemInput> itemInputs;
+    private final List<RecipeFluidInput> fluidInputs;
 
     // Results
     private final List<ItemResult> itemResults;
     private final List<FluidResult> fluidResults;
 
-    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<LimaSizedFluidIngredient> fluidIngredients, List<ItemResult> itemResults, List<FluidResult> fluidResults)
+    protected LimaCustomRecipe(List<RecipeItemInput> itemInputs, List<RecipeFluidInput> fluidInputs, List<ItemResult> itemResults, List<FluidResult> fluidResults)
     {
-        this.itemIngredients = itemIngredients;
-        this.fluidIngredients = fluidIngredients;
+        this.itemInputs = itemInputs;
+        this.fluidInputs = fluidInputs;
         this.itemResults = itemResults;
         this.fluidResults = fluidResults;
     }
 
-    protected LimaCustomRecipe(List<LimaSizedItemIngredient> itemIngredients, List<ItemResult> itemResults)
+    protected LimaCustomRecipe(List<RecipeItemInput> itemInputs, List<ItemResult> itemResults)
     {
-        this(itemIngredients, List.of(), itemResults, List.of());
+        this(itemInputs, List.of(), itemResults, List.of());
     }
 
     //#region Ingredient functions
-    public List<LimaSizedItemIngredient> getItemIngredients()
+    public List<RecipeItemInput> getItemInputs()
     {
-        return itemIngredients;
+        return itemInputs;
     }
 
-    public List<LimaSizedFluidIngredient> getFluidIngredients()
+    public List<RecipeFluidInput> getFluidInputs()
     {
-        return fluidIngredients;
+        return fluidInputs;
     }
 
-    public LimaSizedItemIngredient getItemIngredient(int index)
+    public RecipeItemInput getItemInput(int index)
     {
-        Preconditions.checkElementIndex(index, itemIngredients.size(), "Item Ingredient");
-        return itemIngredients.get(index);
+        Preconditions.checkElementIndex(index, itemInputs.size(), "Item Input");
+        return itemInputs.get(index);
     }
 
-    public LimaSizedFluidIngredient getFluidIngredient(int index)
+    public RecipeFluidInput getFluidInput(int index)
     {
-        Preconditions.checkElementIndex(index, fluidIngredients.size(), "Fluid Ingredient");
-        return fluidIngredients.get(index);
+        Preconditions.checkElementIndex(index, fluidInputs.size(), "Fluid Input");
+        return fluidInputs.get(index);
     }
     //#endregion
 
@@ -126,9 +118,9 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return itemResults.getFirst();
     }
 
-    public List<ResourceStack<ItemResource>> generateItemResults(T input, HolderLookup.Provider registries, RandomSource random)
+    public List<ResourceStack<ItemResource>> generateItemResults(T input, RandomSource random)
     {
-        return itemResults.stream().map(r -> r.generateResult(random)).filter(s -> !s.isEmpty()).collect(LimaStreamsUtil.toObjectList());
+        return itemResults.stream().map(result -> result.createResource(random)).filter(rs -> !rs.isEmpty()).collect(LimaStreamsUtil.toObjectList());
     }
 
     public List<FluidResult> getFluidResults()
@@ -153,69 +145,69 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return fluidResults.getFirst();
     }
 
-    public List<ResourceStack<FluidResource>> generateFluidResults(T input, HolderLookup.Provider registries, RandomSource random)
+    public List<ResourceStack<FluidResource>> generateFluidResults(T input, RandomSource random)
     {
-        return fluidResults.stream().map(r -> r.generateResult(random)).filter(s -> !s.isEmpty()).collect(LimaStreamsUtil.toObjectList());
+        return fluidResults.stream().map(result -> result.createResource(random)).filter(rs -> !rs.isEmpty()).collect(LimaStreamsUtil.toObjectList());
     }
     //#endregion
 
-    private boolean skipIngredient(LimaSizedIngredient<?, ?> ingredient, RandomSource random)
+    private boolean skipInput(RecipeStackInput<?, ?> input, RandomSource random)
     {
-        float chance = ingredient.getConsumeChance();
-        return ingredient.isDeterministic() && (chance == 0 || !(random.nextFloat() < chance));
+        float chance = input.consumeChance();
+        return input.isRandom() && (chance == 0 || !(random.nextFloat() < chance));
     }
 
-    public void consumeItemIngredients(T input, RandomSource random)
+    public void consumeItemInputs(T inputAccess, RandomSource random)
     {
-        ResourceHandler<ItemResource> items = input.items();
-        if (itemIngredients.isEmpty() || items == null) return;
+        ResourceHandler<ItemResource> items = inputAccess.items();
+        if (itemInputs.isEmpty() || items == null) return;
 
         try (Transaction tx = Transaction.openRoot())
         {
-            for (LimaSizedItemIngredient ingredient : itemIngredients)
+            for (RecipeItemInput input : itemInputs)
             {
-                if (skipIngredient(ingredient, random)) continue;
+                if (skipInput(input, random)) continue;
 
-                Ingredient root = ingredient.getIngredient();
-                extractIngredient(items, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                Ingredient ingredient = input.ingredient();
+                extractIngredient(items, (resource, count) -> ingredient.test(resource.toStack(count)), input.count(), tx);
             }
 
             tx.commit();
         }
     }
 
-    public void consumeFluidIngredients(T input, RandomSource random)
+    public void consumeFluidInputs(T inputAccess, RandomSource random)
     {
-        ResourceHandler<FluidResource> fluids = input.fluids();
-        if (fluidIngredients.isEmpty() || fluids == null) return;
+        ResourceHandler<FluidResource> fluids = inputAccess.fluids();
+        if (fluidInputs.isEmpty() || fluids == null) return;
 
         try (Transaction tx = Transaction.openRoot())
         {
-            for (LimaSizedFluidIngredient ingredient : fluidIngredients)
+            for (RecipeFluidInput input : fluidInputs)
             {
-                if (skipIngredient(ingredient, random)) continue;
+                if (skipInput(input, random)) continue;
 
-                FluidIngredient root = ingredient.getIngredient();
-                extractIngredient(fluids, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                FluidIngredient ingredient = input.ingredient();
+                extractIngredient(fluids, (resource, amount) -> ingredient.test(resource.toStack(amount)), input.count(), tx);
             }
 
             tx.commit();
         }
     }
 
-    private boolean checkItemInputs(T input)
+    private boolean checkItemInputs(T inputAccess)
     {
-        if (itemIngredients.isEmpty()) return true;
+        if (itemInputs.isEmpty()) return true;
 
-        ResourceHandler<ItemResource> items = input.items();
-        if (invalidInputSize(items, itemIngredients)) return false;
+        ResourceHandler<ItemResource> items = inputAccess.items();
+        if (invalidInputSize(items, itemInputs)) return false;
 
         try (Transaction tx = Transaction.openRoot())
         {
-            for (LimaSizedItemIngredient ingredient : itemIngredients)
+            for (RecipeItemInput input : itemInputs)
             {
-                Ingredient root = ingredient.getIngredient();
-                boolean pass = extractIngredient(items, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                Ingredient ingredient = input.ingredient();
+                boolean pass = extractIngredient(items, (resource, count) -> ingredient.test(resource.toStack(count)), input.count(), tx);
                 if (!pass) return false;
             }
         }
@@ -223,19 +215,19 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
         return true;
     }
 
-    private boolean checkFluidInputs(T input)
+    private boolean checkFluidInputs(T inputAccess)
     {
-        if (fluidIngredients.isEmpty()) return true;
+        if (fluidInputs.isEmpty()) return true;
 
-        ResourceHandler<FluidResource> fluids = input.fluids();
-        if (invalidInputSize(fluids, fluidIngredients)) return false;
+        ResourceHandler<FluidResource> fluids = inputAccess.fluids();
+        if (invalidInputSize(fluids, fluidInputs)) return false;
 
         try (Transaction tx = Transaction.openRoot())
         {
-            for (LimaSizedFluidIngredient ingredient : fluidIngredients)
+            for (RecipeFluidInput input : fluidInputs)
             {
-                FluidIngredient root = ingredient.getIngredient();
-                boolean pass = extractIngredient(fluids, (resource, count) -> root.test(resource.toStack(count)), ingredient.getSize(), tx);
+                FluidIngredient ingredient = input.ingredient();
+                boolean pass = extractIngredient(fluids, (resource, count) -> ingredient.test(resource.toStack(count)), input.count(), tx);
                 if (!pass) return false;
             }
         }
@@ -313,7 +305,7 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     }
 
     /**
-     * @deprecated Use {@link LimaCustomRecipe#generateItemResults(LimaRecipeInput, HolderLookup.Provider, RandomSource)} to create
+     * @deprecated Use {@link #generateItemResults(RecipeInputAccess, RandomSource)} to create
      * recipe item outputs.
      */
     @Deprecated
@@ -322,7 +314,4 @@ public abstract class LimaCustomRecipe<T extends LimaRecipeInput> implements Rec
     {
         return ItemStack.EMPTY;
     }
-
-    @FunctionalInterface
-    public interface RecipeFactory<R extends LimaCustomRecipe<?>> extends Function4<List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidResult>, R> { }
 }

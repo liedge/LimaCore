@@ -3,9 +3,8 @@ package liedge.limacore.recipe;
 import com.mojang.datafixers.Products;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.network.LimaStreamCodecs;
-import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
-import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
+import liedge.limacore.recipe.input.RecipeFluidInput;
+import liedge.limacore.recipe.input.RecipeItemInput;
 import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -16,22 +15,16 @@ import java.util.List;
 
 public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>, B extends LimaRecipeSerializerBuilder<R, B>>
 {
-    protected MapCodec<List<LimaSizedItemIngredient>> itemIngredientCodec = LimaSizedItemIngredient.LIST_UNIT_MAP_CODEC;
-    protected MapCodec<List<LimaSizedFluidIngredient>> fluidIngredientCodec = LimaSizedFluidIngredient.LIST_UNIT_MAP_CODEC;
+    protected MapCodec<List<RecipeItemInput>> itemIngredientCodec = RecipeItemInput.EMPTY_LIST_CODEC;
+    protected MapCodec<List<RecipeFluidInput>> fluidIngredientCodec = RecipeFluidInput.EMPTY_LIST_CODEC;
     protected MapCodec<List<ItemResult>> itemResultCodec = ItemResult.LIST_UNIT_MAP_CODEC;
     protected MapCodec<List<FluidResult>> fluidResultCodec = FluidResult.LIST_UNIT_MAP_CODEC;
-
-    protected StreamCodec<RegistryFriendlyByteBuf, List<LimaSizedItemIngredient>> itemIngredientStreamCodec = LimaStreamCodecs.unitList();
-    protected StreamCodec<RegistryFriendlyByteBuf, List<LimaSizedFluidIngredient>> fluidIngredientStreamCodec = LimaStreamCodecs.unitList();
-    protected StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> itemResultStreamCodec = LimaStreamCodecs.unitList();
-    protected StreamCodec<RegistryFriendlyByteBuf, List<FluidResult>> fluidResultStreamCodec = LimaStreamCodecs.unitList();
 
     protected LimaRecipeSerializerBuilder() { }
 
     public B withItemIngredients(int min, int max)
     {
-        itemIngredientCodec = LimaSizedItemIngredient.listMapCodec(min, max);
-        itemIngredientStreamCodec = LimaSizedItemIngredient.listStreamCodec(min, max);
+        itemIngredientCodec = RecipeItemInput.listCodec(min, max);
         return thisBuilder();
     }
 
@@ -47,8 +40,7 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
 
     public B withFluidIngredients(int min, int max)
     {
-        fluidIngredientCodec = LimaSizedFluidIngredient.listMapCodec(min, max);
-        fluidIngredientStreamCodec = LimaSizedFluidIngredient.listStreamCodec(min, max);
+        fluidIngredientCodec = RecipeFluidInput.listCodec(min, max);
         return thisBuilder();
     }
 
@@ -65,7 +57,6 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
     public B withItemResults(int min, int max)
     {
         itemResultCodec = ItemResult.listMapCodec(min, max);
-        itemResultStreamCodec = ItemResult.listStreamCodec(min, max);
         return thisBuilder();
     }
 
@@ -82,7 +73,6 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
     public B withFluidResults(int min, int max)
     {
         fluidResultCodec = FluidResult.listMapCodec(min, max);
-        fluidResultStreamCodec = FluidResult.listStreamCodec(min, max);
         return thisBuilder();
     }
 
@@ -106,10 +96,10 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
         return new RecipeSerializer<>(mapCodec, buildStreamCodec());
     }
 
-    protected Products.P4<RecordCodecBuilder.Mu<R>, List<LimaSizedItemIngredient>, List<LimaSizedFluidIngredient>, List<ItemResult>, List<FluidResult>> commonFields(RecordCodecBuilder.Instance<R> instance)
+    protected Products.P4<RecordCodecBuilder.Mu<R>, List<RecipeItemInput>, List<RecipeFluidInput>, List<ItemResult>, List<FluidResult>> commonFields(RecordCodecBuilder.Instance<R> instance)
     {
-        return instance.group(itemIngredientCodec.forGetter(LimaCustomRecipe::getItemIngredients),
-                fluidIngredientCodec.forGetter(LimaCustomRecipe::getFluidIngredients),
+        return instance.group(itemIngredientCodec.forGetter(LimaCustomRecipe::getItemInputs),
+                fluidIngredientCodec.forGetter(LimaCustomRecipe::getFluidInputs),
                 itemResultCodec.forGetter(LimaCustomRecipe::getItemResults),
                 fluidResultCodec.forGetter(LimaCustomRecipe::getFluidResults));
     }

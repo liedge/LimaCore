@@ -9,7 +9,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jspecify.annotations.Nullable;
 
-public interface LimaRecipeInput extends RecipeInput
+public interface RecipeInputAccess extends RecipeInput
 {
     @Nullable ResourceHandler<ItemResource> items();
 

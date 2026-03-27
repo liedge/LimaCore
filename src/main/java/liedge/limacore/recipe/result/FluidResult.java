@@ -3,68 +3,109 @@ package liedge.limacore.recipe.result;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.data.EmptyFieldMapCodec;
-import liedge.limacore.network.LimaStreamCodecs;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.fluids.FluidInstance;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-public final class FluidResult extends ResourceResult<FluidResource>
+public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, String group, boolean required) implements RecipeResult<Fluid, FluidResource>
 {
-    public static final Codec<FluidResult> CODEC = codec(FluidResource.CODEC.fieldOf("fluid"), Integer.MAX_VALUE, FluidResult::new);
-    public static final StreamCodec<RegistryFriendlyByteBuf, FluidResult> STREAM_CODEC = streamCodec(FluidResource.STREAM_CODEC, FluidResult::new);
+    public static final Codec<FluidResult> CODEC = RecipeResult.codec(FluidInstance.FLUID_HOLDER_CODEC, ResultCount.codec(Integer.MAX_VALUE).fieldOf("amount"), FluidResult::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, FluidResult> STREAM_CODEC = RecipeResult.streamCodec(FluidInstance.FLUID_HOLDER_STREAM_CODEC, FluidResult::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, List<FluidResult>> LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
+
     public static final String MAP_CODEC_KEY = "fluid_results";
     public static final MapCodec<List<FluidResult>> LIST_UNIT_MAP_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
 
-    public static MapCodec<List<FluidResult>> listMapCodec(int min, int max)
+    public static MapCodec<List<FluidResult>> listMapCodec(int minInclusive, int maxInclusive)
     {
-        return listMapCodec(CODEC, MAP_CODEC_KEY, min, max);
+        return RecipeResult.listCodec(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
     }
 
-    public static StreamCodec<RegistryFriendlyByteBuf, List<FluidResult>> listStreamCodec(int min, int max)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, String group, boolean required)
     {
-        return STREAM_CODEC.apply(LimaStreamCodecs.asClampedList(min, max));
+        return new FluidResult(fluid, count, components, group, required);
     }
 
-    public static FluidResult create(FluidResource resource, ResultCount count, float chance, ResultPriority priority)
+    public static FluidResult of(Fluid fluid, ResultCount count, DataComponentPatch components, String group, boolean required)
     {
-        return new FluidResult(resource, count, chance, priority);
+        return new FluidResult(LimaRegistryUtil.builtInHolder(fluid), count, components, group, required);
     }
 
-    public static FluidResult create(FluidStack stack, float chance, ResultPriority priority, @Nullable ResultCount count)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components)
     {
-        FluidResource resource = FluidResource.of(stack);
-        count = count != null ? count : ResultCount.exactly(stack.getAmount());
-        return create(resource, count, chance, priority);
+        return of(fluid, count, components, NO_GROUP, true);
     }
 
-    public static FluidResult create(FluidStack stack, float chance, ResultPriority priority)
+    public static FluidResult of(Fluid fluid, ResultCount count, DataComponentPatch components)
     {
-        return create(stack, chance, priority, null);
+        return of(LimaRegistryUtil.builtInHolder(fluid), count, components);
     }
 
-    public static FluidResult create(Fluid fluid, ResultCount count, float chance, ResultPriority priority)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, String group, boolean required)
     {
-        return create(FluidResource.of(fluid), count, chance, priority);
+        return of(fluid, count, DataComponentPatch.EMPTY, group, required);
     }
 
-    public static FluidResult create(Holder<Fluid> fluidHolder, ResultCount count, float chance, ResultPriority priority)
+    public static FluidResult of(Fluid fluid, ResultCount count, String group, boolean required)
     {
-        return create(fluidHolder.value(), count, chance, priority);
+        return of(fluid, count, DataComponentPatch.EMPTY, group, required);
     }
 
-    private FluidResult(FluidResource resource, ResultCount count, float chance, ResultPriority priority)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count)
     {
-        super(resource, count, chance, priority);
+        return of(fluid, count, DataComponentPatch.EMPTY);
     }
 
-    public Fluid getFluid()
+    public static FluidResult of(Fluid fluid, ResultCount count)
     {
-        return resource.getFluid();
+        return of(fluid, count, DataComponentPatch.EMPTY);
+    }
+
+    public static FluidResult of(Holder<Fluid> fluid, int amount)
+    {
+        return of(fluid, ResultCount.exactly(amount), DataComponentPatch.EMPTY);
+    }
+
+    public static FluidResult of(Fluid fluid, int amount)
+    {
+        return of(LimaRegistryUtil.builtInHolder(fluid), amount);
+    }
+
+    public static FluidResult fromVanilla(FluidStackTemplate template)
+    {
+        return of(template.fluid(), ResultCount.exactly(template.amount()), template.components());
+    }
+
+    @Override
+    public Holder<Fluid> typeHolder()
+    {
+        return fluid;
+    }
+
+    @Override
+    public FluidResource getResource()
+    {
+        return FluidResource.of(fluid, components);
+    }
+
+    public FluidStack display(int amount)
+    {
+        if (amount <= 0) return FluidStack.EMPTY;
+        return new FluidStack(fluid, amount, components);
+    }
+
+    public FluidStack display()
+    {
+        return display(count.max());
     }
 }

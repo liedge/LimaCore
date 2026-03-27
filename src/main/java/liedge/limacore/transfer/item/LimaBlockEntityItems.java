@@ -3,6 +3,7 @@ package liedge.limacore.transfer.item;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.transfer.ExternalResourceHandler;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
@@ -23,6 +24,12 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
     public ResourceHandler<ItemResource> createIOWrapper(IOAccess topLevelAccess)
     {
         return new ExternalWrapper(this, topLevelAccess);
+    }
+
+    @Override
+    protected int getCapacity(int index, ItemResource resource)
+    {
+        return resource.isEmpty() ? Item.DEFAULT_MAX_STACK_SIZE : Math.min(resource.getMaxStackSize(), Item.DEFAULT_MAX_STACK_SIZE);
     }
 
     @Override

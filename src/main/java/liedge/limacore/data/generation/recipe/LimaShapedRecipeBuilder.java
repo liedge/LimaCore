@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
-import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -14,19 +13,14 @@ import net.minecraft.world.level.ItemLike;
 
 import java.util.List;
 
-public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, LimaShapedRecipeBuilder>
+public class LimaShapedRecipeBuilder extends VanillaRecipeBuilder<ShapedRecipe, CraftingBookCategory, CraftingRecipe.CraftingBookInfo, LimaShapedRecipeBuilder>
 {
     private final List<String> rows = new ObjectArrayList<>();
     private final Char2ObjectMap<Ingredient> ingredients = new Char2ObjectOpenHashMap<>();
-    private final ItemStackTemplate resultItem;
-    private CraftingBookCategory category = CraftingBookCategory.MISC;
 
-    private boolean showNotification = true;
-
-    public LimaShapedRecipeBuilder(ModResources resources, ItemStackTemplate resultItem)
+    public LimaShapedRecipeBuilder(ModResources resources, ItemStackTemplate result)
     {
-        super(resources);
-        this.resultItem = resultItem;
+        super(resources, result, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
     }
 
     public LimaShapedRecipeBuilder patterns(String... patterns)
@@ -61,18 +55,6 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
         return input(key, Ingredient.of(holders.getOrThrow(itemTag)));
     }
 
-    public LimaShapedRecipeBuilder showsNotification(boolean showNotification)
-    {
-        this.showNotification = showNotification;
-        return this;
-    }
-
-    public LimaShapedRecipeBuilder bookCategory(CraftingBookCategory category)
-    {
-        this.category = category;
-        return this;
-    }
-
     @Override
     protected String defaultFolderPrefix(ShapedRecipe recipe)
     {
@@ -80,16 +62,9 @@ public class LimaShapedRecipeBuilder extends LimaRecipeBuilder<ShapedRecipe, Lim
     }
 
     @Override
-    protected ShapedRecipe buildRecipe()
+    protected ShapedRecipe buildRecipe(Recipe.CommonInfo commonInfo, CraftingRecipe.CraftingBookInfo categoryInfo, ItemStackTemplate result)
     {
         ShapedRecipePattern pattern = ShapedRecipePattern.of(ingredients, rows);
-
-        return new ShapedRecipe(new Recipe.CommonInfo(showNotification), new CraftingRecipe.CraftingBookInfo(category, getGroupOrBlank()), pattern, resultItem);
-    }
-
-    @Override
-    protected String getDefaultRecipeName()
-    {
-        return LimaRegistryUtil.getNonNullRegistryId(resultItem.typeHolder()).getPath();
+        return new ShapedRecipe(commonInfo, categoryInfo, pattern, result);
     }
 }

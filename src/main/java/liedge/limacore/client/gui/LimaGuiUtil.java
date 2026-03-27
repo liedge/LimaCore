@@ -116,14 +116,15 @@ public final class LimaGuiUtil
 
         // Draw stretched borders sampled 1-px wide/high only
         int borderWidth = width - cornerSize * 2;
-        graphics.blit(pipeline, textureLocation, x + cornerSize, y, borderWidth, cornerSize, cornerSize, 0, 1, cornerSize, textureWidth, textureHeight);
-        graphics.blit(pipeline, textureLocation, x + cornerSize, cornerY2, borderWidth, cornerSize, cornerSize, vOffset, 1, cornerSize, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x + cornerSize, y, cornerSize, 0, borderWidth, cornerSize, 1, cornerSize, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x + cornerSize, cornerY2, cornerSize, vOffset, borderWidth, cornerSize, 1, cornerSize, textureWidth, textureHeight);
+
         int borderHeight = height - cornerSize * 2;
-        graphics.blit(pipeline, textureLocation, x, y + cornerSize, cornerSize, borderHeight, 0, cornerSize, cornerSize, 1, textureWidth, textureHeight);
-        graphics.blit(pipeline, textureLocation, cornerX2, y + cornerSize, cornerSize, borderHeight, uOffset, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x, y + cornerSize, 0, cornerSize, cornerSize, borderHeight, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, cornerX2, y + cornerSize, uOffset, cornerSize, cornerSize, borderHeight, cornerSize, 1, textureWidth, textureHeight);
 
         // Draw center sampled 1x1 only
-        graphics.blit(pipeline, textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x + cornerSize, y + cornerSize, cornerSize, cornerSize, borderWidth, borderHeight, 1, 1, textureWidth, textureHeight);
     }
 
     public static void nineSliceNoBottomBlit(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier textureLocation, int cornerSize, int x, int y, int width, int height, int textureWidth, int textureHeight)
@@ -138,13 +139,13 @@ public final class LimaGuiUtil
 
         // Draw only top and side borders. Side borders are 1x corner size longer than normal nine-slice
         int borderWidth = width - cornerSize * 2;
-        graphics.blit(pipeline, textureLocation, x + cornerSize, y, borderWidth, cornerSize, cornerSize, 0, 1, cornerSize, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x + cornerSize, y, cornerSize, 0, borderWidth, cornerSize, 1, cornerSize, textureWidth, textureHeight);
         int borderHeight = height - cornerSize;
-        graphics.blit(pipeline, textureLocation, x, y + cornerSize, cornerSize, borderHeight, 0, cornerSize, cornerSize, 1, textureWidth, textureHeight);
-        graphics.blit(pipeline, textureLocation, cornerX2, y + cornerSize, cornerSize, borderHeight, uOffset, cornerSize, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x, y + cornerSize, 0, cornerSize, cornerSize, borderHeight, cornerSize, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, cornerX2, y + cornerSize, uOffset, cornerSize, cornerSize, borderHeight, cornerSize, 1, textureWidth, textureHeight);
 
         // Draw center sampled 1x1 only
-        graphics.blit(pipeline, textureLocation, x + cornerSize, y + cornerSize, borderWidth, borderHeight, cornerSize, cornerSize, 1, 1, textureWidth, textureHeight);
+        graphics.blit(pipeline, textureLocation, x + cornerSize, y + cornerSize, cornerSize, cornerSize, borderWidth, borderHeight, 1, 1, textureWidth, textureHeight);
     }
 
     public static void renderFluid(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y)

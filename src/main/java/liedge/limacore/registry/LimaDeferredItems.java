@@ -26,12 +26,12 @@ public final class LimaDeferredItems extends DeferredRegister.Items
 
     public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor, Supplier<Item.Properties> properties)
     {
-        return registerItem(name, prop -> constructor.apply(block.get(), prop), properties);
+        return registerItem(name, props -> constructor.apply(block.get(), props), () -> properties.get().useBlockDescriptionPrefix());
     }
 
     public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor, UnaryOperator<Item.Properties> properties)
     {
-        return registerItem(name, prop -> constructor.apply(block.get(), prop), properties);
+        return registerCustomBlockItem(name, block, constructor, () -> properties.apply(new Item.Properties()));
     }
 
     public <B extends Block, I extends BlockItem> DeferredItem<I> registerCustomBlockItem(String name, Supplier<? extends B> block, BiFunction<? super B, Item.Properties, ? extends I> constructor)

@@ -3,6 +3,7 @@ package liedge.limacore.transfer;
 import com.google.common.base.Predicates;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.util.LimaTextUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.ValueIOSerializable;
@@ -48,6 +49,15 @@ public final class LimaTransferUtil
             T handler = accessor.apply(type);
             if (handler != null) handler.serialize(output.child(type.getSerializedName()));
         }
+    }
+
+    public static boolean canMergeIntoIndex(ResourceHandler<ItemResource> handler, int index, ItemStack toInsert)
+    {
+        ItemResource current = handler.getResource(index);
+        if (!(current.isEmpty() || current.matches(toInsert))) return false;
+
+        int limit = handler.getCapacityAsInt(index, current) - handler.getAmountAsInt(index);
+        return toInsert.getCount() <= limit;
     }
 
     public static String formatCompactFluidAmount(int amount)

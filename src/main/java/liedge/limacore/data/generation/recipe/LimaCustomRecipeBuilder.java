@@ -3,18 +3,15 @@ package liedge.limacore.data.generation.recipe;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.recipe.LimaCustomRecipe;
-import liedge.limacore.recipe.ingredient.LimaSizedFluidIngredient;
-import liedge.limacore.recipe.ingredient.LimaSizedItemIngredient;
+import liedge.limacore.recipe.input.RecipeFluidInput;
+import liedge.limacore.recipe.input.RecipeItemInput;
 import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
-import liedge.limacore.recipe.result.ResultCount;
-import liedge.limacore.recipe.result.ResultPriority;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
@@ -25,13 +22,8 @@ import java.util.List;
 
 public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> extends LimaRecipeBuilder<R, B>
 {
-    public static <R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> LimaCustomRecipeBuilder<R, B> simpleBuilder(ModResources resources, LimaCustomRecipe.RecipeFactory<R> factory)
-    {
-        return new SimpleBuilder<>(resources, factory);
-    }
-
-    protected final List<LimaSizedItemIngredient> itemIngredients = new ObjectArrayList<>();
-    protected final List<LimaSizedFluidIngredient> fluidIngredients = new ObjectArrayList<>();
+    protected final List<RecipeItemInput> itemInputs = new ObjectArrayList<>();
+    protected final List<RecipeFluidInput> fluidInputs = new ObjectArrayList<>();
     protected final List<ItemResult> itemResults = new ObjectArrayList<>();
     protected final List<FluidResult> fluidResults = new ObjectArrayList<>();
 
@@ -40,30 +32,30 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         super(modResources);
     }
 
-    public B input(LimaSizedItemIngredient sizedIngredient)
+    public B input(RecipeItemInput itemInput)
     {
-        itemIngredients.add(sizedIngredient);
+        itemInputs.add(itemInput);
         return selfUnchecked();
     }
 
     public B input(Ingredient ingredient)
     {
-        return input(new LimaSizedItemIngredient(ingredient, 1));
+        return input(new RecipeItemInput(ingredient, 1, 1));
     }
 
     public B randomInput(Ingredient ingredient, float consumeChance)
     {
-        return input(new LimaSizedItemIngredient(ingredient, 1, consumeChance));
+        return input(new RecipeItemInput(ingredient, 1, consumeChance));
     }
 
     public B input(Ingredient ingredient, int count)
     {
-        return input(new LimaSizedItemIngredient(ingredient, count));
+        return input(new RecipeItemInput(ingredient, count, 1));
     }
 
     public B randomInput(Ingredient ingredient, int count, float consumeChance)
     {
-        return input(new LimaSizedItemIngredient(ingredient, count, consumeChance));
+        return input(new RecipeItemInput(ingredient, count, consumeChance));
     }
 
     public B input(ItemLike itemLike)
@@ -96,20 +88,20 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return randomInput(Ingredient.of(holders.getOrThrow(tagKey)), count, consumeChance);
     }
 
-    public B fluidInput(LimaSizedFluidIngredient ingredient)
+    public B fluidInput(RecipeFluidInput fluidInput)
     {
-        fluidIngredients.add(ingredient);
+        fluidInputs.add(fluidInput);
         return selfUnchecked();
     }
 
     public B fluidInput(FluidIngredient ingredient, int amount)
     {
-        return fluidInput(new LimaSizedFluidIngredient(ingredient, amount));
+        return fluidInput(new RecipeFluidInput(ingredient, amount, 1));
     }
 
     public B randomFluidInput(FluidIngredient ingredient, int amount, float consumeChance)
     {
-        return fluidInput(new LimaSizedFluidIngredient(ingredient, amount, consumeChance));
+        return fluidInput(new RecipeFluidInput(ingredient, amount, consumeChance));
     }
 
     public B fluidInput(FluidStack fluidStack)
@@ -152,142 +144,29 @@ public abstract class LimaCustomRecipeBuilder<R extends LimaCustomRecipe<?>, B e
         return randomFluidInput(FluidIngredient.of(holders.getOrThrow(tagKey)), amount, consumeChance);
     }
 
-    //#region Item results
+    //#region Results (simplified)
     public B output(ItemResult result)
     {
         itemResults.add(result);
         return selfUnchecked();
     }
 
-    public B output(ItemStack stack, float chance, ResultPriority priority)
-    {
-        return output(ItemResult.create(stack, chance, priority));
-    }
-
-    public B output(ItemStack stack, float chance)
-    {
-        return output(stack, chance, ResultPriority.PRIMARY);
-    }
-
-    public B output(ItemStack stack)
-    {
-        return output(stack, 1f);
-    }
-
-    public B output(ItemLike itemLike, ResultCount count, float chance, ResultPriority priority)
-    {
-        return output(ItemResult.create(itemLike, count, chance, priority));
-    }
-
-    public B output(ItemLike itemLike, ResultCount count, float chance)
-    {
-        return output(itemLike, count, chance, ResultPriority.PRIMARY);
-    }
-
-    public B output(ItemLike itemLike, ResultCount count)
-    {
-        return output(itemLike, count, 1f);
-    }
-
-    public B output(ItemLike itemLike, int count)
-    {
-        return output(new ItemStack(itemLike, count));
-    }
-
-    public B output(ItemLike itemLike)
-    {
-        return output(itemLike, 1);
-    }
-    //#endregion
-
-    //#region Fluid results
     public B fluidOutput(FluidResult result)
     {
         fluidResults.add(result);
         return selfUnchecked();
     }
 
-    public B fluidOutput(FluidStack stack, float chance, ResultPriority priority)
-    {
-        return fluidOutput(FluidResult.create(stack, chance, priority));
-    }
-
-    public B fluidOutput(FluidStack stack, float chance)
-    {
-        return fluidOutput(stack, chance, ResultPriority.PRIMARY);
-    }
-
-    public B fluidOutput(FluidStack fluidStack)
-    {
-        return fluidOutput(fluidStack, 1f);
-    }
-
-    public B fluidOutput(Fluid fluid, ResultCount count, float chance, ResultPriority priority)
-    {
-        return fluidOutput(FluidResult.create(fluid, count, chance, priority));
-    }
-
-    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count, float chance, ResultPriority priority)
-    {
-        return fluidOutput(fluidHolder.value(), count, chance, priority);
-    }
-
-    public B fluidOutput(Fluid fluid, ResultCount count, float chance)
-    {
-        return fluidOutput(fluid, count, chance, ResultPriority.PRIMARY);
-    }
-
-    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count, float chance)
-    {
-        return fluidOutput(fluidHolder.value(), count, chance);
-    }
-
-    public B fluidOutput(Fluid fluid, ResultCount count)
-    {
-        return fluidOutput(fluid, count, 1f);
-    }
-
-    public B fluidOutput(Holder<Fluid> fluidHolder, ResultCount count)
-    {
-        return fluidOutput(fluidHolder.value(), count);
-    }
-
-    public B fluidOutput(Fluid fluid, int amount)
-    {
-        return fluidOutput(new FluidStack(fluid, amount));
-    }
-
-    public B fluidOutput(Holder<Fluid> fluidHolder, int amount)
-    {
-        return fluidOutput(fluidHolder.value(), amount);
-    }
     //#endregion
 
     @Override
     protected String getDefaultRecipeName()
     {
         if (!itemResults.isEmpty())
-            return LimaRegistryUtil.getItemName(itemResults.getFirst().getItem());
+            return LimaRegistryUtil.getNonNullRegistryId(itemResults.getFirst().item()).getPath();
         else if (!fluidResults.isEmpty())
-            return LimaRegistryUtil.getFluidName(fluidResults.getFirst().getFluid());
+            return LimaRegistryUtil.getNonNullRegistryId(fluidResults.getFirst().fluid()).getPath();
         else
             throw new IllegalStateException("Default recipe name cannot be determined without any item or fluid results.");
-    }
-
-    private static class SimpleBuilder<R extends LimaCustomRecipe<?>, B extends LimaCustomRecipeBuilder<R, B>> extends LimaCustomRecipeBuilder<R, B>
-    {
-        private final LimaCustomRecipe.RecipeFactory<R> factory;
-
-        private SimpleBuilder(ModResources modResources, LimaCustomRecipe.RecipeFactory<R> factory)
-        {
-            super(modResources);
-            this.factory = factory;
-        }
-
-        @Override
-        protected R buildRecipe()
-        {
-            return factory.apply(itemIngredients, fluidIngredients, itemResults, fluidResults);
-        }
     }
 }
