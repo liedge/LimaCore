@@ -2,11 +2,13 @@ package liedge.limacore.client.gui;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.InputConstants;
 import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
@@ -37,6 +39,11 @@ public final class LimaGuiUtil
     public static boolean isMouseWithinArea(double mouseX, double mouseY, int x, int y, int width, int height)
     {
         return isMouseWithinXYBounds(mouseX, mouseY, x, y, x + width, y + height);
+    }
+
+    public static boolean isLeftClickOrSelection(InputWithModifiers input)
+    {
+        return input.input() == InputConstants.MOUSE_BUTTON_LEFT || input.isSelection();
     }
 
     public static int halfTextWidth(String text)
@@ -77,7 +84,7 @@ public final class LimaGuiUtil
 
     public static void floatBlit(GuiGraphicsExtractor graphics, RenderPipeline pipeline, TextureAtlasSprite sprite, float x, float y, int width, int height, int color)
     {
-        floatBlit(graphics, pipeline, sprite.atlasLocation(), x, y, x + width, y + width, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color);
+        floatBlit(graphics, pipeline, sprite.atlasLocation(), x, y, x + width, y + height, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color);
     }
 
     public static void partialHorizontalBlit(GuiGraphicsExtractor graphics, RenderPipeline pipeline, TextureAtlasSprite sprite, float x, float y, int width, int height, float percentage, int color)

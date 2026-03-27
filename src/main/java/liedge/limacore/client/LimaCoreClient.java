@@ -9,16 +9,26 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 
 @Mod(value = LimaCore.MODID, dist = Dist.CLIENT)
 public class LimaCoreClient
 {
+    private static final LimaClientRecipes CLIENT_RECIPES = new LimaClientRecipes();
+
     public static final Logger CLIENT_LOGGER = LogUtils.getLogger();
+
+    public static LimaClientRecipes getClientRecipes()
+    {
+        return CLIENT_RECIPES;
+    }
 
     public LimaCoreClient(IEventBus modBus, ModContainer modContainer)
     {
         modBus.register(new ClientSetup());
+
+        CLIENT_RECIPES.register(NeoForge.EVENT_BUS);
     }
 
     private static class ClientSetup

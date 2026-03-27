@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.crafting.display.DisplayContentsFactory;
 
 import java.util.function.Predicate;
 
@@ -35,6 +36,8 @@ public interface RecipeStackInput<I extends Predicate<S>, S> extends Predicate<S
     int count();
 
     float consumeChance();
+
+    DisplayContentsFactory<S> displayResolver();
 
     default boolean isRandom()
     {

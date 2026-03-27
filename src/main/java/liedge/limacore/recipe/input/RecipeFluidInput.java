@@ -10,6 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.neoforged.neoforge.fluids.crafting.display.ForFluidStacks;
 
 import java.util.List;
 
@@ -28,5 +29,11 @@ public record RecipeFluidInput(FluidIngredient ingredient, int count, float cons
     public static MapCodec<List<RecipeFluidInput>> listCodec(int minInclusive, int maxInclusive)
     {
         return LimaCoreCodecs.autoOptionalListField(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
+    }
+
+    @Override
+    public ForFluidStacks<FluidStack> displayResolver()
+    {
+        return stack -> stack.copyWithAmount(count);
     }
 }

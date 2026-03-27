@@ -10,7 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.DisplayContentsFactory;
 
 import java.util.List;
 
@@ -29,5 +29,11 @@ public record RecipeItemInput(Ingredient ingredient, int count, float consumeCha
     public static MapCodec<List<RecipeItemInput>> listCodec(int minInclusive, int maxInclusive)
     {
         return LimaCoreCodecs.autoOptionalListField(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
+    }
+
+    @Override
+    public DisplayContentsFactory.ForStacks<ItemStack> displayResolver()
+    {
+        return stack -> stack.copyWithCount(count);
     }
 }
