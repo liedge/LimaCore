@@ -1,5 +1,6 @@
 package liedge.limacore.blockentity;
 
+import com.mojang.logging.LogUtils;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.menu.BlockEntityMenuType;
 import liedge.limacore.network.IndexedStreamData;
@@ -8,33 +9,46 @@ import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.util.LimaCoreObjects;
+import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
 
 public abstract class LimaBlockEntity extends BlockEntity implements DataWatcherHolder, LimaBlockEntityAccess
 {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private final List<LimaDataWatcher<?>> dataWatchers;
 
     protected LimaBlockEntity(LimaBlockEntityType<?> type, BlockPos pos, BlockState state)
@@ -82,7 +96,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         CompoundTag updateTag = getUpdateTag(nonNullLevel().registryAccess());
         if (!updateTag.isEmpty())
         {
-            return ClientboundBlockEntityDataPacket.create(this, ($1, $2) -> updateTag);
+            return ClientboundBlockEntityDataPacket.create(this, (_, _) -> updateTag);
         }
         else
         {
@@ -123,6 +137,36 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     @SuppressWarnings("deprecation")
     @Override
     public void removeComponentsFromTag(ValueOutput output) {}
+
+    @ApiStatus.Internal
+    public void saveToItemStack(ItemStack stack, HolderLookup.Provider registries)
+    {
+        if (!(stack.getItem() instanceof BlockItem blockItem && this.getType().getValidBlocks().contains(blockItem.getBlock())))
+        {
+            LOGGER.warn("Attempted to save block entity data of type {} to incompatible item {}", LimaRegistryUtil.getNonNullRegistryId(getType(), BuiltInRegistries.BLOCK_ENTITY_TYPE), LimaRegistryUtil.getItemId(stack.getItem()));
+            return;
+        }
+
+        CompoundTag tag;
+
+        try (ProblemReporter.ScopedCollector reporter = createReporter())
+        {
+            TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
+            saveCustomOnly(output);
+            removeComponentsFromTag(output);
+            tag = output.buildResult();
+        }
+
+        stack.applyComponents(collectComponents());
+
+        TypedEntityData<BlockEntityType<?>> data = TypedEntityData.of(getType(), tag);
+        stack.set(DataComponents.BLOCK_ENTITY_DATA, data);
+    }
+
+    protected final ProblemReporter.ScopedCollector createReporter()
+    {
+        return new ProblemReporter.ScopedCollector(problemPath(), LOGGER);
+    }
 
     //#region Block/level interaction helpers
     protected <T> BlockCapabilityCache<T, Direction> createCapabilityCache(BlockCapability<T, Direction> capability, ServerLevel level, Direction side, Runnable invalidationListener)
