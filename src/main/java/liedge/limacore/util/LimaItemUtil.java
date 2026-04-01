@@ -4,6 +4,7 @@ import liedge.limacore.lib.ModResources;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -34,6 +35,11 @@ public final class LimaItemUtil
     public static boolean hasEnergyCapability(ItemAccess context)
     {
         return hasValidCapability(context, Capabilities.Energy.ITEM);
+    }
+
+    public static boolean hasEnergyCapability(ItemStack stack)
+    {
+        return hasEnergyCapability(ItemAccess.forStack(stack));
     }
 
     public static boolean hasFluidHandlerCapability(ItemAccess context)

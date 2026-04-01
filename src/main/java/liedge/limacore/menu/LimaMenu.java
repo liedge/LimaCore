@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.menu.slot.LimaItemSlot;
+import liedge.limacore.menu.slot.RecipeResultSlot;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
@@ -39,6 +40,7 @@ import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -102,21 +104,23 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     @Override
     public ItemStack quickMoveStack(Player player, int index)
     {
-        ItemStack stack = ItemStack.EMPTY;
+        ItemStack clicked = ItemStack.EMPTY;
         Slot slot = slots.get(index);
 
         if (slot.hasItem())
         {
-            ItemStack stack1 = slot.getItem();
-            stack = stack1.copy();
+            ItemStack slotStack = slot.getItem();
+            clicked = slotStack.copy();
 
-            if (!quickMoveInternal(index, stack1)) return ItemStack.EMPTY;
+            if (!quickMoveInternal(index, slotStack)) return ItemStack.EMPTY;
 
-            // TODO Reimplement ???
-            // Recipe trigger must be called here for quick transfer
-            //if (slot instanceof RecipeOutputSlot recipeSlot) recipeSlot.onQuickCraft(stack1, stack);
+            // We have to call onQuickCraft here
+            if (slot instanceof RecipeResultSlot)
+            {
+                slot.onQuickCraft(slotStack, clicked);
+            }
 
-            if (stack1.isEmpty())
+            if (slotStack.isEmpty())
             {
                 slot.setByPlayer(ItemStack.EMPTY);
             }
@@ -125,10 +129,12 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
                 slot.setChanged();
             }
 
-            slot.onTake(player, stack1);
+            if (slotStack.getCount() == clicked.getCount()) return ItemStack.EMPTY;
+
+            slot.onTake(player, slotStack);
         }
 
-        return stack;
+        return clicked;
     }
 
     @Override
@@ -242,8 +248,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
-    // TODO: Maybe reimplement this if needed?
-    /*
     protected boolean quickMoveToContainer(ItemStack stack)
     {
         boolean result = false;
@@ -253,7 +257,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         {
             for (int i = 0; i < inventoryStart; i++)
             {
-                if (slots.get(i) instanceof LimaHandlerSlot limaSlot)
+                if (slots.get(i) instanceof LimaItemSlot limaSlot)
                 {
                     if (!limaSlot.canQuickTransfer(stack)) continue;
 
@@ -268,7 +272,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
                             stack.setCount(0);
                             slotStack.setCount(n);
                             limaSlot.setChanged();
-                            limaSlot.setBaseContainerChanged();
                             result = true;
                         }
                         else if (slotStack.getCount() < maxStackSize)
@@ -276,7 +279,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
                             stack.shrink(maxStackSize - slotStack.getCount());
                             slotStack.setCount(maxStackSize);
                             limaSlot.setChanged();
-                            limaSlot.setBaseContainerChanged();
                             result = true;
                         }
                     }
@@ -291,14 +293,13 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         {
             for (int i = 0; i < inventoryStart; i++)
             {
-                if (slots.get(i) instanceof LimaHandlerSlot limaSlot)
+                if (slots.get(i) instanceof LimaItemSlot limaSlot)
                 {
-                    if (limaSlot.getItem().isEmpty() && limaSlot.mayPlace(stack) && limaSlot.canQuickTransfer(stack))
+                    if (limaSlot.getItem().isEmpty() && limaSlot.canQuickTransfer(stack))
                     {
                         int maxStackSize = limaSlot.getMaxStackSize(stack);
                         limaSlot.setByPlayer(stack.split(Math.min(stack.getCount(), maxStackSize)));
                         limaSlot.setChanged();
-                        limaSlot.setBaseContainerChanged();
                         result = true;
                         break;
                     }
@@ -307,12 +308,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
 
         return result;
-    }
-    */
-
-    protected boolean quickMoveToContainer(ItemStack stack)
-    {
-        return moveItemStackTo(stack, 0, inventoryStart, false);
     }
 
     protected boolean quickMoveToInventory(ItemStack stack, boolean reverse)
@@ -414,7 +409,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected static class EventHandlerBuilder
     {
-        private Int2ObjectMap<EventHandler<?>> map;
+        private @Nullable Int2ObjectMap<EventHandler<?>> map;
 
         public <T> void handleAction(int index, NetworkSerializer<T> serializer, BiConsumer<ServerPlayer, T> action)
         {
