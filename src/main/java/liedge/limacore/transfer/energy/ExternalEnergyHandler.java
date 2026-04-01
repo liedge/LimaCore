@@ -1,31 +1,18 @@
 package liedge.limacore.transfer.energy;
 
 import liedge.limacore.blockentity.IOAccess;
-import liedge.limacore.transfer.VariableRateTransferHandler;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 public final class ExternalEnergyHandler implements EnergyHandler
 {
-    private final EnergyHandler base;
-    private final IOAccess access;
+    private final VariableEnergyHandler base;
+    private final IOAccess topLevelAccess;
 
-    public ExternalEnergyHandler(EnergyHandler base, IOAccess access)
+    public ExternalEnergyHandler(VariableEnergyHandler base, IOAccess topLevelAccess)
     {
         this.base = base;
-        this.access = access;
-    }
-
-    private int getTransferRate()
-    {
-        if (base instanceof VariableRateTransferHandler handler)
-        {
-            return handler.getTransferRate();
-        }
-        else
-        {
-            return Integer.MAX_VALUE;
-        }
+        this.topLevelAccess = topLevelAccess;
     }
 
     @Override
@@ -43,9 +30,9 @@ public final class ExternalEnergyHandler implements EnergyHandler
     @Override
     public int insert(int amount, TransactionContext transaction)
     {
-        if (access.allowsInput())
+        if (topLevelAccess.allowsInput())
         {
-            int toInsert = Math.min(amount, getTransferRate());
+            int toInsert = Math.min(amount, base.getTransferRate());
             return base.insert(toInsert, transaction);
         }
 
@@ -55,9 +42,9 @@ public final class ExternalEnergyHandler implements EnergyHandler
     @Override
     public int extract(int amount, TransactionContext transaction)
     {
-        if (access.allowsOutput())
+        if (topLevelAccess.allowsOutput())
         {
-            int toExtract = Math.min(amount, getTransferRate());
+            int toExtract = Math.min(amount, base.getTransferRate());
             return base.extract(toExtract, transaction);
         }
 

@@ -12,11 +12,13 @@ import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler implements VariableEnergyHandler
 {
     private final EnergyHolderBlockEntity blockEntity;
+    private int transferRate;
 
     public AdjustableBlockEntityEnergy(EnergyHolderBlockEntity blockEntity)
     {
-        super(blockEntity.getBaseEnergyCapacity(), blockEntity.getBaseEnergyCapacity());
+        super(blockEntity.getBaseEnergyCapacity());
         this.blockEntity = blockEntity;
+        this.transferRate = blockEntity.getBaseEnergyTransferRate();
     }
 
     public void writeComponents(MutableDataComponentHolder dataHolder)
@@ -53,20 +55,21 @@ public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler imple
     @Override
     public int getTransferRate()
     {
-        return maxInsert;
+        return transferRate;
     }
 
     @Override
     public void setTransferRate(int transferRate)
     {
-        this.maxInsert = transferRate;
-        this.maxExtract = transferRate;
+        this.transferRate = transferRate;
     }
 
     @Override
     public void setCapacity(int capacity)
     {
         this.capacity = capacity;
+        this.maxInsert = capacity;
+        this.maxExtract = capacity;
     }
 
     @Override
