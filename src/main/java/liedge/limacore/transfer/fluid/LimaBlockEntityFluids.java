@@ -8,6 +8,8 @@ import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.ExternalResourceHandler;
 import liedge.limacore.transfer.VariableRateTransferHandler;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -17,6 +19,8 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
 {
     private final FluidHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
+    private final int minSize;
+
     private int transferRate;
 
     public LimaBlockEntityFluids(FluidHolderBlockEntity blockEntity, BlockContentsType contentsType, int size)
@@ -24,6 +28,8 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
         super(size, blockEntity.getBaseFluidCapacity(contentsType));
         this.blockEntity = blockEntity;
         this.contentsType = contentsType;
+        this.minSize = size;
+
         this.transferRate = blockEntity.getBaseFluidTransferRate(contentsType);
     }
 
@@ -90,6 +96,23 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
     protected void onContentsChanged(int index, FluidStack previousContents)
     {
         blockEntity.onFluidChanged(contentsType, index, previousContents);
+    }
+
+    @Override
+    public void deserialize(ValueInput input)
+    {
+        input.read(VALUE_IO_KEY, codec).ifPresent(list ->
+        {
+            int size = Math.max(list.size(), this.minSize);
+            NonNullList<FluidStack> fixedStacks = NonNullList.withSize(size, FluidStack.EMPTY);
+
+            for (int i = 0; i < list.size(); i++)
+            {
+                fixedStacks.set(i, list.get(i));
+            }
+
+            setStacks(fixedStacks);
+        });
     }
 
     private static class ExternalWrapper extends ExternalResourceHandler<FluidResource, LimaBlockEntityFluids>
