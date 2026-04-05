@@ -2,7 +2,8 @@ package liedge.limacore.client;
 
 import com.mojang.logging.LogUtils;
 import liedge.limacore.LimaCore;
-import liedge.limacore.client.model.EmissiveUnbakedModel;
+import liedge.limacore.client.model.EmissiveItemCuboidModel;
+import liedge.limacore.client.model.EmissiveEntityCuboidModel;
 import liedge.limacore.client.particle.CustomGeometryParticleGroup;
 import liedge.limacore.client.renderer.LimaCoreRenderPipelines;
 import net.neoforged.api.distmarker.Dist;
@@ -46,7 +47,8 @@ public class LimaCoreClient
         @SubscribeEvent
         private void registerModeLoaders(final ModelEvent.RegisterLoaders event)
         {
-            event.register(EmissiveUnbakedModel.LOADER_ID, EmissiveUnbakedModel.LOADER);
+            event.register(EmissiveItemCuboidModel.LOADER_ID, EmissiveItemCuboidModel.LOADER);
+            event.register(EmissiveEntityCuboidModel.LOADER_ID, EmissiveEntityCuboidModel.LOADER);
         }
 
         @SubscribeEvent

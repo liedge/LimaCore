@@ -9,7 +9,7 @@ public class EmissiveModelBuilder extends CustomLoaderBuilder
 
     public EmissiveModelBuilder()
     {
-        super(EmissiveUnbakedModel.LOADER_ID, true);
+        super(EmissiveItemCuboidModel.LOADER_ID, true);
     }
 
     public EmissiveModelBuilder emissionTarget(int emissionTarget)
