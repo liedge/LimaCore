@@ -3,6 +3,7 @@ package liedge.limacore.client.gui;
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -73,7 +74,7 @@ public final class LimaGuiUtil
         AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(atlasLocation);
         TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler());
 
-        GuiElementRenderState renderState = new FloatingBlitRenderState(pipeline, textureSetup, graphics.peekScissorStack(), new Matrix3x2f(graphics.pose()), x1, y1, x2, y2, u0, u1, v0, v1, color);
+        GuiElementRenderState renderState = new FloatingBlitRenderState(pipeline, textureSetup, graphics, x1, y1, x2, y2, u0, u1, v0, v1, color);
         graphics.submitGuiElementRenderState(renderState);
     }
 
@@ -187,16 +188,33 @@ public final class LimaGuiUtil
         }
     }
 
-    public static void submitHorizontalGradient(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int leftColor, int rightColor)
+    public static void fill(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int colX1Y1, int colX1Y2, int colX2Y2, int colX2Y1)
     {
-        GuiElementRenderState renderState = new HorizontalGradientRenderState(pipeline, graphics.peekScissorStack(), new Matrix3x2f(graphics.pose()), x1, y1, x2, y2, leftColor, rightColor);
+        GuiElementRenderState renderState = new FloatingRectangleBlitState(pipeline, graphics, x1, y1, x2, y2, colX1Y1, colX1Y2, colX2Y2, colX2Y1);
         graphics.submitGuiElementRenderState(renderState);
     }
 
-    public static void submitVerticalGradient(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int topColor, int bottomColor)
+    public static void fillHorizontalGradient(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int leftColor, int rightColor)
     {
-        GuiElementRenderState renderState = new VerticalGradientRenderState(pipeline, graphics.peekScissorStack(), new Matrix3x2f(graphics.pose()), x1, y1, x2, y2, topColor, bottomColor);
-        graphics.submitGuiElementRenderState(renderState);
+        fill(graphics, pipeline, x1, y1, x2, y2, leftColor, leftColor, rightColor, rightColor);
+    }
+
+    public static void fillVerticalGradient(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int topColor, int bottomColor)
+    {
+        fill(graphics, pipeline, x1, y1, x2, y2, topColor, bottomColor, bottomColor, topColor);
+    }
+
+    public static void putColoredQuad(Matrix3x2f pose, VertexConsumer buffer, float x1, float y1, float x2, float y2, int colX1Y1, int colX1Y2, int colX2Y2, int colX2Y1)
+    {
+        buffer.addVertexWith2DPose(pose, x1, y1).setColor(colX1Y1);
+        buffer.addVertexWith2DPose(pose, x1, y2).setColor(colX1Y2);
+        buffer.addVertexWith2DPose(pose, x2, y2).setColor(colX2Y2);
+        buffer.addVertexWith2DPose(pose, x2, y1).setColor(colX2Y1);
+    }
+
+    public static void putColoredQuad(Matrix3x2f pose, VertexConsumer buffer, float x1, float y1, float x2, float y2, int color)
+    {
+        putColoredQuad(pose, buffer, x1, y1, x2, y2, color, color, color, color);
     }
     //#endregion
 }
