@@ -4,13 +4,9 @@ import com.mojang.serialization.MapCodec;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import liedge.limacore.advancement.HostilityEntityPredicate;
 import liedge.limacore.advancement.LivingHealthPredicate;
-import liedge.limacore.world.loot.AddItemLootModifier;
-import liedge.limacore.world.loot.DynamicWeightLootEntry;
-import liedge.limacore.world.loot.RemoveItemLootModifier;
-import liedge.limacore.world.loot.SaveBlockEntityFunction;
+import liedge.limacore.world.loot.*;
 import liedge.limacore.world.loot.level.MathOpsLevelBasedValue;
 import liedge.limacore.world.loot.level.RangedLookupLevelBasedValue;
-import liedge.limacore.world.loot.number.*;
 import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
@@ -58,8 +54,8 @@ public final class LimaCoreLootRegistries
     public static final DeferredHolder<MapCodec<? extends LootPoolEntryContainer>, MapCodec<DynamicWeightLootEntry>> DYNAMIC_WEIGHT_LOOT_ENTRY = LOOT_ENTRY_TYPES.register("dynamic_weight", () -> DynamicWeightLootEntry.CODEC);
 
     // GLM Codecs
-    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<AddItemLootModifier>> ADD_ITEM_MODIFIER = GLM_CODECS.register("add_item", () -> AddItemLootModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<RemoveItemLootModifier>> REMOVE_ITEM_MODIFIER = GLM_CODECS.register("remove_item", () -> RemoveItemLootModifier.CODEC);
+    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ApplyFunctionsLootModifier>> RUN_FUNCTIONS_MODIFIER = GLM_CODECS.register("apply_functions", () -> ApplyFunctionsLootModifier.CODEC);
 
     // Level based value types
     public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<RangedLookupLevelBasedValue>> RANGED_LOOKUP_LEVEL_BASED_VALUE = LBV_CODECS.register("ranged_lookup", () -> RangedLookupLevelBasedValue.CODEC);
