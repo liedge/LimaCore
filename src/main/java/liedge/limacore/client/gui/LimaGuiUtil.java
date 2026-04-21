@@ -19,7 +19,6 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
@@ -156,36 +155,45 @@ public final class LimaGuiUtil
         graphics.blit(pipeline, textureLocation, x + cornerSize, y + cornerSize, cornerSize, cornerSize, borderWidth, borderHeight, 1, 1, textureWidth, textureHeight);
     }
 
-    public static void renderFluid(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y)
+    public static void fluidSprite(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y, boolean useFlowing)
     {
-        FluidState fluidState = stack.getFluid().defaultFluidState();
-        FluidModel model = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(fluidState);
-        Material.Baked material = model.stillMaterial();
+        FluidModel model = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(stack.getFluid().defaultFluidState());
+        Material.Baked material = useFlowing ? model.flowingMaterial() : model.stillMaterial();
 
         FluidTintSource tintSource = model.fluidTintSource();
-        int tint = tintSource != null ? tintSource.color(fluidState) : -1;
+        int tint = tintSource != null ? tintSource.colorAsStack(stack) : -1;
 
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, material.sprite(), x, y, 16, 16, tint);
     }
 
-    public static void renderFluidWithAmount(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y)
+    public static void fluidSprite(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y)
+    {
+        fluidSprite(graphics, stack, x, y, false);
+    }
+
+    public static void fluidSpriteWithAmount(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y, boolean useFlowing)
     {
         if (!stack.isEmpty())
         {
-            LimaGuiUtil.renderFluid(graphics, stack, x, y);
+            LimaGuiUtil.fluidSprite(graphics, stack, x, y, useFlowing);
 
             Matrix3x2fStack matrixStack = graphics.pose();
             matrixStack.pushMatrix();
 
-            String amountText = LimaTransferUtil.formatCompactFluidAmount(stack.getAmount());
-            int textWidth = LimaGuiUtil.halfTextWidth(amountText);
+            String text = LimaTransferUtil.formatCompactFluidAmount(stack.getAmount());
+            int textWidth = LimaGuiUtil.halfTextWidth(text);
             matrixStack.translate(x + 16 - textWidth, y + 16 - FONT_HALF_LINE_HEIGHT);
             matrixStack.scale(0.5f);
 
-            graphics.text(Minecraft.getInstance().font, amountText, 0, 0, -1, true);
+            graphics.text(Minecraft.getInstance().font, text, 0, 0, -1, true);
 
             matrixStack.popMatrix();
         }
+    }
+
+    public static void fluidSpriteWithAmount(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y)
+    {
+        fluidSpriteWithAmount(graphics, stack, x, y, false);
     }
 
     public static void fill(GuiGraphicsExtractor graphics, RenderPipeline pipeline, float x1, float y1, float x2, float y2, int colX1Y1, int colX1Y2, int colX2Y2, int colX2Y1)

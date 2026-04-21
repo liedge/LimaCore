@@ -265,7 +265,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                     }
 
                     FluidStack stack = fluidSlot.getFluid();
-                    if (!stack.isEmpty()) LimaGuiUtil.renderFluidWithAmount(graphics, stack, slotX, slotY);
+                    if (!stack.isEmpty()) LimaGuiUtil.fluidSpriteWithAmount(graphics, stack, slotX, slotY);
 
                     if (hovering)
                         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_FRONT_SPRITE, slotX - 4, slotY - 4, 24, 24);
