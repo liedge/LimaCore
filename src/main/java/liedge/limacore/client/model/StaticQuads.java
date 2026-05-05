@@ -54,6 +54,11 @@ public final class StaticQuads
         this.layers = layers;
     }
 
+    public List<Layer> getLayers()
+    {
+        return layers;
+    }
+
     public void submit(PoseStack poseStack, SubmitNodeCollector nodeCollector, int color, int lightCoords)
     {
         for (Layer layer : layers)
@@ -80,7 +85,7 @@ public final class StaticQuads
         return layers.stream().flatMap(Layer::extents);
     }
 
-    private record Layer(RenderType renderType, List<BakedQuad> quads)
+    public record Layer(RenderType renderType, List<BakedQuad> quads)
     {
         Stream<Vector3fc> extents()
         {
