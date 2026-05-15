@@ -2,7 +2,6 @@ package liedge.limacore.util;
 
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import liedge.limacore.advancement.LimaAdvancementUtil;
 import net.minecraft.advancements.criterion.EntityPredicate;
@@ -11,7 +10,6 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -41,24 +40,24 @@ public final class LimaLootUtil
 {
     private LimaLootUtil() {}
 
-    public static <T extends LootContextUser> Codec<T> contextUserCodec(Codec<T> unvalidatedCodec, ContextKeySet params, String contextName)
+    public static <T extends Validatable> Codec<T> validatedCodec(Codec<T> codec, ContextKeySet params)
     {
-        return unvalidatedCodec.validate(value ->
-        {
-            ProblemReporter.Collector reporter = new ProblemReporter.Collector();
-            ValidationContext context = new ValidationContext(reporter, params);
-            value.validate(context);
-
-            if (reporter.getReport().isEmpty())
-                return DataResult.success(value);
-            else
-                return DataResult.error(() -> String.format("Validation error in %s %s", contextName, reporter.getReport()));
-        });
+        return codec.validate(Validatable.validatorForContext(params));
     }
 
-    public static Codec<LootItemCondition> conditionsCodec(ContextKeySet params, String contextName)
+    public static <T extends Validatable> Codec<List<T>> validatedListCodec(Codec<List<T>> codec, ContextKeySet params)
     {
-        return contextUserCodec(LootItemCondition.DIRECT_CODEC, params, contextName);
+        return codec.validate(Validatable.listValidatorForContext(params));
+    }
+
+    public static Codec<LootItemCondition> conditionCodec(ContextKeySet params)
+    {
+        return validatedCodec(LootItemCondition.DIRECT_CODEC, params);
+    }
+
+    public static Codec<List<LootItemCondition>> conditionsCodec(ContextKeySet params)
+    {
+        return validatedListCodec(LootItemCondition.DIRECT_CODEC.listOf(), params);
     }
 
     public static Set<ContextKey<?>> joinReferencedParams(LootContextUser... users)
