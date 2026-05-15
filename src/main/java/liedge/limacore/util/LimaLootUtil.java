@@ -152,7 +152,7 @@ public final class LimaLootUtil
 
     public static LootItemCondition.Builder needsEntityType(EntityType<?> type)
     {
-        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(LimaAdvancementUtil.matchingEntityType(type)));
+        return LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, LimaAdvancementUtil.matchesEntityType(type));
     }
 
     public static LootItemCondition.Builder needsEntityTag(HolderGetter<EntityType<?>> holders, TagKey<EntityType<?>> tagKey)

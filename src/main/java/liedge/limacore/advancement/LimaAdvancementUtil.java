@@ -24,14 +24,14 @@ public final class LimaAdvancementUtil
 {
     private LimaAdvancementUtil() {}
 
-    public static EntityTypePredicate matchingEntityType(Holder<EntityType<?>> typeHolder)
+    public static EntityPredicate.Builder matchesEntityType(Holder<EntityType<?>> holder)
     {
-        return new EntityTypePredicate(HolderSet.direct(typeHolder));
+        return EntityPredicate.Builder.entity().entityType(new EntityTypePredicate(HolderSet.direct(holder)));
     }
 
-    public static EntityTypePredicate matchingEntityType(EntityType<?> entityType)
+    public static EntityPredicate.Builder matchesEntityType(EntityType<?> type)
     {
-        return matchingEntityType(LimaRegistryUtil.builtInHolder(entityType));
+        return matchesEntityType(LimaRegistryUtil.builtInHolder(type));
     }
 
     public static ItemPredicate matchingItems(ItemLike... items)

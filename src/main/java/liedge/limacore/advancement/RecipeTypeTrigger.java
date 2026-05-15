@@ -8,12 +8,11 @@ import net.minecraft.advancements.criterion.ContextAwarePredicate;
 import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.ItemLike;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -40,20 +39,34 @@ public final class RecipeTypeTrigger extends SimpleCriterionTrigger<RecipeTypeTr
                 ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item))
                 .apply(instance, TriggerInstance::new));
 
-        public static Criterion<TriggerInstance> customItemCrafted(@Nullable ContextAwarePredicate player, RecipeType<?> recipeType, @Nullable ItemPredicate predicate)
+        public static Criterion<TriggerInstance> anyItemCrafted(RecipeType<?> recipeType)
         {
-            TriggerInstance instance = new TriggerInstance(Optional.ofNullable(player), recipeType, Optional.ofNullable(predicate));
-            return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(instance);
+            return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(new TriggerInstance(Optional.empty(), recipeType, Optional.empty()));
         }
 
-        public static Criterion<TriggerInstance> customItemCrafted(@Nullable ContextAwarePredicate player, RecipeType<?> recipeType, ItemPredicate.Builder builder)
+        public static Criterion<TriggerInstance> anyItemCrafted(Holder<RecipeType<?>> typeHolder)
         {
-            return customItemCrafted(player, recipeType, builder.build());
+            return anyItemCrafted(typeHolder.value());
         }
 
-        public static Criterion<TriggerInstance> customItemCrafted(RecipeType<?> recipeType, ItemLike... items)
+        public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, ItemPredicate predicate)
         {
-            return customItemCrafted(null, recipeType, LimaAdvancementUtil.matchingItems(items));
+            return LimaCoreTriggerTypes.CUSTOM_RECIPE_TYPE_USED.get().createCriterion(new TriggerInstance(Optional.empty(), recipeType, Optional.of(predicate)));
+        }
+
+        public static Criterion<TriggerInstance> itemCrafted(Holder<RecipeType<?>> typeHolder, ItemPredicate predicate)
+        {
+            return itemCrafted(typeHolder.value(), predicate);
+        }
+
+        public static Criterion<TriggerInstance> itemCrafted(RecipeType<?> recipeType, ItemPredicate.Builder predicate)
+        {
+            return itemCrafted(recipeType, predicate.build());
+        }
+
+        public static Criterion<TriggerInstance> itemCrafted(Holder<RecipeType<?>> typeHolder, ItemPredicate.Builder predicate)
+        {
+            return itemCrafted(typeHolder.value(), predicate.build());
         }
 
         private boolean matches(RecipeType<?> type, ItemStack stack)
