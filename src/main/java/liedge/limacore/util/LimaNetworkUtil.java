@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.function.Supplier;
@@ -75,12 +76,22 @@ public final class LimaNetworkUtil
         registrar.playToClient(type, streamCodec, ClientboundPayload::handleClient);
     }
 
-    public static <T extends ServerboundPayload> void registerPlayToServer(PayloadRegistrar registrar, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    public static <T extends ServerboundPayload> IPayloadHandler<T> serverPayloadHandler()
     {
-        registrar.playToServer(type, streamCodec, (payload, context) ->
+        return (payload, context) ->
         {
             ServerPlayer sender = LimaCoreObjects.cast(ServerPlayer.class, context.player(), "Received server packet without sender.");
             payload.handleServer(sender, context);
-        });
+        };
+    }
+
+    public static <T extends ServerboundPayload> void registerPlayToServer(PayloadRegistrar registrar, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    {
+        registrar.playToServer(type, streamCodec, serverPayloadHandler());
+    }
+
+    public static <T extends ClientboundPayload & ServerboundPayload> void registerBiDirectional(PayloadRegistrar registrar, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec)
+    {
+        registrar.playBidirectional(type, streamCodec, serverPayloadHandler(), ClientboundPayload::handleClient);
     }
 }

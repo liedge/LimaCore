@@ -46,6 +46,36 @@ public final class LimaStreamCodecs
     public static final StreamCodec<ByteBuf, Integer> POSITIVE_VAR_INT = varIntRange(1, Integer.MAX_VALUE);
     public static final StreamCodec<ByteBuf, Vec3> VEC3D = StreamCodec.of((net, vec) -> net.writeDouble(vec.x).writeDouble(vec.y).writeDouble(vec.z), net -> new Vec3(net.readDouble(), net.readDouble(), net.readDouble()));
 
+    public static final StreamCodec<ByteBuf, Integer> BYTE_INT = new StreamCodec<>()
+    {
+        @Override
+        public Integer decode(ByteBuf input)
+        {
+            return (int) input.readByte();
+        }
+
+        @Override
+        public void encode(ByteBuf output, Integer value)
+        {
+            output.writeByte(value);
+        }
+    };
+
+    public static final StreamCodec<ByteBuf, Integer> SHORT_INT = new StreamCodec<>()
+    {
+        @Override
+        public Integer decode(ByteBuf input)
+        {
+            return (int) input.readShort();
+        }
+
+        @Override
+        public void encode(ByteBuf output, Integer value)
+        {
+            output.writeShort(value);
+        }
+    };
+
     public static final StreamCodec<ByteBuf, IntList> INT_LIST = new StreamCodec<>()
     {
         @Override

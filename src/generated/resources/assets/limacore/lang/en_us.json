@@ -14,6 +14,7 @@
   "reduction_type.limacore.absorption": "Absorption",
   "reduction_type.limacore.armor": "Armor",
   "reduction_type.limacore.enchantments": "Enchantments",
+  "reduction_type.limacore.innate_resistance": "Innate Resistance",
   "reduction_type.limacore.invulnerability": "Invulnerability",
   "reduction_type.limacore.mob_effects": "Mob Effects",
   "relative_side.limacore.bottom": "Bottom",
@@ -21,8 +22,5 @@
   "relative_side.limacore.left": "Left",
   "relative_side.limacore.rear": "Rear",
   "relative_side.limacore.right": "Right",
-  "relative_side.limacore.top": "Top",
-  "result_priority.limacore.primary": "Primary Output",
-  "result_priority.limacore.secondary": "Secondary Output",
-  "result_priority.limacore.tertiary": "Tertiary Output"
+  "relative_side.limacore.top": "Top"
 }

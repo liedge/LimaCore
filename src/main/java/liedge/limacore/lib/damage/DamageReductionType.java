@@ -19,7 +19,8 @@ public enum DamageReductionType implements StringRepresentable, Translatable
     ARMOR("armor", DamageContainer.Reduction.ARMOR),
     ENCHANTMENTS("enchantments", DamageContainer.Reduction.ENCHANTMENTS),
     MOB_EFFECTS("mob_effects", DamageContainer.Reduction.MOB_EFFECTS),
-    ABSORPTION("absorption", DamageContainer.Reduction.ABSORPTION);
+    ABSORPTION("absorption", DamageContainer.Reduction.ABSORPTION),
+    INNATE_RESISTANCE("innate_resistance", DamageContainer.Reduction.INNATE_RESISTANCE);
 
     public static final LimaEnumCodec<DamageReductionType> CODEC = LimaEnumCodec.create(DamageReductionType.class);
     public static final StreamCodec<FriendlyByteBuf, DamageReductionType> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(DamageReductionType.class);
