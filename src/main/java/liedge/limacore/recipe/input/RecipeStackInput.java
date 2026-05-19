@@ -2,6 +2,7 @@ package liedge.limacore.recipe.input;
 
 import com.mojang.datafixers.util.Function3;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,6 +23,17 @@ public interface RecipeStackInput<I extends Predicate<S>, S> extends Predicate<S
                 .apply(i, factory));
     }
 
+    static <A extends RecipeStackInput<?, ?>> Codec<A> constantCodec(Codec<A> baseCodec)
+    {
+        return baseCodec.validate(value ->
+        {
+            if (value.isConstant())
+                return DataResult.success(value);
+            else
+                return DataResult.error(() -> "Recipe input cannot be random.");
+        });
+    }
+
     static <I extends Predicate<?>, A extends RecipeStackInput<I, ?>> StreamCodec<RegistryFriendlyByteBuf, A> streamCodec(StreamCodec<RegistryFriendlyByteBuf, I> ingredientCodec, Function3<I, Integer, Float, A> factory)
     {
         return StreamCodec.composite(
@@ -38,6 +50,11 @@ public interface RecipeStackInput<I extends Predicate<S>, S> extends Predicate<S
     float consumeChance();
 
     DisplayContentsFactory<S> displayResolver();
+
+    default boolean isConstant()
+    {
+        return !isRandom();
+    }
 
     default boolean isRandom()
     {

@@ -20,13 +20,14 @@ public record RecipeItemInput(Ingredient ingredient, int count, float consumeCha
             Ingredient.CODEC,
             ExtraCodecs.POSITIVE_INT.optionalFieldOf("count", 1),
             RecipeItemInput::new);
+    public static final Codec<RecipeItemInput> CONSTANT_CODEC = RecipeStackInput.constantCodec(CODEC);
     public static final StreamCodec<RegistryFriendlyByteBuf, RecipeItemInput> STREAM_CODEC = RecipeStackInput.streamCodec(Ingredient.CONTENTS_STREAM_CODEC, RecipeItemInput::new);
     public static final StreamCodec<RegistryFriendlyByteBuf, List<RecipeItemInput>> LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
 
     public static final String MAP_CODEC_KEY = "item_inputs";
     public static final MapCodec<List<RecipeItemInput>> EMPTY_LIST_CODEC = EmptyFieldMapCodec.emptyListField(MAP_CODEC_KEY);
 
-    public static MapCodec<List<RecipeItemInput>> listCodec(int minInclusive, int maxInclusive)
+    public static MapCodec<List<RecipeItemInput>> listMapCodec(int minInclusive, int maxInclusive)
     {
         return LimaCoreCodecs.autoOptionalListField(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
     }

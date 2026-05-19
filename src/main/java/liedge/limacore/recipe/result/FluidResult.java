@@ -17,9 +17,10 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 import java.util.List;
 
-public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, String group, boolean required) implements RecipeResult<Fluid, FluidResource>
+public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, boolean required) implements RecipeResult<Fluid, FluidResource>
 {
     public static final Codec<FluidResult> CODEC = RecipeResult.codec(FluidInstance.FLUID_HOLDER_CODEC, ResultCount.codec(Integer.MAX_VALUE).fieldOf("amount"), FluidResult::new);
+    public static final Codec<FluidResult> CONSTANT_CODEC = RecipeResult.constantCodec(CODEC);
     public static final StreamCodec<RegistryFriendlyByteBuf, FluidResult> STREAM_CODEC = RecipeResult.streamCodec(FluidInstance.FLUID_HOLDER_STREAM_CODEC, FluidResult::new);
     public static final StreamCodec<RegistryFriendlyByteBuf, List<FluidResult>> LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
 
@@ -31,19 +32,19 @@ public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentP
         return RecipeResult.listCodec(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
     }
 
-    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, String group, boolean required)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components, boolean required)
     {
-        return new FluidResult(fluid, count, components, group, required);
+        return new FluidResult(fluid, count, components, required);
     }
 
-    public static FluidResult of(Fluid fluid, ResultCount count, DataComponentPatch components, String group, boolean required)
+    public static FluidResult of(Fluid fluid, ResultCount count, DataComponentPatch components, boolean required)
     {
-        return new FluidResult(LimaRegistryUtil.builtInHolder(fluid), count, components, group, required);
+        return new FluidResult(LimaRegistryUtil.builtInHolder(fluid), count, components, required);
     }
 
     public static FluidResult of(Holder<Fluid> fluid, ResultCount count, DataComponentPatch components)
     {
-        return of(fluid, count, components, NO_GROUP, true);
+        return of(fluid, count, components, true);
     }
 
     public static FluidResult of(Fluid fluid, ResultCount count, DataComponentPatch components)
@@ -51,14 +52,14 @@ public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentP
         return of(LimaRegistryUtil.builtInHolder(fluid), count, components);
     }
 
-    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, String group, boolean required)
+    public static FluidResult of(Holder<Fluid> fluid, ResultCount count, boolean required)
     {
-        return of(fluid, count, DataComponentPatch.EMPTY, group, required);
+        return of(fluid, count, DataComponentPatch.EMPTY, required);
     }
 
-    public static FluidResult of(Fluid fluid, ResultCount count, String group, boolean required)
+    public static FluidResult of(Fluid fluid, ResultCount count, boolean required)
     {
-        return of(fluid, count, DataComponentPatch.EMPTY, group, required);
+        return of(fluid, count, DataComponentPatch.EMPTY, required);
     }
 
     public static FluidResult of(Holder<Fluid> fluid, ResultCount count)
@@ -81,7 +82,7 @@ public record FluidResult(Holder<Fluid> fluid, ResultCount count, DataComponentP
         return of(LimaRegistryUtil.builtInHolder(fluid), amount);
     }
 
-    public static FluidResult fromVanilla(FluidStackTemplate template)
+    public static FluidResult copyOf(FluidStackTemplate template)
     {
         return of(template.fluid(), ResultCount.exactly(template.amount()), template.components());
     }

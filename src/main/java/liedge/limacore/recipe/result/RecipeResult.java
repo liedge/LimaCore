@@ -1,7 +1,8 @@
 package liedge.limacore.recipe.result;
 
-import com.mojang.datafixers.util.Function5;
+import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -26,26 +27,33 @@ import java.util.function.UnaryOperator;
 
 public interface RecipeResult<T, R extends Resource> extends Comparable<RecipeResult<T, R>>, DataComponentGetter
 {
-    String NO_GROUP = "";
-
-    static <T, R extends Resource, A extends RecipeResult<T, R>> Codec<A> codec(Codec<Holder<T>> typeCodec, MapCodec<ResultCount> countCodec, Function5<Holder<T>, ResultCount, DataComponentPatch, String, Boolean, A> factory)
+    static <T, R extends Resource, A extends RecipeResult<T, R>> Codec<A> codec(Codec<Holder<T>> typeCodec, MapCodec<ResultCount> countCodec, Function4<Holder<T>, ResultCount, DataComponentPatch, Boolean, A> factory)
     {
         return RecordCodecBuilder.create(i -> i.group(
                 typeCodec.fieldOf("id").forGetter(RecipeResult::typeHolder),
                 countCodec.forGetter(RecipeResult::count),
                 DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(RecipeResult::components),
-                Codec.STRING.optionalFieldOf("group", NO_GROUP).forGetter(RecipeResult::group),
                 Codec.BOOL.optionalFieldOf("required", true).forGetter(RecipeResult::required))
                 .apply(i, factory));
     }
 
-    static <T, R extends Resource, A extends RecipeResult<T, R>> StreamCodec<RegistryFriendlyByteBuf, A> streamCodec(StreamCodec<RegistryFriendlyByteBuf, Holder<T>> typeCodec, Function5<Holder<T>, ResultCount, DataComponentPatch, String, Boolean, A> factory)
+    static <A extends RecipeResult<?, ?>> Codec<A> constantCodec(Codec<A> baseCodec)
+    {
+        return baseCodec.validate(value ->
+        {
+            if (value.count().isConstant())
+                return DataResult.success(value);
+            else
+                return DataResult.error(() -> "Recipe result must have a fixed count and not be random.");
+        });
+    }
+
+    static <T, R extends Resource, A extends RecipeResult<T, R>> StreamCodec<RegistryFriendlyByteBuf, A> streamCodec(StreamCodec<RegistryFriendlyByteBuf, Holder<T>> typeCodec, Function4<Holder<T>, ResultCount, DataComponentPatch, Boolean, A> factory)
     {
         return StreamCodec.composite(
                 typeCodec, RecipeResult::typeHolder,
                 ResultCount.STREAM_CODEC, RecipeResult::count,
                 DataComponentPatch.STREAM_CODEC, RecipeResult::components,
-                ByteBufCodecs.STRING_UTF8, RecipeResult::group,
                 ByteBufCodecs.BOOL, RecipeResult::required,
                 factory);
     }
@@ -67,8 +75,6 @@ public interface RecipeResult<T, R extends Resource> extends Comparable<RecipeRe
     ResultCount count();
 
     DataComponentPatch components();
-
-    String group();
 
     boolean required();
 

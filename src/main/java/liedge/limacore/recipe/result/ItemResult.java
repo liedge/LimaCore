@@ -16,9 +16,10 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.List;
 
-public record ItemResult(Holder<Item> item, ResultCount count, DataComponentPatch components, String group, boolean required) implements RecipeResult<Item, ItemResource>
+public record ItemResult(Holder<Item> item, ResultCount count, DataComponentPatch components, boolean required) implements RecipeResult<Item, ItemResource>
 {
     public static final Codec<ItemResult> CODEC = RecipeResult.codec(Item.CODEC, ResultCount.codec(Item.DEFAULT_MAX_STACK_SIZE).fieldOf("count"), ItemResult::new);
+    public static final Codec<ItemResult> CONSTANT_CODEC = RecipeResult.constantCodec(CODEC);
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemResult> STREAM_CODEC = RecipeResult.streamCodec(Item.STREAM_CODEC, ItemResult::new);
     public static final StreamCodec<RegistryFriendlyByteBuf, List<ItemResult>> LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
 
@@ -30,19 +31,19 @@ public record ItemResult(Holder<Item> item, ResultCount count, DataComponentPatc
         return RecipeResult.listCodec(CODEC, MAP_CODEC_KEY, minInclusive, maxInclusive);
     }
 
-    public static ItemResult of(Holder<Item> item, ResultCount count, DataComponentPatch components, String group, boolean required)
+    public static ItemResult of(Holder<Item> item, ResultCount count, DataComponentPatch components, boolean required)
     {
-        return new ItemResult(item, count, components, group, required);
+        return new ItemResult(item, count, components, required);
     }
 
-    public static ItemResult of(Item item, ResultCount count, DataComponentPatch components, String group, boolean required)
+    public static ItemResult of(Item item, ResultCount count, DataComponentPatch components, boolean required)
     {
-        return new ItemResult(LimaRegistryUtil.builtInHolder(item), count, components, group, required);
+        return new ItemResult(LimaRegistryUtil.builtInHolder(item), count, components, required);
     }
 
     public static ItemResult of(Holder<Item> item, ResultCount count, DataComponentPatch components)
     {
-        return of(item, count, components, NO_GROUP, true);
+        return of(item, count, components, true);
     }
 
     public static ItemResult of(Item item, ResultCount count, DataComponentPatch components)
@@ -50,14 +51,14 @@ public record ItemResult(Holder<Item> item, ResultCount count, DataComponentPatc
         return of(LimaRegistryUtil.builtInHolder(item), count, components);
     }
 
-    public static ItemResult of(Holder<Item> item, ResultCount count, String group, boolean required)
+    public static ItemResult of(Holder<Item> item, ResultCount count, boolean required)
     {
-        return of(item, count, DataComponentPatch.EMPTY, group, required);
+        return of(item, count, DataComponentPatch.EMPTY, required);
     }
 
-    public static ItemResult of(Item item, ResultCount count, String group, boolean required)
+    public static ItemResult of(Item item, ResultCount count, boolean required)
     {
-        return of(item, count, DataComponentPatch.EMPTY, group, required);
+        return of(item, count, DataComponentPatch.EMPTY, required);
     }
 
     public static ItemResult of(Holder<Item> item, ResultCount count)
@@ -90,7 +91,7 @@ public record ItemResult(Holder<Item> item, ResultCount count, DataComponentPatc
         return of(item, 1);
     }
 
-    public static ItemResult fromVanilla(ItemStackTemplate template)
+    public static ItemResult copyOf(ItemStackTemplate template)
     {
         return of(template.item(), ResultCount.exactly(template.count()), template.components());
     }

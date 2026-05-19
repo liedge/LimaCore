@@ -56,6 +56,11 @@ public record ResultCount(int min, int max, float chance)
 
     public boolean isConstant()
     {
+        return isFixedCount() && !isRandom();
+    }
+
+    public boolean isFixedCount()
+    {
         return min == max;
     }
 
@@ -68,7 +73,7 @@ public record ResultCount(int min, int max, float chance)
     {
         if (chance >= 1 || random.nextFloat() < chance)
         {
-            return isConstant() ? max : random.nextIntBetweenInclusive(min ,max);
+            return isFixedCount() ? max : random.nextIntBetweenInclusive(min ,max);
         }
         else
         {
@@ -78,7 +83,7 @@ public record ResultCount(int min, int max, float chance)
 
     private Either<Integer, ResultCount> encode()
     {
-        if (isConstant() && !isRandom())
+        if (isConstant())
             return Either.left(min);
         else
             return Either.right(this);

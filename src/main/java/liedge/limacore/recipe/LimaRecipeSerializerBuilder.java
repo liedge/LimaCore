@@ -24,7 +24,7 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
 
     public B withItemIngredients(int min, int max)
     {
-        itemIngredientCodec = RecipeItemInput.listCodec(min, max);
+        itemIngredientCodec = RecipeItemInput.listMapCodec(min, max);
         return thisBuilder();
     }
 
@@ -40,7 +40,7 @@ public abstract class LimaRecipeSerializerBuilder<R extends LimaCustomRecipe<?>,
 
     public B withFluidIngredients(int min, int max)
     {
-        fluidIngredientCodec = RecipeFluidInput.listCodec(min, max);
+        fluidIngredientCodec = RecipeFluidInput.listMapCodec(min, max);
         return thisBuilder();
     }
 
