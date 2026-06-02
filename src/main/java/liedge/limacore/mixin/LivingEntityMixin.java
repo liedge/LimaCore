@@ -17,46 +17,53 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import oshi.util.tuples.Pair;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin
 {
     @Unique
-    private final List<Pair<Holder<Attribute>, AttributeModifier>> limacore$modifiers = new ObjectArrayList<>();
+    private final Deque<List<Pair<Holder<Attribute>, AttributeModifier>>> limacore$modifierStack = new ArrayDeque<>();
 
-    @Inject(method = "hurtServer", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/neoforged/neoforge/common/damagesource/DamageContainer;getNewDamage()F", ordinal = 0))
-    private void serverPreDamage(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
+    @Inject(method = "hurtServer", at = @At(value = "HEAD"))
+    private void applyTransientModifiers(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
     {
-        // Modifiers
-        limacore$modifiers.clear();
-        NeoForge.EVENT_BUS.post(new DamageAttributeModifiersEvent(level, source, amount, limacore$modifiers));
         LivingEntity thisEntity = (LivingEntity) (Object) this;
+        List<Pair<Holder<Attribute>, AttributeModifier>> pairs = new ObjectArrayList<>();
 
-        for (var pair : limacore$modifiers)
+        NeoForge.EVENT_BUS.post(new DamageAttributeModifiersEvent(thisEntity, level, source, amount, pairs));
+        limacore$modifierStack.push(pairs);
+
+        for (var pair : pairs)
         {
             AttributeInstance instance = thisEntity.getAttribute(pair.getA());
             if (instance != null)
             {
                 AttributeModifier modifier = pair.getB();
                 instance.removeModifier(modifier);
-                instance.addTransientModifier(modifier);
+                instance.addOrUpdateTransientModifier(modifier);
             }
         }
     }
 
-    @Inject(method = "hurtServer", at = @At(value = "INVOKE", target = "Ljava/util/Stack;pop()Ljava/lang/Object;", ordinal = 1))
-    private void serverPostDamage(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
+    @Inject(method = "hurtServer", at = @At(value = "RETURN"))
+    private void clearTransientModifiers(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
     {
         LivingEntity thisEntity = (LivingEntity) (Object) this;
 
-        for (var pair : limacore$modifiers)
+        List<Pair<Holder<Attribute>, AttributeModifier>> pairs = limacore$modifierStack.poll();
+        if (pairs != null)
         {
-            AttributeInstance instance = thisEntity.getAttribute(pair.getA());
-            if (instance != null)
+            for (var pair : pairs)
             {
-                AttributeModifier modifier = pair.getB();
-                instance.removeModifier(modifier);
+                AttributeInstance instance = thisEntity.getAttribute(pair.getA());
+                if (instance != null)
+                {
+                    AttributeModifier modifier = pair.getB();
+                    instance.removeModifier(modifier);
+                }
             }
         }
     }

@@ -3,9 +3,10 @@ package liedge.limacore.event;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import oshi.util.tuples.Pair;
 
 import java.util.List;
@@ -15,15 +16,16 @@ import java.util.List;
  * living entity when it is being attacked. These modifiers are removed at the end of
  * {@link net.minecraft.world.entity.LivingEntity#hurtServer(ServerLevel, DamageSource, float)}.
  */
-public final class DamageAttributeModifiersEvent extends Event
+public final class DamageAttributeModifiersEvent extends LivingEvent
 {
     private final ServerLevel level;
     private final DamageSource damageSource;
     private final float damage;
     private final List<Pair<Holder<Attribute>, AttributeModifier>> modifiers;
 
-    public DamageAttributeModifiersEvent(ServerLevel level, DamageSource damageSource, float damage, List<Pair<Holder<Attribute>, AttributeModifier>> modifiers)
+    public DamageAttributeModifiersEvent(LivingEntity entity, ServerLevel level, DamageSource damageSource, float damage, List<Pair<Holder<Attribute>, AttributeModifier>> modifiers)
     {
+        super(entity);
         this.level = level;
         this.damageSource = damageSource;
         this.damage = damage;
