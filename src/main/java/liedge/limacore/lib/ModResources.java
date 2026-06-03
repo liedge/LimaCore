@@ -23,10 +23,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public record ModResources(String modid)
 {
@@ -154,6 +156,11 @@ public record ModResources(String modid)
         return LimaDeferredNetworkSerializers.create(modid);
     }
 
+    public <T> void registerByEvent(ResourceKey<? extends Registry<T>> registryKey, RegisterEvent event, Consumer<RegisterHelper<T>> helperConsumer)
+    {
+        event.register(registryKey, helper -> helperConsumer.accept((name, obj) -> helper.register(id(name), obj)));
+    }
+
     public <T> RegistryBuilder<T> registryBuilder(ResourceKey<? extends Registry<T>> registryKey)
     {
         return new RegistryBuilder<>(registryKey);
@@ -265,4 +272,10 @@ public record ModResources(String modid)
         return new CustomPacketPayload.Type<>(id(name));
     }
     //#endregion
+
+    @FunctionalInterface
+    public interface RegisterHelper<T>
+    {
+        void register(String name, T value);
+    }
 }

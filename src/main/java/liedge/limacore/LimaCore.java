@@ -17,6 +17,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 
 import static liedge.limacore.util.LimaNetworkUtil.registerPlayToClient;
@@ -33,10 +34,7 @@ public class LimaCore
     {
         LimaCoreAttributes.register(modBus);
         LimaCoreDataComponents.register(modBus);
-        LimaCoreLootConditions.register(modBus);
-        LimaCoreLootRegistries.register(modBus);
         LimaCoreNetworkSerializers.register(modBus);
-        LimaCoreNumberProviders.register(modBus);
         LimaCoreRecipes.register(modBus);
         LimaCoreTriggerTypes.register(modBus);
         LimaCoreWorldGen.register(modBus);
@@ -46,6 +44,12 @@ public class LimaCore
 
     private static class CommonSetup
     {
+        @SubscribeEvent
+        private void registerGameObjects(final RegisterEvent event)
+        {
+            LimaCoreLootRegistries.register(event, RESOURCES);
+        }
+
         @SubscribeEvent
         private void registerPayloadHandlers(final RegisterPayloadHandlersEvent event)
         {

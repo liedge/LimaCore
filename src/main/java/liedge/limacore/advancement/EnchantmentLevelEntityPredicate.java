@@ -2,7 +2,6 @@ package liedge.limacore.advancement;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
@@ -28,7 +27,7 @@ public record EnchantmentLevelEntityPredicate(Holder<Enchantment> enchantment, M
     @Override
     public MapCodec<? extends EntitySubPredicate> codec()
     {
-        return LimaCoreLootRegistries.ENCHANTMENT_LEVEL_ENTITY_PREDICATE.get();
+        return CODEC;
     }
 
     @Override

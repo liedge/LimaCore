@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.FloatList;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import org.jetbrains.annotations.Nullable;
@@ -69,6 +68,6 @@ public record RangedLookupLevelBasedValue(List<Float> values, int levelOffset, O
     @Override
     public MapCodec<? extends LevelBasedValue> codec()
     {
-        return LimaCoreLootRegistries.RANGED_LOOKUP_LEVEL_BASED_VALUE.get();
+        return CODEC;
     }
 }

@@ -5,61 +5,88 @@ import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import liedge.limacore.advancement.HostilityEntityPredicate;
 import liedge.limacore.advancement.InvertedEntitySubPredicate;
 import liedge.limacore.advancement.LivingHealthPredicate;
-import liedge.limacore.world.loot.*;
+import liedge.limacore.lib.ModResources;
+import liedge.limacore.world.loot.ApplyFunctionsLootModifier;
+import liedge.limacore.world.loot.DynamicWeightLootEntry;
+import liedge.limacore.world.loot.RemoveItemLootModifier;
+import liedge.limacore.world.loot.SaveBlockEntityFunction;
+import liedge.limacore.world.loot.condition.*;
 import liedge.limacore.world.loot.level.MathOpsLevelBasedValue;
 import liedge.limacore.world.loot.level.RangedLookupLevelBasedValue;
+import liedge.limacore.world.loot.number.*;
 import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-
-import static liedge.limacore.LimaCore.RESOURCES;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import org.jetbrains.annotations.ApiStatus;
 
 public final class LimaCoreLootRegistries
 {
     private LimaCoreLootRegistries() {}
 
-    private static final DeferredRegister<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATES = RESOURCES.deferredRegister(Registries.ENTITY_SUB_PREDICATE_TYPE);
-    private static final DeferredRegister<MapCodec<? extends LootItemFunction>> FUNCTIONS = RESOURCES.deferredRegister(Registries.LOOT_FUNCTION_TYPE);
-    private static final DeferredRegister<MapCodec<? extends LootPoolEntryContainer>> LOOT_ENTRY_TYPES = RESOURCES.deferredRegister(Registries.LOOT_POOL_ENTRY_TYPE);
-    private static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> GLM_CODECS = RESOURCES.deferredRegister(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
-    private static final DeferredRegister<MapCodec<? extends LevelBasedValue>> LBV_CODECS = RESOURCES.deferredRegister(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE);
-    private static final DeferredRegister<MapCodec<? extends NumberProvider>> NUMBER_PROVIDERS = RESOURCES.deferredRegister(Registries.LOOT_NUMBER_PROVIDER_TYPE);
-
-    public static void register(IEventBus bus)
+    @ApiStatus.Internal
+    public static void register(RegisterEvent event, ModResources resources)
     {
-        ENTITY_SUB_PREDICATES.register(bus);
-        FUNCTIONS.register(bus);
-        LOOT_ENTRY_TYPES.register(bus);
-        GLM_CODECS.register(bus);
-        LBV_CODECS.register(bus);
-        NUMBER_PROVIDERS.register(bus);
+        resources.registerByEvent(Registries.LOOT_CONDITION_TYPE, event, LimaCoreLootRegistries::registerConditions);
+        resources.registerByEvent(Registries.LOOT_FUNCTION_TYPE, event, LimaCoreLootRegistries::registerFunctions);
+        resources.registerByEvent(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE, event, LimaCoreLootRegistries::registerLevelBasedValues);
+        resources.registerByEvent(Registries.LOOT_NUMBER_PROVIDER_TYPE, event, LimaCoreLootRegistries::registerLootNumbers);
+        resources.registerByEvent(Registries.ENTITY_SUB_PREDICATE_TYPE, event, LimaCoreLootRegistries::registerSubPredicates);
+        resources.registerByEvent(Registries.LOOT_POOL_ENTRY_TYPE, event, LimaCoreLootRegistries::registerLootEntryTypes);
+        resources.registerByEvent(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, event, LimaCoreLootRegistries::registerGLMCodecs);
     }
 
-    // Entity sub predicate types
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<InvertedEntitySubPredicate>> INVERTED_ENTITY_SUB_PREDICATE = ENTITY_SUB_PREDICATES.register("not", () -> InvertedEntitySubPredicate.CODEC);
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<LivingHealthPredicate>> LIVING_HEALTH_PREDICATE = ENTITY_SUB_PREDICATES.register("living_health", () -> LivingHealthPredicate.CODEC);
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<HostilityEntityPredicate>> HOSTILITY_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("hostility", () -> HostilityEntityPredicate.CODEC);
-    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<EnchantmentLevelEntityPredicate>> ENCHANTMENT_LEVEL_ENTITY_PREDICATE = ENTITY_SUB_PREDICATES.register("enchantment_level", () -> EnchantmentLevelEntityPredicate.CODEC);
+    private static void registerConditions(ModResources.RegisterHelper<MapCodec<? extends LootItemCondition>> helper)
+    {
+        helper.register("match_weapon_item", MatchWeaponItem.CODEC);
+        helper.register("match_default_loot_table", MatchDefaultLootTable.CODEC);
+        helper.register("entity_hostility", EntityHostilityCondition.CODEC);
+        helper.register("distance_check", DistanceCheckCondition.CODEC);
+        helper.register("compare_values", CompareValuesCondition.CODEC);
+    }
 
-    // Functions
-    public static final DeferredHolder<MapCodec<? extends LootItemFunction>, MapCodec<SaveBlockEntityFunction>> SAVE_BLOCK_ENTITY = FUNCTIONS.register("save_block_entity", () -> SaveBlockEntityFunction.CODEC);
+    private static void registerFunctions(ModResources.RegisterHelper<MapCodec<? extends LootItemFunction>> helper)
+    {
+        helper.register("save_block_entity", SaveBlockEntityFunction.CODEC);
+    }
 
-    // Loot entry types
-    public static final DeferredHolder<MapCodec<? extends LootPoolEntryContainer>, MapCodec<DynamicWeightLootEntry>> DYNAMIC_WEIGHT_LOOT_ENTRY = LOOT_ENTRY_TYPES.register("dynamic_weight", () -> DynamicWeightLootEntry.CODEC);
+    private static void registerLevelBasedValues(ModResources.RegisterHelper<MapCodec<? extends LevelBasedValue>> helper)
+    {
+        helper.register("ranged_lookup", RangedLookupLevelBasedValue.CODEC);
+        helper.register("math_ops", MathOpsLevelBasedValue.CODEC);
+    }
 
-    // GLM Codecs
-    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<RemoveItemLootModifier>> REMOVE_ITEM_MODIFIER = GLM_CODECS.register("remove_item", () -> RemoveItemLootModifier.CODEC);
-    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ApplyFunctionsLootModifier>> RUN_FUNCTIONS_MODIFIER = GLM_CODECS.register("apply_functions", () -> ApplyFunctionsLootModifier.CODEC);
+    private static void registerLootNumbers(ModResources.RegisterHelper<MapCodec<? extends NumberProvider>> helper)
+    {
+        helper.register("distance", LootContextDistance.CODEC);
+        helper.register("rounding", RoundValue.CODEC);
+        helper.register("entity_attribute", EntityAttributeValue.CODEC);
+        helper.register("enchantment_level", EntityEnchantmentLevels.CODEC);
+        helper.register("math", ValueMathOperation.CODEC);
+    }
 
-    // Level based value types
-    public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<RangedLookupLevelBasedValue>> RANGED_LOOKUP_LEVEL_BASED_VALUE = LBV_CODECS.register("ranged_lookup", () -> RangedLookupLevelBasedValue.CODEC);
-    public static final DeferredHolder<MapCodec<? extends LevelBasedValue>, MapCodec<MathOpsLevelBasedValue>> MATH_OPS_LEVEL_BASED_VALUE = LBV_CODECS.register("math_ops", () -> MathOpsLevelBasedValue.CODEC);
+    private static void registerSubPredicates(ModResources.RegisterHelper<MapCodec<? extends EntitySubPredicate>> helper)
+    {
+        helper.register("not", InvertedEntitySubPredicate.CODEC);
+        helper.register("living_health", LivingHealthPredicate.CODEC);
+        helper.register("hostility", HostilityEntityPredicate.CODEC);
+        helper.register("enchantment_level", EnchantmentLevelEntityPredicate.CODEC);
+    }
+
+    private static void registerLootEntryTypes(ModResources.RegisterHelper<MapCodec<? extends LootPoolEntryContainer>> helper)
+    {
+        helper.register("dynamic_weight", DynamicWeightLootEntry.CODEC);
+    }
+
+    private static void registerGLMCodecs(ModResources.RegisterHelper<MapCodec<? extends IGlobalLootModifier>> helper)
+    {
+        helper.register("remove_item", RemoveItemLootModifier.CODEC);
+        helper.register("apply_functions", ApplyFunctionsLootModifier.CODEC);
+    }
 }

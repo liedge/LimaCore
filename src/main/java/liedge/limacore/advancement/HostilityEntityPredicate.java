@@ -3,7 +3,6 @@ package liedge.limacore.advancement;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.lib.MinMaxRange;
 import liedge.limacore.lib.MobHostility;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import liedge.limacore.util.LimaEntityUtil;
 import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +22,7 @@ public record HostilityEntityPredicate(MinMaxRange<MobHostility> bounds) impleme
     @Override
     public MapCodec<? extends EntitySubPredicate> codec()
     {
-        return LimaCoreLootRegistries.HOSTILITY_ENTITY_PREDICATE.get();
+        return CODEC;
     }
 
     @Override

@@ -3,7 +3,6 @@ package liedge.limacore.advancement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import liedge.limacore.lib.MinMaxRange;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -23,7 +22,7 @@ public record LivingHealthPredicate(MinMaxRange<Float> health) implements Entity
     @Override
     public MapCodec<? extends EntitySubPredicate> codec()
     {
-        return LimaCoreLootRegistries.LIVING_HEALTH_PREDICATE.get();
+        return CODEC;
     }
 
     @Override

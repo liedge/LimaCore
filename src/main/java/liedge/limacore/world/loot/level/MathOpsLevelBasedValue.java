@@ -3,7 +3,6 @@ package liedge.limacore.world.loot.level;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import liedge.limacore.lib.math.MathOperation;
-import liedge.limacore.registry.game.LimaCoreLootRegistries;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 
 public record MathOpsLevelBasedValue(LevelBasedValue first, LevelBasedValue second, MathOperation operation) implements LevelBasedValue
@@ -23,6 +22,6 @@ public record MathOpsLevelBasedValue(LevelBasedValue first, LevelBasedValue seco
     @Override
     public MapCodec<? extends LevelBasedValue> codec()
     {
-        return LimaCoreLootRegistries.MATH_OPS_LEVEL_BASED_VALUE.get();
+        return CODEC;
     }
 }
