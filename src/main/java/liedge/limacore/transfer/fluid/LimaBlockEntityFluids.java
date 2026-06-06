@@ -7,8 +7,8 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.ExternalResourceHandler;
+import liedge.limacore.transfer.LimaTransferUtil;
 import liedge.limacore.transfer.VariableRateTransferHandler;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -101,18 +101,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
     @Override
     public void deserialize(ValueInput input)
     {
-        input.read(VALUE_IO_KEY, codec).ifPresent(list ->
-        {
-            int size = Math.max(list.size(), this.minSize);
-            NonNullList<FluidStack> fixedStacks = NonNullList.withSize(size, FluidStack.EMPTY);
-
-            for (int i = 0; i < list.size(); i++)
-            {
-                fixedStacks.set(i, list.get(i));
-            }
-
-            setStacks(fixedStacks);
-        });
+        LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, FluidStack.EMPTY).ifPresent(this::setStacks);
     }
 
     private static class ExternalWrapper extends ExternalResourceHandler<FluidResource, LimaBlockEntityFluids>

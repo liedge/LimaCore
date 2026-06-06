@@ -3,7 +3,7 @@ package liedge.limacore.transfer.item;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.transfer.ExternalResourceHandler;
-import net.minecraft.core.NonNullList;
+import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -51,18 +51,7 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
     @Override
     public void deserialize(ValueInput input)
     {
-        input.read(VALUE_IO_KEY, codec).ifPresent(list ->
-        {
-            int size = Math.max(list.size(), this.minSize);
-            NonNullList<ItemStack> fixedStacks = NonNullList.withSize(size, ItemStack.EMPTY);
-
-            for (int i = 0; i < list.size(); i++)
-            {
-                fixedStacks.set(i, list.get(i));
-            }
-
-            setStacks(fixedStacks);
-        });
+        LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, ItemStack.EMPTY).ifPresent(this::setStacks);
     }
 
     private static class ExternalWrapper extends ExternalResourceHandler<ItemResource, LimaBlockEntityItems>

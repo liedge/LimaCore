@@ -5,8 +5,8 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
-import net.neoforged.neoforge.common.MutableDataComponentHolder;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 
 public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler implements VariableEnergyHandler
@@ -21,18 +21,25 @@ public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler imple
         this.transferRate = blockEntity.getBaseEnergyTransferRate();
     }
 
-    public void writeComponents(MutableDataComponentHolder dataHolder)
+    @Override
+    public void readComponents(DataComponentGetter components)
     {
-        dataHolder.set(LimaCoreDataComponents.ENERGY, getAmountAsInt());
-        dataHolder.set(LimaCoreDataComponents.ENERGY_CAPACITY, getCapacityAsInt());
-        dataHolder.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
+        Integer energy = components.get(LimaCoreDataComponents.ENERGY);
+        if (energy != null) set(energy);
+
+        Integer capacity = components.get(LimaCoreDataComponents.ENERGY_CAPACITY);
+        if (capacity != null) setCapacity(capacity);
+
+        Integer transferRate = components.get(LimaCoreDataComponents.ENERGY_TRANSFER_RATE);
+        if (transferRate != null) setTransferRate(transferRate);
     }
 
-    public void writeComponents(DataComponentMap.Builder builder)
+    @Override
+    public void writeComponents(DataComponentMap.Builder components)
     {
-        builder.set(LimaCoreDataComponents.ENERGY, getAmountAsInt());
-        builder.set(LimaCoreDataComponents.ENERGY_CAPACITY, getCapacityAsInt());
-        builder.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
+        components.set(LimaCoreDataComponents.ENERGY, getAmountAsInt());
+        components.set(LimaCoreDataComponents.ENERGY_CAPACITY, getCapacityAsInt());
+        components.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
     }
 
     public LimaDataWatcher<Integer> syncEnergyStored()

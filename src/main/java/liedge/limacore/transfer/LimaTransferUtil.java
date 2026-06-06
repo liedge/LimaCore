@@ -1,8 +1,10 @@
 package liedge.limacore.transfer;
 
 import com.google.common.base.Predicates;
+import com.mojang.serialization.Codec;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.util.LimaTextUtil;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -15,6 +17,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.resource.Resource;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -27,6 +30,21 @@ public final class LimaTransferUtil
 
     public static final String MILLIBUCKET_UNIT = "mB";
     public static final String BUCKET_UNIT = "B";
+
+    public static <T> Optional<NonNullList<T>> loadSizedResources(ValueInput input, String key, Codec<NonNullList<T>> stacksCodec, int minSize, T emptyStack)
+    {
+        return input.read(key, stacksCodec).map(list ->
+        {
+            NonNullList<T> fixedList = NonNullList.withSize(Math.max(list.size(), minSize), emptyStack);
+
+            for (int i = 0; i < list.size(); i++)
+            {
+                fixedList.set(i, list.get(i));
+            }
+
+            return fixedList;
+        });
+    }
 
     public static <T extends ResourceHandler<?> & ValueIOSerializable> void loadBlockResources(ValueInput global, String globalKey, Function<BlockContentsType, @Nullable T> accessor)
     {
