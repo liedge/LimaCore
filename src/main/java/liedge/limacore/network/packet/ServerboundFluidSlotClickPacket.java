@@ -25,7 +25,7 @@ public record ServerboundFluidSlotClickPacket(int containerId, int slotIndex, Li
     @Override
     public void handleServer(ServerPlayer sender, IPayloadContext context)
     {
-        LimaCoreServerPacketHandler.handleFluidSlotClick(this, sender);
+        // LimaCoreServerPacketHandler.handleFluidSlotClick(this, sender);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package liedge.limacore.network.packet;
 
 import liedge.limacore.LimaCore;
+import liedge.limacore.menu.LimaMenu;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.ServerboundPayload;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -23,7 +24,10 @@ public record ServerboundCustomMenuButtonPacket(int containerId, IndexedStreamDa
     @Override
     public void handleServer(ServerPlayer sender, IPayloadContext context)
     {
-        LimaCoreServerPacketHandler.handleCustomMenuButtonPacket(this, sender);
+        if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == this.containerId)
+        {
+            menu.handleCustomButtonData(sender, streamData);
+        }
     }
 
     @Override

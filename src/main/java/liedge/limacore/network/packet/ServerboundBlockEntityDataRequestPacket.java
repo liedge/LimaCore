@@ -3,6 +3,8 @@ package liedge.limacore.network.packet;
 import io.netty.buffer.ByteBuf;
 import liedge.limacore.LimaCore;
 import liedge.limacore.network.ServerboundPayload;
+import liedge.limacore.network.sync.DataWatcherHolder;
+import liedge.limacore.util.LimaBlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -17,7 +19,8 @@ public record ServerboundBlockEntityDataRequestPacket(BlockPos blockPos) impleme
     @Override
     public void handleServer(ServerPlayer sender, IPayloadContext context)
     {
-        LimaCoreServerPacketHandler.handleBlockDataRequestPacket(this, sender);
+        DataWatcherHolder blockEntity = LimaBlockUtil.getSafeBlockEntity(sender.level(), blockPos, DataWatcherHolder.class);
+        if (blockEntity != null) blockEntity.forceSyncDataWatchers();
     }
 
     @Override
