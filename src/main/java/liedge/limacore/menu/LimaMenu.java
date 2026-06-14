@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
+import liedge.limacore.menu.slot.FluidMenuInput;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.menu.slot.LimaItemSlot;
 import liedge.limacore.menu.slot.RecipeResultSlot;
@@ -168,31 +169,36 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         return fluidSlots;
     }
 
-    public void fluidSlotClicked(ServerPlayer sender, int slotIndex, LimaFluidSlot.ClickAction action)
+    public void fluidClicked(ServerPlayer player, int slotIndex, FluidMenuInput input)
     {
-        ResourceHandler<FluidResource> carriedFluids = getCarried().getCapability(Capabilities.Fluid.ITEM, ItemAccess.forPlayerCursor(sender, this));
-        if (carriedFluids != null)
-        {
-            LimaFluidSlot slot = getFluidSlots().get(slotIndex);
-            int slotCapacity = slot.getCapacity();
-            ResourceHandler<FluidResource> slotFluids = RangedResourceHandler.ofSingleIndex(slot.fluids(), slot.resourceIndex());
+        LimaFluidSlot slot = fluidSlots.get(slotIndex);
+        ResourceHandler<FluidResource> carriedFluids = ItemAccess.forPlayerCursor(player, this).getCapability(Capabilities.Fluid.ITEM);
+        ResourceHandler<FluidResource> slotFluids = RangedResourceHandler.ofSingleIndex(slot.getFluidHandler(), slot.getResourceIndex());
 
-            if (action == LimaFluidSlot.ClickAction.FILL)
+        if (input == FluidMenuInput.FILL && carriedFluids != null)
+        {
+            int inserted = ResourceHandlerUtil.move(carriedFluids, slotFluids, slot::mayPlace, slot.getCapacity(), null);
+            if (inserted > 0) sendSoundToPlayer(player, SoundEvents.BUCKET_EMPTY, 1f, 1f);
+        }
+        else if (input == FluidMenuInput.DRAIN && carriedFluids != null)
+        {
+            int extracted = ResourceHandlerUtil.move(slotFluids, carriedFluids, Predicates.alwaysTrue(), slot.getCapacity(), null);
+            if (extracted > 0) sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
+        }
+        else if (input == FluidMenuInput.CLONE && getCarried().isEmpty() && slot.canCreateCloneBucket(player))
+        {
+            FluidResource resource = slot.getFluidResource();
+            ItemStack bucket = resource.getFluid().getBucket().getDefaultInstance();
+
+            if (!bucket.isEmpty())
             {
-                int inserted = ResourceHandlerUtil.move(carriedFluids, slotFluids, slot::mayPlace, slotCapacity, null);
-                if (inserted > 0)
-                {
-                    sendSoundToPlayer(sender, SoundEvents.BUCKET_EMPTY, 1f, 1f);
-                }
+                setCarried(bucket);
+                sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
             }
-            else
-            {
-                int extracted = ResourceHandlerUtil.move(slotFluids, carriedFluids, Predicates.alwaysTrue(), slotCapacity, null);
-                if (extracted > 0)
-                {
-                    sendSoundToPlayer(sender, SoundEvents.BUCKET_FILL, 1f, 1f);
-                }
-            }
+        }
+        else if (input == FluidMenuInput.CLEAR && !getCarried().isEmpty() && slot.canClear(player, getCarried()))
+        {
+            slot.clearFluid();
         }
     }
 
@@ -377,7 +383,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
     protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y, boolean allowInsert)
     {
-        fluidSlots.add(new LimaFluidSlot(fluids, fluidSlots.size(), resourceIndex, x, y, allowInsert));
+        fluidSlots.add(new LimaFluidSlot(fluids, x, y, fluidSlots.size(), resourceIndex, allowInsert));
     }
 
     protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y)
@@ -425,7 +431,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
 
         public void handleUnitAction(int index, Consumer<ServerPlayer> action)
         {
-            handleAction(index, LimaCoreNetworkSerializers.UNIT, (sender, $) -> action.accept(sender));
+            handleAction(index, LimaCoreNetworkSerializers.UNIT, (sender, _) -> action.accept(sender));
         }
     }
 

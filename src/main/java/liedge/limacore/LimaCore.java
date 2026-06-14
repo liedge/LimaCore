@@ -62,7 +62,7 @@ public class LimaCore
 
             // Serverbound Packets
             registerPlayToServer(registrar, ServerboundCustomMenuButtonPacket.TYPE, ServerboundCustomMenuButtonPacket.STREAM_CODEC);
-            registerPlayToServer(registrar, ServerboundFluidSlotClickPacket.TYPE, ServerboundFluidSlotClickPacket.STREAM_CODEC);
+            registerPlayToServer(registrar, ServerboundFluidSlotInputPacket.TYPE, ServerboundFluidSlotInputPacket.STREAM_CODEC);
             registerPlayToServer(registrar, ServerboundBlockEntityDataRequestPacket.TYPE, ServerboundBlockEntityDataRequestPacket.STREAM_CODEC);
         }
 

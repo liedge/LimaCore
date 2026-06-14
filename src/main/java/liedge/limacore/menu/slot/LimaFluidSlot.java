@@ -1,34 +1,92 @@
 package liedge.limacore.menu.slot;
 
 import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
-public record LimaFluidSlot(LimaBlockEntityFluids fluids, int slot, int resourceIndex, int x, int y, boolean allowInsert)
+public class LimaFluidSlot
 {
+    private final LimaBlockEntityFluids handler;
+    private final int x;
+    private final int y;
+    private final int slotIndex;
+    private final int resourceIndex;
+    private final boolean allowPlace;
+
+    public LimaFluidSlot(LimaBlockEntityFluids handler, int x, int y, int slotIndex, int resourceIndex, boolean allowPlace)
+    {
+        this.handler = handler;
+        this.x = x;
+        this.y = y;
+        this.slotIndex = slotIndex;
+        this.resourceIndex = resourceIndex;
+        this.allowPlace = allowPlace;
+    }
+
+    public LimaBlockEntityFluids getFluidHandler()
+    {
+        return handler;
+    }
+
+    public int getX()
+    {
+        return x;
+    }
+
+    public int getY()
+    {
+        return y;
+    }
+
+    public int getSlotIndex()
+    {
+        return slotIndex;
+    }
+
+    public int getResourceIndex()
+    {
+        return resourceIndex;
+    }
+
+    public boolean allowsPlacement()
+    {
+        return allowPlace;
+    }
+
+    public FluidResource getFluidResource()
+    {
+        return handler.getResource(resourceIndex);
+    }
+
     public FluidStack getFluid()
     {
-        return fluids.getResource(resourceIndex).toStack(fluids.getAmountAsInt(resourceIndex));
+        return getFluidResource().toStack(handler.getAmountAsInt(resourceIndex));
     }
 
     public int getCapacity()
     {
-        return fluids.getCapacity();
+        return handler.getCapacity();
     }
 
     public boolean mayPlace(FluidResource resource)
     {
-        return allowInsert && fluids.isValid(resourceIndex, resource);
+        return allowPlace && handler.isValid(resourceIndex, resource);
     }
 
-    public enum ClickAction
+    public boolean canCreateCloneBucket(Player player)
     {
-        FILL,
-        DRAIN;
+        return player.hasInfiniteMaterials() && !getFluidResource().isEmpty();
+    }
 
-        public static final StreamCodec<FriendlyByteBuf, ClickAction> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(ClickAction.class);
+    public boolean canClear(Player player, ItemStack cursorItem)
+    {
+        return false;
+    }
+
+    public void clearFluid()
+    {
+        handler.set(resourceIndex, FluidResource.EMPTY, 0);
     }
 }

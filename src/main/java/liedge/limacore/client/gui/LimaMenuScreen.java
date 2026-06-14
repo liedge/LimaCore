@@ -6,17 +6,17 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.menu.LimaMenu;
+import liedge.limacore.menu.slot.FluidMenuInput;
 import liedge.limacore.menu.slot.LimaFluidSlot;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ServerboundCustomMenuButtonPacket;
-import liedge.limacore.network.packet.ServerboundFluidSlotClickPacket;
+import liedge.limacore.network.packet.ServerboundFluidSlotInputPacket;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.LimaTransferUtil;
 import liedge.limacore.util.LimaItemUtil;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -95,14 +95,6 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)
-    {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-
-        extractTooltip(graphics, mouseX, mouseY);
-    }
-
-    @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int x, int y)
     {
         super.extractTooltip(graphics, x, y);
@@ -110,22 +102,9 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         // Render fluid slot tooltips
         if (hoveredFluidSlot != null)
         {
-            FluidStack stack = hoveredFluidSlot.getFluid();
-            if (!stack.isEmpty())
-            {
-                List<Component> lines = new ObjectArrayList<>();
-                lines.add(stack.getHoverName());
-
-                if (Minecraft.getInstance().options.advancedItemTooltips)
-                {
-                    String id = LimaRegistryUtil.getNonNullRegistryId(stack.typeHolder()).toString();
-                    lines.add(Component.literal(id).withStyle(ChatFormatting.DARK_GRAY));
-                }
-
-                lines.add(Component.literal(LimaTransferUtil.formatStoredFluidMillibucket(stack.getAmount(), hoveredFluidSlot.getCapacity())).withStyle(ChatFormatting.GRAY));
-
-                graphics.setTooltipForNextFrame(font, lines, Optional.empty(), x, y);
-            }
+            List<Component> fluidTooltips = new ObjectArrayList<>();
+            extractFluidSlotTooltips(hoveredFluidSlot, x, y, fluidTooltips);
+            graphics.setTooltipForNextFrame(font, fluidTooltips, Optional.empty(), x, y);
         }
 
         // Render widget
@@ -140,6 +119,28 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         }
     }
 
+    protected void extractFluidSlotTooltips(LimaFluidSlot slot, int x, int y, List<Component> lines)
+    {
+        FluidStack stack = slot.getFluid();
+
+        if (!stack.isEmpty())
+        {
+            lines.add(stack.getHoverName());
+            if (minecraft.options.advancedItemTooltips)
+            {
+                String id = LimaRegistryUtil.getNonNullRegistryId(stack.typeHolder()).toString();
+                lines.add(Component.literal(id).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        }
+        else
+        {
+            lines.add(Component.literal("—").withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        String formattedAmount = LimaTransferUtil.formatStoredFluidMillibucket(stack.getAmount(), slot.getCapacity());
+        lines.add(Component.literal(formattedAmount).withStyle(ChatFormatting.GRAY));
+    }
+
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY)
     {
@@ -151,17 +152,27 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
     public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick)
     {
         Player player = minecraft.player;
-
-        if (player != null && hoveredFluidSlot != null && LimaItemUtil.hasFluidHandlerCapability(ItemAccess.forPlayerCursor(player, menu)) && isHovering(hoveredFluidSlot.x(), hoveredFluidSlot.y(), 16, 16, event.x(), event.y()))
+        if (player != null && hoveredFluidSlot != null && isHovering(hoveredFluidSlot.getX(), hoveredFluidSlot.getY(), 16, 16, event.x(), event.y()))
         {
-            LimaFluidSlot.ClickAction action = switch (event.button())
+            FluidMenuInput input = switch (event.button())
             {
-                case InputConstants.MOUSE_BUTTON_LEFT -> LimaFluidSlot.ClickAction.DRAIN;
-                case InputConstants.MOUSE_BUTTON_RIGHT -> LimaFluidSlot.ClickAction.FILL;
+                case InputConstants.MOUSE_BUTTON_LEFT -> isCarryingFluidItem(player) ? FluidMenuInput.DRAIN : null;
+                case InputConstants.MOUSE_BUTTON_RIGHT -> isCarryingFluidItem(player) ? FluidMenuInput.FILL : null;
+                case InputConstants.MOUSE_BUTTON_MIDDLE ->
+                {
+                    if (menu.getCarried().isEmpty() && hoveredFluidSlot.canCreateCloneBucket(player))
+                        yield FluidMenuInput.CLONE;
+                    else
+                        yield !menu.getCarried().isEmpty() && hoveredFluidSlot.canClear(player, menu.getCarried()) ? FluidMenuInput.CLEAR : null;
+                }
                 default -> null;
             };
 
-            if (action != null) ClientPacketDistributor.sendToServer(new ServerboundFluidSlotClickPacket(menu.containerId, hoveredFluidSlot.slot(), action));
+            if (input != null)
+            {
+                ClientPacketDistributor.sendToServer(new ServerboundFluidSlotInputPacket(menu.containerId, hoveredFluidSlot.getSlotIndex(), input));
+                return true;
+            }
         }
 
         return super.mouseClicked(event, isDoubleClick);
@@ -232,6 +243,11 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         }
     }
 
+    private boolean isCarryingFluidItem(Player player)
+    {
+        return LimaItemUtil.hasFluidHandlerCapability(ItemAccess.forPlayerCursor(player, menu));
+    }
+
     @EventBusSubscriber(modid = LimaCore.MODID, value = Dist.CLIENT)
     private static class FluidSlotRenderer
     {
@@ -253,8 +269,8 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                 for (int i = 0; i < limaScreen.menu.getFluidSlots().size(); i++)
                 {
                     LimaFluidSlot fluidSlot = limaScreen.menu.getFluidSlots().get(i);
-                    int slotX = fluidSlot.x();
-                    int slotY = fluidSlot.y();
+                    int slotX = fluidSlot.getX();
+                    int slotY = fluidSlot.getY();
 
                     boolean hovering = limaScreen.isHovering(slotX, slotY, 16, 16, mouseX, mouseY);
 
