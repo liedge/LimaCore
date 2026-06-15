@@ -1,6 +1,6 @@
 package liedge.limacore.menu.slot;
 
-import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
+import liedge.limacore.transfer.fluid.LimaFluidResourceHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -8,14 +8,14 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 public class LimaFluidSlot
 {
-    private final LimaBlockEntityFluids handler;
+    private final LimaFluidResourceHandler handler;
     private final int x;
     private final int y;
     private final int slotIndex;
     private final int resourceIndex;
     private final boolean allowPlace;
 
-    public LimaFluidSlot(LimaBlockEntityFluids handler, int x, int y, int slotIndex, int resourceIndex, boolean allowPlace)
+    public LimaFluidSlot(LimaFluidResourceHandler handler, int x, int y, int slotIndex, int resourceIndex, boolean allowPlace)
     {
         this.handler = handler;
         this.x = x;
@@ -25,7 +25,7 @@ public class LimaFluidSlot
         this.allowPlace = allowPlace;
     }
 
-    public LimaBlockEntityFluids getFluidHandler()
+    public LimaFluidResourceHandler getFluidHandler()
     {
         return handler;
     }

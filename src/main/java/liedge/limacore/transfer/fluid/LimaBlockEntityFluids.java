@@ -6,16 +6,15 @@ import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
-import liedge.limacore.transfer.ExternalResourceHandler;
+import liedge.limacore.transfer.ExternalAccessResourceHandler;
 import liedge.limacore.transfer.LimaTransferUtil;
-import liedge.limacore.transfer.VariableRateTransferHandler;
 import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 
-public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements VariableRateTransferHandler
+public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements LimaFluidResourceHandler
 {
     private final FluidHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
@@ -35,7 +34,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
 
     public ResourceHandler<FluidResource> createIOWrapper(IOAccess topLevelAccess)
     {
-        return new ExternalWrapper(this, topLevelAccess);
+        return new ExternalAccessResourceHandler<>(this, this::getTransferRate, topLevelAccess, (index, resource) -> blockEntity.getResourceLevelFluidIO(contentsType, index, resource));
     }
 
     public void syncTanks(DataWatcherHolder.DataWatcherCollector collector)
@@ -52,23 +51,21 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
         }
     }
 
-    public LimaDataWatcher<Integer> syncCapacity()
-    {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getCapacity, this::setCapacity);
-    }
-
-    public void keepHandlerSynced(DataWatcherHolder.DataWatcherCollector collector)
+    @Override
+    public void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector)
     {
         syncTanks(collector);
         collector.register(syncCapacity());
         collector.register(syncTransferRate());
     }
 
+    @Override
     public int getCapacity()
     {
         return capacity;
     }
 
+    @Override
     public void setCapacity(int capacity)
     {
         this.capacity = capacity;
@@ -102,31 +99,5 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
     public void deserialize(ValueInput input)
     {
         LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, FluidStack.EMPTY).ifPresent(this::setStacks);
-    }
-
-    private static class ExternalWrapper extends ExternalResourceHandler<FluidResource, LimaBlockEntityFluids>
-    {
-        ExternalWrapper(LimaBlockEntityFluids base, IOAccess topLevelAccess)
-        {
-            super(base, topLevelAccess);
-        }
-
-        @Override
-        protected boolean canInsert(LimaBlockEntityFluids base, int index, FluidResource resource, IOAccess topLevelAccess)
-        {
-            return topLevelAccess.allowsInput() && base.blockEntity.getResourceLevelFluidIO(base.contentsType, index, resource).allowsInput();
-        }
-
-        @Override
-        protected boolean canExtract(LimaBlockEntityFluids base, int index, FluidResource resource, IOAccess topLevelAccess)
-        {
-            return topLevelAccess.allowsOutput() && base.blockEntity.getResourceLevelFluidIO(base.contentsType, index, resource).allowsOutput();
-        }
-
-        @Override
-        protected int getTransferLimit(LimaBlockEntityFluids base)
-        {
-            return base.transferRate;
-        }
     }
 }

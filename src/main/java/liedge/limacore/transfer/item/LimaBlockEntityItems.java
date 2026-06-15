@@ -2,7 +2,7 @@ package liedge.limacore.transfer.item;
 
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
-import liedge.limacore.transfer.ExternalResourceHandler;
+import liedge.limacore.transfer.ExternalAccessResourceHandler;
 import liedge.limacore.transfer.LimaTransferUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
 
     public ResourceHandler<ItemResource> createIOWrapper(IOAccess topLevelAccess)
     {
-        return new ExternalWrapper(this, topLevelAccess);
+        return new ExternalAccessResourceHandler<>(this, Item.DEFAULT_MAX_STACK_SIZE, topLevelAccess, (index, resource) -> blockEntity.getResourceLevelItemIO(contentsType, index, resource));
     }
 
     @Override
@@ -52,31 +52,5 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
     public void deserialize(ValueInput input)
     {
         LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, ItemStack.EMPTY).ifPresent(this::setStacks);
-    }
-
-    private static class ExternalWrapper extends ExternalResourceHandler<ItemResource, LimaBlockEntityItems>
-    {
-        ExternalWrapper(LimaBlockEntityItems base, IOAccess topLevelAccess)
-        {
-            super(base, topLevelAccess);
-        }
-
-        @Override
-        protected boolean canInsert(LimaBlockEntityItems base, int index, ItemResource resource, IOAccess topLevelAccess)
-        {
-            return topLevelAccess.allowsInput() && base.blockEntity.getResourceLevelItemIO(base.contentsType, index, resource).allowsInput();
-        }
-
-        @Override
-        protected boolean canExtract(LimaBlockEntityItems base, int index, ItemResource resource, IOAccess topLevelAccess)
-        {
-            return topLevelAccess.allowsOutput() && base.blockEntity.getResourceLevelItemIO(base.contentsType, index, resource).allowsOutput();
-        }
-
-        @Override
-        protected int getTransferLimit(LimaBlockEntityItems base)
-        {
-            return Integer.MAX_VALUE;
-        }
     }
 }
