@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface EnergyHolderBlockEntity extends LimaBlockEntityAccess
 {
-    VariableEnergyHandler getEnergy();
+    LimaEnergyHandler getEnergy();
 
     int getBaseEnergyCapacity();
 

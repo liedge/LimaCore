@@ -1,20 +1,17 @@
 package liedge.limacore.transfer.energy;
 
-import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
-import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
-import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 
-public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler implements VariableEnergyHandler
+public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements LimaEnergyHandler
 {
     private final EnergyHolderBlockEntity blockEntity;
     private int transferRate;
 
-    public AdjustableBlockEntityEnergy(EnergyHolderBlockEntity blockEntity)
+    public LimaBlockEntityEnergy(EnergyHolderBlockEntity blockEntity)
     {
         super(blockEntity.getBaseEnergyCapacity());
         this.blockEntity = blockEntity;
@@ -42,19 +39,10 @@ public final class AdjustableBlockEntityEnergy extends SimpleEnergyHandler imple
         components.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
     }
 
-    public LimaDataWatcher<Integer> syncEnergyStored()
+    @Override
+    public void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector)
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getAmountAsInt, this::set);
-    }
-
-    public LimaDataWatcher<Integer> syncCapacity()
-    {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getCapacityAsInt, this::setCapacity);
-    }
-
-    public void keepAllPropertiesSynced(DataWatcherHolder.DataWatcherCollector collector)
-    {
-        collector.register(syncEnergyStored());
+        collector.register(syncEnergy());
         collector.register(syncCapacity());
         collector.register(syncTransferRate());
     }

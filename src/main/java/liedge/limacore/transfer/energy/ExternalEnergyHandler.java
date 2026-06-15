@@ -6,10 +6,10 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 public final class ExternalEnergyHandler implements EnergyHandler
 {
-    private final VariableEnergyHandler base;
+    private final LimaEnergyHandler base;
     private final IOAccess topLevelAccess;
 
-    public ExternalEnergyHandler(VariableEnergyHandler base, IOAccess topLevelAccess)
+    public ExternalEnergyHandler(LimaEnergyHandler base, IOAccess topLevelAccess)
     {
         this.base = base;
         this.topLevelAccess = topLevelAccess;
