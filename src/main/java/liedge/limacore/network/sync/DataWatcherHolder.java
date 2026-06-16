@@ -64,6 +64,7 @@ public interface DataWatcherHolder
         if (streamData != null) sendDataWatcherPacket(streamData);
     }
 
+    @ApiStatus.Internal
     default List<LimaDataWatcher<?>> createDataWatchers()
     {
         ObjectList<LimaDataWatcher<?>> list = new ObjectArrayList<>();

@@ -1,8 +1,8 @@
 package liedge.limacore.transfer.fluid;
 
-import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.network.sync.SimpleValueTracker;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.neoforged.neoforge.transfer.IndexModifier;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -22,11 +22,11 @@ public interface LimaFluidResourceHandler extends ResourceHandler<FluidResource>
 
     default LimaDataWatcher<Integer> syncCapacity()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getCapacity, this::setCapacity);
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getCapacity, this::setCapacity).setAutomatic();
     }
 
     default LimaDataWatcher<Integer> syncTransferRate()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate);
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate).setAutomatic();
     }
 }

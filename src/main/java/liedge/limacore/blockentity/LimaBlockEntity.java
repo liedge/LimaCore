@@ -39,7 +39,7 @@ import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -49,12 +49,12 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final List<LimaDataWatcher<?>> dataWatchers;
+    @Nullable
+    private List<LimaDataWatcher<?>> dataWatchers;
 
     protected LimaBlockEntity(LimaBlockEntityType<?> type, BlockPos pos, BlockState state)
     {
         super(type, pos, state);
-        this.dataWatchers = createDataWatchers();
     }
 
     public boolean canPlayerUse(Player player)
@@ -78,6 +78,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     @Override
     public final List<LimaDataWatcher<?>> getDataWatchers()
     {
+        if (dataWatchers == null) dataWatchers = createDataWatchers();
         return dataWatchers;
     }
 

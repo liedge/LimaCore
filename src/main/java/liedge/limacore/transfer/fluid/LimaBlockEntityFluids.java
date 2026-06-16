@@ -2,9 +2,7 @@ package liedge.limacore.transfer.fluid;
 
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
-import liedge.limacore.network.sync.AutomaticDataWatcher;
-import liedge.limacore.network.sync.DataWatcherHolder;
-import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.network.sync.*;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.ExternalAccessResourceHandler;
 import liedge.limacore.transfer.LimaTransferUtil;
@@ -42,12 +40,13 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
         for (int i = 0; i < size(); i++)
         {
             final int index = i;
-            LimaDataWatcher<FluidStack> watcher = AutomaticDataWatcher.keepSynced(
+            ValueTracker<FluidStack> tracker = SimpleValueTracker.create(
                     LimaCoreNetworkSerializers.FLUID_STACK,
                     () -> stacks.get(index),
-                    fs -> stacks.set(index, fs));
+                    fs -> stacks.set(index, fs))
+                    .setAutomatic();
 
-            collector.register(watcher);
+            collector.register(tracker);
         }
     }
 

@@ -4,7 +4,7 @@ import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import org.jetbrains.annotations.ApiStatus;
 
-public abstract sealed class LimaDataWatcher<T> permits ManualDataWatcher, AutomaticDataWatcher
+public abstract class LimaDataWatcher<T>
 {
     private final NetworkSerializer<T> serializer;
     private boolean changed;

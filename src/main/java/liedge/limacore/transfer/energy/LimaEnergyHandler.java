@@ -1,8 +1,8 @@
 package liedge.limacore.transfer.energy;
 
-import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.network.sync.SimpleValueTracker;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
@@ -26,16 +26,16 @@ public interface LimaEnergyHandler extends EnergyHandler
 
     default LimaDataWatcher<Integer> syncEnergy()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getAmountAsInt, this::set);
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getAmountAsInt, this::set).setAutomatic();
     }
 
     default LimaDataWatcher<Integer> syncCapacity()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getCapacityAsInt, this::setCapacity);
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getCapacityAsInt, this::setCapacity).setAutomatic();
     }
 
     default LimaDataWatcher<Integer> syncTransferRate()
     {
-        return AutomaticDataWatcher.keepSynced(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate);
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate).setAutomatic();
     }
 }

@@ -1,7 +1,7 @@
 package liedge.limacore.recipe;
 
-import liedge.limacore.network.sync.AutomaticDataWatcher;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.network.sync.NullableValueTracker;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.resources.ResourceKey;
@@ -72,7 +72,7 @@ public final class LimaRecipeCheck<I extends RecipeInput, R extends Recipe<I>> i
 
     public LimaDataWatcher<Optional<ResourceKey<Recipe<?>>>> keepLastUsedSynced()
     {
-        return AutomaticDataWatcher.keepNullableSynced(LimaCoreNetworkSerializers.OPTIONAL_RECIPE_KEY, this::getLastUsedRecipeKey, this::setLastUsedRecipeKey);
+        return NullableValueTracker.create(LimaCoreNetworkSerializers.OPTIONAL_RECIPE_KEY, this::getLastUsedRecipeKey, this::setLastUsedRecipeKey).setAutomatic();
     }
 
     @Override
