@@ -12,7 +12,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 
-public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements LimaFluidResourceHandler
+public class LimaBlockEntityFluids extends FluidStacksResourceHandler
 {
     private final FluidHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
@@ -50,7 +50,16 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
         }
     }
 
-    @Override
+    public LimaDataWatcher<Integer> syncCapacity()
+    {
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getCapacity, this::setCapacity);
+    }
+
+    public LimaDataWatcher<Integer> syncTransferRate()
+    {
+        return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate);
+    }
+
     public void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector)
     {
         syncTanks(collector);
@@ -58,25 +67,21 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler implements
         collector.register(syncTransferRate());
     }
 
-    @Override
     public int getCapacity()
     {
         return capacity;
     }
 
-    @Override
     public void setCapacity(int capacity)
     {
         this.capacity = capacity;
     }
 
-    @Override
     public int getTransferRate()
     {
         return transferRate;
     }
 
-    @Override
     public void setTransferRate(int transferRate)
     {
         this.transferRate = transferRate;

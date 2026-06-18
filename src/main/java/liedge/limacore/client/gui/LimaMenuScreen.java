@@ -103,7 +103,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         if (hoveredFluidSlot != null)
         {
             List<Component> fluidTooltips = new ObjectArrayList<>();
-            extractFluidSlotTooltips(hoveredFluidSlot, x, y, fluidTooltips);
+            extractFluidSlotTooltips(hoveredFluidSlot, fluidTooltips);
             graphics.setTooltipForNextFrame(font, fluidTooltips, Optional.empty(), x, y);
         }
 
@@ -119,7 +119,16 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
         }
     }
 
-    protected void extractFluidSlotTooltips(LimaFluidSlot slot, int x, int y, List<Component> lines)
+    protected void extractFluidSlot(GuiGraphicsExtractor graphics, LimaFluidSlot slot, int mouseX, int mouseY)
+    {
+        FluidStack stack = slot.getFluid();
+        if (!stack.isEmpty())
+        {
+            LimaGuiUtil.fluidSpriteWithAmount(graphics, stack, slot.getX(), slot.getY());
+        }
+    }
+
+    protected void extractFluidSlotTooltips(LimaFluidSlot slot, List<Component> lines)
     {
         FluidStack stack = slot.getFluid();
 
@@ -280,8 +289,7 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
                         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_BACK_SPRITE, slotX - 4, slotY - 4, 24, 24);
                     }
 
-                    FluidStack stack = fluidSlot.getFluid();
-                    if (!stack.isEmpty()) LimaGuiUtil.fluidSpriteWithAmount(graphics, stack, slotX, slotY);
+                    limaScreen.extractFluidSlot(graphics, fluidSlot, mouseX, mouseY);
 
                     if (hovering)
                         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_FRONT_SPRITE, slotX - 4, slotY - 4, 24, 24);

@@ -15,6 +15,7 @@ public final class LimaTextUtil
     private static final LocalizedNumberFormatter PERCENT = NumberFormatter.withLocale(ULocale.US).unit(NoUnit.PERCENT).precision(Precision.integer());
     private static final LocalizedNumberFormatter PERCENT_1PLACE = NumberFormatter.withLocale(ULocale.US).unit(NoUnit.PERCENT).precision(Precision.maxFraction(1)).roundingMode(RoundingMode.FLOOR);
     private static final LocalizedNumberFormatter WHOLE_NUMBER_COMMA = NumberFormatter.withLocale(ULocale.US).grouping(NumberFormatter.GroupingStrategy.AUTO).precision(Precision.integer());
+    private static final LocalizedNumberFormatter DECIMAL_1PLACE = NumberFormatter.withLocale(ULocale.US).precision(Precision.maxFraction(1)).roundingMode(RoundingMode.FLOOR);
     private static final LocalizedNumberFormatter DECIMAL_2PLACE = NumberFormatter.withLocale(ULocale.US).precision(Precision.maxFraction(2)).roundingMode(RoundingMode.FLOOR);
 
     // Decimal formatting
@@ -36,6 +37,11 @@ public final class LimaTextUtil
     public static String formatWholeNumber(double value)
     {
         return WHOLE_NUMBER_COMMA.format(value).toString();
+    }
+
+    public static String format1PlaceDecimal(double value)
+    {
+        return DECIMAL_1PLACE.format(value).toString();
     }
 
     public static String format2PlaceDecimal(double value)

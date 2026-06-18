@@ -1,9 +1,11 @@
 package liedge.limacore.transfer.energy;
 
+import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 
 public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements LimaEnergyHandler
@@ -37,6 +39,12 @@ public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements 
         components.set(LimaCoreDataComponents.ENERGY, getAmountAsInt());
         components.set(LimaCoreDataComponents.ENERGY_CAPACITY, getCapacityAsInt());
         components.set(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, getTransferRate());
+    }
+
+    @Override
+    public void removeComponentsFromTag(ValueOutput output)
+    {
+        output.discard(LimaCommonConstants.KEY_ENERGY_CONTAINER);
     }
 
     @Override

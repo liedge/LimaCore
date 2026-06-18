@@ -1,15 +1,11 @@
 package liedge.limacore.menu;
 
-import com.google.common.base.Predicates;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
-import liedge.limacore.menu.slot.FluidMenuInput;
-import liedge.limacore.menu.slot.LimaFluidSlot;
-import liedge.limacore.menu.slot.LimaItemSlot;
-import liedge.limacore.menu.slot.RecipeResultSlot;
+import liedge.limacore.menu.slot.*;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
@@ -35,9 +31,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.RangedResourceHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jetbrains.annotations.ApiStatus;
@@ -46,6 +41,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 @SuppressWarnings("SameParameterValue")
@@ -173,17 +169,14 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     {
         LimaFluidSlot slot = fluidSlots.get(slotIndex);
         ResourceHandler<FluidResource> carriedFluids = ItemAccess.forPlayerCursor(player, this).getCapability(Capabilities.Fluid.ITEM);
-        ResourceHandler<FluidResource> slotFluids = RangedResourceHandler.ofSingleIndex(slot.getFluidHandler(), slot.getResourceIndex());
 
         if (input == FluidMenuInput.FILL && carriedFluids != null)
         {
-            int inserted = ResourceHandlerUtil.move(carriedFluids, slotFluids, slot::mayPlace, slot.getCapacity(), null);
-            if (inserted > 0) sendSoundToPlayer(player, SoundEvents.BUCKET_EMPTY, 1f, 1f);
+            if (slot.fillSlotFromItem(carriedFluids)) sendSoundToPlayer(player, SoundEvents.BUCKET_EMPTY, 1f, 1f);
         }
         else if (input == FluidMenuInput.DRAIN && carriedFluids != null)
         {
-            int extracted = ResourceHandlerUtil.move(slotFluids, carriedFluids, Predicates.alwaysTrue(), slot.getCapacity(), null);
-            if (extracted > 0) sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
+            if (slot.drainSlotIntoItem(carriedFluids)) sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
         }
         else if (input == FluidMenuInput.CLONE && getCarried().isEmpty() && slot.canCreateCloneBucket(player))
         {
@@ -198,7 +191,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
         else if (input == FluidMenuInput.CLEAR && !getCarried().isEmpty() && slot.canClear(player, getCarried()))
         {
-            slot.clearFluid();
+            slot.setFluid(FluidStack.EMPTY);
         }
     }
 
@@ -381,9 +374,14 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         addPlayerInventoryAndHotbar(DEFAULT_INV_X, DEFAULT_INV_Y);
     }
 
+    protected void addFluidSlot(IntFunction<LimaFluidSlot> indexFunction)
+    {
+        fluidSlots.add(indexFunction.apply(fluidSlots.size()));
+    }
+
     protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y, boolean allowInsert)
     {
-        fluidSlots.add(new LimaFluidSlot(fluids, x, y, fluidSlots.size(), resourceIndex, allowInsert));
+        addFluidSlot(si -> new HandlerFluidSlot(x, y, si, fluids, resourceIndex).setAllowPlace(allowInsert));
     }
 
     protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y)

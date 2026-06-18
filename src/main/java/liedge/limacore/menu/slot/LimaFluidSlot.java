@@ -1,34 +1,25 @@
 package liedge.limacore.menu.slot;
 
-import liedge.limacore.transfer.fluid.LimaFluidResourceHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
-public class LimaFluidSlot
+public abstract class LimaFluidSlot
 {
-    private final LimaFluidResourceHandler handler;
     private final int x;
     private final int y;
     private final int slotIndex;
-    private final int resourceIndex;
-    private final boolean allowPlace;
 
-    public LimaFluidSlot(LimaFluidResourceHandler handler, int x, int y, int slotIndex, int resourceIndex, boolean allowPlace)
+    protected LimaFluidSlot(int x, int y, int slotIndex)
     {
-        this.handler = handler;
         this.x = x;
         this.y = y;
         this.slotIndex = slotIndex;
-        this.resourceIndex = resourceIndex;
-        this.allowPlace = allowPlace;
     }
 
-    public LimaFluidResourceHandler getFluidHandler()
-    {
-        return handler;
-    }
+    // Basic properties
 
     public int getX()
     {
@@ -45,48 +36,31 @@ public class LimaFluidSlot
         return slotIndex;
     }
 
-    public int getResourceIndex()
-    {
-        return resourceIndex;
-    }
+    public abstract FluidStack getFluid();
 
-    public boolean allowsPlacement()
-    {
-        return allowPlace;
-    }
+    public abstract void setFluid(FluidStack stack);
 
-    public FluidResource getFluidResource()
-    {
-        return handler.getResource(resourceIndex);
-    }
+    public abstract FluidResource getFluidResource();
 
-    public FluidStack getFluid()
-    {
-        return getFluidResource().toStack(handler.getAmountAsInt(resourceIndex));
-    }
+    public abstract int getAmount();
 
-    public int getCapacity()
-    {
-        return handler.getCapacity();
-    }
+    public abstract int getCapacity();
 
-    public boolean mayPlace(FluidResource resource)
-    {
-        return allowPlace && handler.isValid(resourceIndex, resource);
-    }
+    public abstract boolean mayPlace(FluidResource resource);
+
+    // Menu functions
+
+    public abstract boolean fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids);
+
+    public abstract boolean drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids);
 
     public boolean canCreateCloneBucket(Player player)
     {
         return player.hasInfiniteMaterials() && !getFluidResource().isEmpty();
     }
 
-    public boolean canClear(Player player, ItemStack cursorItem)
+    public boolean canClear(Player player, ItemStack carriedItem)
     {
         return false;
-    }
-
-    public void clearFluid()
-    {
-        handler.set(resourceIndex, FluidResource.EMPTY, 0);
     }
 }

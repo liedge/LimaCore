@@ -13,7 +13,4 @@ public final class LimaInfiniteEnergyHandler extends InfiniteEnergyHandler imple
     {
         return Integer.MAX_VALUE;
     }
-
-    @Override
-    public void setTransferRate(int transferRate) { }
 }

@@ -6,13 +6,14 @@ import liedge.limacore.network.sync.SimpleValueTracker;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 
 public interface LimaEnergyHandler extends EnergyHandler
 {
     int getTransferRate();
 
-    void setTransferRate(int transferRate);
+    default void setTransferRate(int transferRate) { }
 
     default void setCapacity(int capacity) { }
 
@@ -21,6 +22,8 @@ public interface LimaEnergyHandler extends EnergyHandler
     default void readComponents(DataComponentGetter components) { }
 
     default void writeComponents(DataComponentMap.Builder components) { }
+
+    default void removeComponentsFromTag(ValueOutput output) { }
 
     default void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector) { }
 

@@ -3,12 +3,14 @@ package liedge.limacore.transfer;
 import com.google.common.base.Predicates;
 import com.mojang.serialization.Codec;
 import liedge.limacore.blockentity.BlockContentsType;
+import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.util.LimaTextUtil;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -30,6 +32,13 @@ public final class LimaTransferUtil
 
     public static final String MILLIBUCKET_UNIT = "mB";
     public static final String BUCKET_UNIT = "B";
+    public static final String KILO_BUCKET_UNIT = "KB";
+
+    public static @Nullable ResourceHandler<FluidResource> createInfiniteItemFluids(ItemStack stack)
+    {
+        FluidStackTemplate template = stack.get(LimaCoreDataComponents.INFINITE_FLUID);
+        return LimaInfiniteResources.fromFluidTemplate(template);
+    }
 
     public static <T> Optional<NonNullList<T>> loadSizedResources(ValueInput input, String key, Codec<NonNullList<T>> stacksCodec, int minSize, T emptyStack)
     {
@@ -78,15 +87,23 @@ public final class LimaTransferUtil
         return toInsert.getCount() <= limit;
     }
 
+    public static String formatFullFluidAmount(int amount)
+    {
+        return LimaTextUtil.formatWholeNumber(amount) + MILLIBUCKET_UNIT;
+    }
+
     public static String formatCompactFluidAmount(int amount)
     {
-        if (amount < FluidType.BUCKET_VOLUME)
+        if (amount < FluidType.BUCKET_VOLUME) return amount + MILLIBUCKET_UNIT;
+
+        double bucketAmount = amount / (double) FluidType.BUCKET_VOLUME;
+        if (bucketAmount < 1000)
         {
-            return amount + MILLIBUCKET_UNIT;
+            return LimaTextUtil.format1PlaceDecimal(bucketAmount) + BUCKET_UNIT;
         }
         else
         {
-            return LimaTextUtil.format2PlaceDecimal(amount / (double) FluidType.BUCKET_VOLUME) + BUCKET_UNIT;
+            return LimaTextUtil.formatWholeNumber(bucketAmount / 1000d) + KILO_BUCKET_UNIT;
         }
     }
 
