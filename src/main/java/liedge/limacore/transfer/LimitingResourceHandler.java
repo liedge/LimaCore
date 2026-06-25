@@ -9,6 +9,14 @@ import java.util.function.IntSupplier;
 
 public class LimitingResourceHandler<T extends Resource> extends DelegatingResourceHandler<T>
 {
+    public static <T extends Resource> ResourceHandler<T> create(ResourceHandler<T> delegate, int transferLimit)
+    {
+        if (transferLimit == Integer.MAX_VALUE)
+            return delegate;
+        else
+            return new LimitingResourceHandler<>(delegate, () -> transferLimit);
+    }
+
     private final IntSupplier transferLimit;
 
     public LimitingResourceHandler(ResourceHandler<T> delegate, IntSupplier transferLimit)

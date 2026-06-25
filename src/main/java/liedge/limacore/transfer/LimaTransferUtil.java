@@ -1,6 +1,5 @@
 package liedge.limacore.transfer;
 
-import com.google.common.base.Predicates;
 import com.mojang.serialization.Codec;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
@@ -14,25 +13,31 @@ import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.ItemAccessFluidHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.resource.Resource;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public final class LimaTransferUtil
 {
     private LimaTransferUtil() {}
 
-    public static final Predicate<ItemResource> ALL_ITEMS = Predicates.alwaysTrue();
-    public static final Predicate<FluidResource> ALL_FLUIDS = Predicates.alwaysTrue();
-
     public static final String MILLIBUCKET_UNIT = "mB";
     public static final String BUCKET_UNIT = "B";
     public static final String KILO_BUCKET_UNIT = "KB";
+
+    public static @Nullable ResourceHandler<FluidResource> createItemFluids(ItemAccess context, int capacity, int transferLimit)
+    {
+        if (capacity <= 0 || transferLimit <= 0) return null;
+
+        ResourceHandler<FluidResource> handler = new ItemAccessFluidHandler(context, LimaCoreDataComponents.FLUID_CONTENT.get(), capacity);
+        return LimitingResourceHandler.create(handler, transferLimit);
+    }
 
     public static @Nullable ResourceHandler<FluidResource> createInfiniteItemFluids(ItemStack stack)
     {

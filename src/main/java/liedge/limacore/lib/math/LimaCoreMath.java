@@ -59,6 +59,30 @@ public final class LimaCoreMath
         return divideFloat(Mth.lerp(partialTick, dividendStart, dividendEnd), divisor);
     }
 
+    public static float getFloatRatio(float amount, float total)
+    {
+        if (Mth.equal(amount, 0f) || total <= 0f)
+        {
+            return 0f;
+        }
+        else
+        {
+            return Math.clamp(amount / total, 0f, 1f);
+        }
+    }
+
+    public static double getDoubleRatio(double amount, double total)
+    {
+        if (Mth.equal(amount, 0d) || total <= 0d)
+        {
+            return 0d;
+        }
+        else
+        {
+            return Math.clamp(amount / total, 0d, 1d);
+        }
+    }
+
     public static int nextIntBetweenInclusive(int min, int max)
     {
         return RANDOM.nextInt(min, max + 1);

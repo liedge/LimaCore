@@ -3,7 +3,6 @@ package liedge.limacore.transfer;
 import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.util.LimaTextUtil;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -19,21 +18,11 @@ public final class LimaEnergyUtil
     private LimaEnergyUtil() {}
 
     // Item access energy handlers
-    private static ItemAccessEnergyHandler createItemEnergy(ItemStack stack, ItemAccess context, int defaultCapacity, int transferRate)
+    public static @Nullable EnergyHandler createItemEnergy(ItemAccess context, int capacity, int transferRate)
     {
-        int capacity = stack.getOrDefault(LimaCoreDataComponents.ENERGY_CAPACITY, defaultCapacity);
+        if (capacity <= 0 || transferRate <= 0) return null;
+
         return new ItemAccessEnergyHandler(context, LimaCoreDataComponents.ENERGY.get(), capacity, transferRate);
-    }
-
-    public static ItemAccessEnergyHandler createUnlimitedTransferItemEnergy(ItemStack stack, ItemAccess context, int defaultCapacity)
-    {
-        return createItemEnergy(stack, context, defaultCapacity, Integer.MAX_VALUE);
-    }
-
-    public static ItemAccessEnergyHandler createStandardTransferItemEnergy(ItemStack stack, ItemAccess context, int defaultCapacity, int defaultTransferRate)
-    {
-        int transferRate = stack.getOrDefault(LimaCoreDataComponents.ENERGY_TRANSFER_RATE, defaultTransferRate);
-        return createItemEnergy(stack, context, defaultCapacity, transferRate);
     }
 
     // Usage
@@ -58,12 +47,7 @@ public final class LimaEnergyUtil
     // Misc
     public static float getFillPercentage(EnergyHandler handler)
     {
-        return LimaCoreMath.divideFloat(handler.getAmountAsInt(), handler.getCapacityAsInt());
-    }
-
-    public static float getClampedFillPercentage(EnergyHandler handler)
-    {
-        return Math.clamp(getFillPercentage(handler), 0f, 1f);
+        return LimaCoreMath.getFloatRatio(handler.getAmountAsInt(), handler.getCapacityAsInt());
     }
 
     public static String toEnergyString(int energy)
