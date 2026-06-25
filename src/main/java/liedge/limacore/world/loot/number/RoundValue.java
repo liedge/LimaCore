@@ -52,7 +52,7 @@ public record RoundValue(NumberProvider child, LimaRoundingMode mode) implements
     @Override
     public int getInt(LootContext context)
     {
-        return LimaCoreMath.round(child.getFloat(context), mode);
+        return LimaCoreMath.roundInt(child.getFloat(context), mode);
     }
 
     @Override

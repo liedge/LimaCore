@@ -36,7 +36,7 @@ public record ValueMathOperation(NumberProvider first, NumberProvider second, Ma
     @Override
     public int getInt(LootContext context)
     {
-        return LimaCoreMath.round(getDouble(context), roundingMode);
+        return LimaCoreMath.roundInt(getDouble(context), roundingMode);
     }
 
     private double getDouble(LootContext context)

@@ -1,5 +1,6 @@
 package liedge.limacore.lib.math;
 
+import com.google.common.primitives.Ints;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -121,32 +122,46 @@ public final class LimaCoreMath
      * @param value The double to be rounded.
      * @return The whole number after rounding.
      */
-    public static int roundRandomly(double value)
+    public static long roundLongRandomly(double value)
     {
-        int nearest = (int) Math.round(value);
+        long nearest = Math.round(value);
         double diff = value - nearest;
-        double rng = Math.abs(diff);
 
-        if (rng < 1e-5) return nearest;
+        if (Mth.equal(diff, 0d)) return nearest;
 
-        int delta = boolAsInt(rollRandomChance(rng)) * Mth.sign(diff);
+        int delta = boolAsInt(rollRandomChance(Math.abs(diff))) * Mth.sign(diff);
         return nearest + delta;
     }
 
-    public static int round(double value)
+    public static int roundIntRandomly(double value)
     {
-        return round(value, LimaRoundingMode.NATURAL);
+        return Ints.saturatedCast(roundLongRandomly(value));
     }
 
-    public static int round(double value, LimaRoundingMode mode)
+    public static long roundLong(double value, LimaRoundingMode mode)
     {
         return switch (mode)
         {
-            case NATURAL -> (int) Math.round(value);
-            case FLOOR -> Mth.floor(value);
-            case CEIL -> Mth.ceil(value);
-            case RANDOM -> roundRandomly(value);
+            case NATURAL -> Math.round(value);
+            case FLOOR -> (long) Math.floor(value);
+            case CEIL -> (long) Math.ceil(value);
+            case RANDOM -> roundLongRandomly(value);
         };
+    }
+
+    public static long roundLong(double value)
+    {
+        return roundLong(value, LimaRoundingMode.NATURAL);
+    }
+
+    public static int roundInt(double value, LimaRoundingMode mode)
+    {
+        return Ints.saturatedCast(roundLong(value, mode));
+    }
+
+    public static int roundInt(double value)
+    {
+        return roundInt(value, LimaRoundingMode.NATURAL);
     }
 
     //#endregion
