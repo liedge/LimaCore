@@ -2,19 +2,14 @@ package liedge.limacore.data.generation.loot;
 
 import liedge.limacore.util.LimaRegistryUtil;
 import liedge.limacore.world.loot.SaveBlockEntityFunction;
-import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.Collection;
 import java.util.Set;
@@ -81,15 +76,5 @@ public abstract class LimaBlockLootSubProvider extends BlockLootSubProvider impl
     protected void oreDrop(Holder<Block> oreBlockHolder, ItemLike rawOreItem)
     {
         oreDrop(oreBlockHolder.value(), rawOreItem);
-    }
-
-    protected <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchStateProperty(Block block, Property<T> property, T value)
-    {
-        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, value));
-    }
-
-    protected <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchStateProperty(Holder<Block> holder, Property<T> property, T value)
-    {
-        return matchStateProperty(holder.value(), property, value);
     }
 }

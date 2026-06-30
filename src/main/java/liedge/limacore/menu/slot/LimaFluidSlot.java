@@ -5,6 +5,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LimaFluidSlot
 {
@@ -38,8 +40,6 @@ public abstract class LimaFluidSlot
 
     public abstract FluidStack getFluid();
 
-    public abstract void setFluid(FluidStack stack);
-
     public abstract FluidResource getFluidResource();
 
     public abstract int getAmount();
@@ -50,9 +50,9 @@ public abstract class LimaFluidSlot
 
     // Menu functions
 
-    public abstract boolean fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids);
+    public abstract @Nullable ResourceStack<FluidResource> fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids);
 
-    public abstract boolean drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids);
+    public abstract @Nullable ResourceStack<FluidResource> drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids);
 
     public boolean canCreateCloneBucket(Player player)
     {
@@ -63,4 +63,6 @@ public abstract class LimaFluidSlot
     {
         return false;
     }
+
+    public void clearFluid(Player player) { }
 }

@@ -1,11 +1,14 @@
 package liedge.limacore.client;
 
 import liedge.limacore.lib.LimaColor;
+import liedge.limacore.lib.ModResources;
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
@@ -17,6 +20,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -115,6 +119,20 @@ public final class LimaCoreClientUtil
         particle.setColor(color.red(), color.green(), color.blue());
     }
 
+    public static FluidModel.Unbaked fluidModel(ModResources resources, String stillPath, String flowPath, @Nullable String overlayPath, @Nullable FluidTintSource tint)
+    {
+        Material stillMaterial = new Material(resources.id(stillPath));
+        Material flowMaterial = new Material(resources.id(flowPath));
+        Material overlayMaterial = overlayPath != null ? new Material(resources.id(overlayPath)) : null;
+
+        return new FluidModel.Unbaked(stillMaterial, flowMaterial, overlayMaterial, tint);
+    }
+
+    public static FluidModel.Unbaked fluidModel(ModResources resources, String stillPath, String flowPath, @Nullable FluidTintSource tint)
+    {
+        return fluidModel(resources, stillPath, flowPath, null, tint);
+    }
+
     private static void calculateExtents(Consumer<Vector3fc> output, float x1, float y1, float z1, float x2, float y2, float z2)
     {
         output.accept(new Vector3f(x1, y1, z1));
@@ -142,5 +160,4 @@ public final class LimaCoreClientUtil
     {
         cubeExtents(output, x, y, z, x + xSize, y + ySize, z + zSize);
     }
-    //#endregion
 }

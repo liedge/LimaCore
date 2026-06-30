@@ -18,6 +18,8 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.ItemAccessFluidHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.resource.Resource;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
@@ -81,6 +83,17 @@ public final class LimaTransferUtil
             T handler = accessor.apply(type);
             if (handler != null) handler.serialize(output.child(type.getSerializedName()));
         }
+    }
+
+    @Contract("null->true")
+    public static boolean isEmpty(@Nullable ResourceStack<?> stack)
+    {
+        return stack == null || stack.isEmpty();
+    }
+
+    public static int getAmount(@Nullable ResourceStack<?> stack)
+    {
+        return stack != null ? stack.amount() : 0;
     }
 
     public static boolean canMergeIntoIndex(ResourceHandler<ItemResource> handler, int index, ItemStack toInsert)

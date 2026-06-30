@@ -5,11 +5,13 @@ import com.mojang.serialization.Codec;
 import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
 import liedge.limacore.advancement.LimaAdvancementUtil;
 import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.damagesource.DamageSource;
@@ -18,13 +20,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.*;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceWithEnchantedBonusCondition;
-import net.minecraft.world.level.storage.loot.predicates.ValueCheckCondition;
+import net.minecraft.world.level.storage.loot.predicates.*;
 import net.minecraft.world.level.storage.loot.providers.number.EnchantmentLevelProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.phys.Vec3;
@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public final class LimaLootUtil
@@ -173,5 +174,45 @@ public final class LimaLootUtil
     public static LootItemCondition.Builder entityEnchantmentLevels(LootContext.EntityTarget entityTarget, EnchantmentLevelEntityPredicate predicate)
     {
         return LootItemEntityPropertyCondition.hasProperties(entityTarget, EntityPredicate.Builder.entity().subPredicate(predicate));
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Block block, UnaryOperator<StatePropertiesPredicate.Builder> op)
+    {
+        return LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(op.apply(StatePropertiesPredicate.Builder.properties()));
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Holder<Block> holder, UnaryOperator<StatePropertiesPredicate.Builder> op)
+    {
+        return matchBlockProperty(holder.value(), op);
+    }
+
+    public static <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchBlockProperty(Block block, Property<T> property, T value)
+    {
+        return matchBlockProperty(block, builder -> builder.hasProperty(property, value));
+    }
+
+    public static <T extends Comparable<T> & StringRepresentable> LootItemCondition.Builder matchBlockProperty(Holder<Block> holder, Property<T> property, T value)
+    {
+        return matchBlockProperty(holder.value(), property, value);
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Block block, Property<Integer> property, int value)
+    {
+        return matchBlockProperty(block, builder -> builder.hasProperty(property, value));
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Holder<Block> holder, Property<Integer> property, int value)
+    {
+        return matchBlockProperty(holder.value(), property, value);
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Block block, Property<Boolean> property, boolean value)
+    {
+        return matchBlockProperty(block, builder -> builder.hasProperty(property, value));
+    }
+
+    public static LootItemCondition.Builder matchBlockProperty(Holder<Block> holder, Property<Boolean> property, boolean value)
+    {
+        return matchBlockProperty(holder.value(), property, value);
     }
 }

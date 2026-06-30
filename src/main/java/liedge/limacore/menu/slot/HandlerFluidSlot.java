@@ -7,6 +7,8 @@ import net.neoforged.neoforge.transfer.RangedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
+import org.jspecify.annotations.Nullable;
 
 public class HandlerFluidSlot extends LimaFluidSlot
 {
@@ -35,12 +37,6 @@ public class HandlerFluidSlot extends LimaFluidSlot
     }
 
     @Override
-    public void setFluid(FluidStack stack)
-    {
-        handler.set(resourceIndex, FluidResource.of(stack), stack.getAmount());
-    }
-
-    @Override
     public FluidResource getFluidResource()
     {
         return handler.getResource(resourceIndex);
@@ -65,17 +61,15 @@ public class HandlerFluidSlot extends LimaFluidSlot
     }
 
     @Override
-    public boolean fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids)
+    public @Nullable ResourceStack<FluidResource> fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids)
     {
-        int inserted = ResourceHandlerUtil.move(carriedFluids, indexHandler(), this::mayPlace, getCapacity(), null);
-        return inserted > 0;
+        return ResourceHandlerUtil.moveFirst(carriedFluids, indexHandler(), this::mayPlace, getCapacity(), null);
     }
 
     @Override
-    public boolean drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids)
+    public @Nullable ResourceStack<FluidResource> drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids)
     {
-        int extracted = ResourceHandlerUtil.move(indexHandler(), carriedFluids, Predicates.alwaysTrue(), getCapacity(), null);
-        return extracted > 0;
+        return ResourceHandlerUtil.moveFirst(indexHandler(), carriedFluids, Predicates.alwaysTrue(), getCapacity(), null);
     }
 
     private ResourceHandler<FluidResource> indexHandler()

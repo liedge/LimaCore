@@ -12,6 +12,7 @@ import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
+import liedge.limacore.transfer.LimaTransferUtil;
 import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreObjects;
@@ -20,7 +21,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -31,10 +31,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.SoundActions;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
@@ -168,15 +169,25 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     public void fluidClicked(ServerPlayer player, int slotIndex, FluidMenuInput input)
     {
         LimaFluidSlot slot = fluidSlots.get(slotIndex);
-        ResourceHandler<FluidResource> carriedFluids = ItemAccess.forPlayerCursor(player, this).getCapability(Capabilities.Fluid.ITEM);
+        ResourceHandler<FluidResource> carriedFluids = ItemAccess.forPlayerCursor(player, this).oneByOne().getCapability(Capabilities.Fluid.ITEM);
 
         if (input == FluidMenuInput.FILL && carriedFluids != null)
         {
-            if (slot.fillSlotFromItem(carriedFluids)) sendSoundToPlayer(player, SoundEvents.BUCKET_EMPTY, 1f, 1f);
+            ResourceStack<FluidResource> moved = slot.fillSlotFromItem(carriedFluids);
+            if (!LimaTransferUtil.isEmpty(moved))
+            {
+                SoundEvent sound = moved.resource().getFluidType().getSound(SoundActions.BUCKET_EMPTY);
+                if (sound != null) sendSoundToPlayer(player, sound, 1f, 1f);
+            }
         }
         else if (input == FluidMenuInput.DRAIN && carriedFluids != null)
         {
-            if (slot.drainSlotIntoItem(carriedFluids)) sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
+            ResourceStack<FluidResource> moved = slot.drainSlotIntoItem(carriedFluids);
+            if (!LimaTransferUtil.isEmpty(moved))
+            {
+                SoundEvent sound = moved.resource().getFluidType().getSound(SoundActions.BUCKET_FILL);
+                if (sound != null) sendSoundToPlayer(player, sound, 1f, 1f);
+            }
         }
         else if (input == FluidMenuInput.CLONE && getCarried().isEmpty() && slot.canCreateCloneBucket(player))
         {
@@ -186,12 +197,13 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
             if (!bucket.isEmpty())
             {
                 setCarried(bucket);
-                sendSoundToPlayer(player, SoundEvents.BUCKET_FILL, 1f, 1f);
+                SoundEvent sound = resource.getFluidType().getSound(SoundActions.BUCKET_FILL);
+                if (sound != null) sendSoundToPlayer(player, sound, 1f, 1f);
             }
         }
         else if (input == FluidMenuInput.CLEAR && !getCarried().isEmpty() && slot.canClear(player, getCarried()))
         {
-            slot.setFluid(FluidStack.EMPTY);
+            slot.clearFluid(player);
         }
     }
 
