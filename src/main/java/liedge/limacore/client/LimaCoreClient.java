@@ -13,6 +13,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import net.neoforged.neoforge.client.event.RegisterSpriteSourcesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 
@@ -55,6 +56,12 @@ public class LimaCoreClient
             event.registerPipeline(LimaCoreRenderPipelines.ENTITY_CUTOUT_EMISSIVE);
             event.registerPipeline(LimaCoreRenderPipelines.ENTITY_CUTOUT_CULL_EMISSIVE);
             event.registerPipeline(LimaCoreRenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE);
+        }
+
+        @SubscribeEvent
+        private void registerSpriteSources(final RegisterSpriteSourcesEvent event)
+        {
+            event.register(LimaCore.RESOURCES.id("grayscale"), GrayscaleSprite.CODEC);
         }
     }
 }
