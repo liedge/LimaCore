@@ -10,7 +10,6 @@ import liedge.limacore.recipe.input.RecipeStackInput;
 import liedge.limacore.recipe.result.FluidResult;
 import liedge.limacore.recipe.result.ItemResult;
 import liedge.limacore.registry.game.LimaCoreRecipes;
-import liedge.limacore.util.LimaStreamsUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -40,14 +39,19 @@ public abstract class LimaCustomRecipe<T extends RecipeInputAccess> implements R
     public static final String EMPTY_GROUP = "";
     public static final MapCodec<String> GROUP_MAP_CODEC = Codec.STRING.optionalFieldOf("group", EMPTY_GROUP);
 
-    public static <R extends LimaCustomRecipe<?>> DataResult<R> checkNotEmpty(R recipe)
+    public static <R extends LimaCustomRecipe<?>> DataResult<R> checkNotEmpty(R recipe, boolean checkInputs)
     {
-        if (recipe.getItemInputs().isEmpty() && recipe.getFluidInputs().isEmpty())
+        if (checkInputs && recipe.getItemInputs().isEmpty() && recipe.getFluidInputs().isEmpty())
             return DataResult.error(() -> "Recipe has no item or fluid inputs.");
         else if (recipe.getItemResults().isEmpty() && recipe.getFluidResults().isEmpty())
             return DataResult.error(() -> "Recipe has no item or fluid results.");
         else
             return DataResult.success(recipe);
+    }
+
+    public static <R extends LimaCustomRecipe<?>> DataResult<R> checkNotEmpty(R recipe)
+    {
+        return checkNotEmpty(recipe, true);
     }
 
     // Ingredients
@@ -118,9 +122,9 @@ public abstract class LimaCustomRecipe<T extends RecipeInputAccess> implements R
         return itemResults.getFirst();
     }
 
-    public List<ResourceStack<ItemResource>> generateItemResults(T input, RandomSource random)
+    public List<ResourceStack<ItemResource>> generateItemResults(RandomSource random)
     {
-        return itemResults.stream().map(result -> result.createResource(random)).filter(rs -> !rs.isEmpty()).collect(LimaStreamsUtil.toObjectList());
+        return LimaRecipeUtil.generateResultStacks(random, itemResults);
     }
 
     public List<FluidResult> getFluidResults()
@@ -145,9 +149,9 @@ public abstract class LimaCustomRecipe<T extends RecipeInputAccess> implements R
         return fluidResults.getFirst();
     }
 
-    public List<ResourceStack<FluidResource>> generateFluidResults(T input, RandomSource random)
+    public List<ResourceStack<FluidResource>> generateFluidResults(RandomSource random)
     {
-        return fluidResults.stream().map(result -> result.createResource(random)).filter(rs -> !rs.isEmpty()).collect(LimaStreamsUtil.toObjectList());
+        return LimaRecipeUtil.generateResultStacks(random, fluidResults);
     }
     //#endregion
 
@@ -305,7 +309,7 @@ public abstract class LimaCustomRecipe<T extends RecipeInputAccess> implements R
     }
 
     /**
-     * @deprecated Use {@link #generateItemResults(RecipeInputAccess, RandomSource)} to create
+     * @deprecated Use {@link #generateItemResults(RandomSource)} to create
      * recipe item outputs.
      */
     @Deprecated

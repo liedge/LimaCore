@@ -25,7 +25,7 @@ public enum MathOperation implements StringRepresentable, DoubleBinaryOperator
 
     public static final LimaEnumCodec<MathOperation> SINGLE_OP_CODEC = LimaEnumCodec.create(MathOperation.class, List.of(IDENTITY, REPLACE, ADD, MULTIPLY_AND_ADD, MULTIPLY, DIVIDE, MAX, MIN));
     public static final LimaEnumCodec<MathOperation> COMPOUND_OP_CODEC = LimaEnumCodec.create(MathOperation.class, List.of(IDENTITY, REPLACE, ADD, ADD_PERCENT_OF_BASE, ADD_PERCENT_OF_TOTAL, MULTIPLY, DIVIDE));
-    public static final Comparator<MathOperation> PRIORITY_COMPARATOR = Comparator.comparingInt(MathOperation::getPriority);
+    public static final Comparator<MathOperation> PRIORITY_COMPARATOR = MathOperation::comparePriority;
 
     public static Comparator<MathOperation> comparingPriority()
     {
@@ -49,6 +49,11 @@ public enum MathOperation implements StringRepresentable, DoubleBinaryOperator
     public int getPriority()
     {
         return priority;
+    }
+
+    public int comparePriority(MathOperation o)
+    {
+        return Integer.compare(priority, o.priority);
     }
 
     @Override

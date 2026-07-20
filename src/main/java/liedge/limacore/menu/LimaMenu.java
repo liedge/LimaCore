@@ -5,7 +5,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.LimaCore;
-import liedge.limacore.menu.slot.*;
+import liedge.limacore.menu.slot.FluidMenuInput;
+import liedge.limacore.menu.slot.LimaFluidSlot;
+import liedge.limacore.menu.slot.LimaItemSlot;
+import liedge.limacore.menu.slot.RecipeResultSlot;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.network.packet.ClientboundMenuDataWatcherPacket;
@@ -13,7 +16,6 @@ import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.LimaTransferUtil;
-import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Holder;
@@ -348,12 +350,12 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         }
     }
 
-    protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int columns, int rows, MenuSlotFactory<? super T> factory)
+    protected <T> void addSlotsGrid(T container, int startIndex, int xPos, int yPos, int width, int height, ItemSlotFactory<? super T> factory)
     {
-        runSlotsGrid(startIndex, xPos, yPos, columns, rows, (i, sx, sy) -> addSlot(factory.createSlot(container, i, sx, sy)));
+        runSlotsGrid(startIndex, xPos, yPos, width, height, (resourceIndex, slotX, slotY) -> addSlot(factory.create(container, resourceIndex, slotX, slotY)));
     }
 
-    protected void addPlayerInventory(int xPos, int yPos, MenuSlotFactory<Container> factory)
+    protected void addPlayerInventory(int xPos, int yPos, ItemSlotFactory<Container> factory)
     {
         inventoryStart = slots.size();
         addSlotsGrid(playerInventory, 9, xPos, yPos, 9, 3, factory);
@@ -364,7 +366,7 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         addPlayerInventory(xPos, yPos, Slot::new);
     }
 
-    protected void addPlayerHotbar(int xPos, int yPos, MenuSlotFactory<Container> factory)
+    protected void addPlayerHotbar(int xPos, int yPos, ItemSlotFactory<Container> factory)
     {
         hotbarStart = slots.size();
         addSlotsGrid(playerInventory, 0, xPos, yPos, 9, 1, factory);
@@ -391,36 +393,31 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         fluidSlots.add(indexFunction.apply(fluidSlots.size()));
     }
 
-    protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y, boolean allowInsert)
+    protected <T> void addFluidSlotsGrid(T container, int startIndex, int xPos, int yPos, int width, int height, FluidSlotFactory<? super T> factory)
     {
-        addFluidSlot(si -> new HandlerFluidSlot(x, y, si, fluids, resourceIndex).setAllowPlace(allowInsert));
-    }
-
-    protected void addFluidSlot(LimaBlockEntityFluids fluids, int resourceIndex, int x, int y)
-    {
-        addFluidSlot(fluids, resourceIndex, x, y, true);
-    }
-
-    protected void addFluidSlotsGrid(LimaBlockEntityFluids fluids, int resourceIndexStart, int xPos, int yPos, int columns, int rows, boolean allowInsert)
-    {
-        runSlotsGrid(resourceIndexStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(fluids, i, sx, sy, allowInsert));
-    }
-
-    protected void addFluidSlotsGrid(LimaBlockEntityFluids fluids, int resourceIndexStart, int xPos, int yPos, int columns, int rows)
-    {
-        runSlotsGrid(resourceIndexStart, xPos, yPos, columns, rows, (i, sx, sy) -> addFluidSlot(fluids, i, sx, sy, true));
+        runSlotsGrid(startIndex, xPos, yPos, width, height, (resourceIndex, slotX, slotY) ->
+        {
+            int slotIndex = fluidSlots.size();
+            fluidSlots.add(factory.create(container, slotIndex, slotX, slotY, resourceIndex));
+        });
     }
 
     @FunctionalInterface
     public interface SlotPosConsumer
     {
-        void accept(int index, int x, int y);
+        void accept(int resourceIndex, int slotX, int slotY);
     }
 
     @FunctionalInterface
-    public interface MenuSlotFactory<T>
+    public interface ItemSlotFactory<T>
     {
-        Slot createSlot(T container, int index, int x, int y);
+        Slot create(T container, int resourceIndex, int slotX, int slotY);
+    }
+
+    @FunctionalInterface
+    public interface FluidSlotFactory<T>
+    {
+        LimaFluidSlot create(T container, int slotIndex, int slotX, int slotY, int resourceIndex);
     }
 
     protected static class EventHandlerBuilder
