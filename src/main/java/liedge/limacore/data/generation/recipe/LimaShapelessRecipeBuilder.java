@@ -1,6 +1,7 @@
 package liedge.limacore.data.generation.recipe;
 
 import liedge.limacore.lib.ModResources;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -9,9 +10,9 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 
 public class LimaShapelessRecipeBuilder extends VanillaRecipeBuilder.StandardIngredients<ShapelessRecipe, CraftingBookCategory, CraftingRecipe.CraftingBookInfo, LimaShapelessRecipeBuilder>
 {
-    public LimaShapelessRecipeBuilder(ModResources modResources, ItemStackTemplate resultItem)
+    public LimaShapelessRecipeBuilder(ModResources resources, HolderLookup.Provider registries, ItemStackTemplate result)
     {
-        super(modResources, resultItem, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
+        super(resources, registries, result, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
     }
 
     @Override

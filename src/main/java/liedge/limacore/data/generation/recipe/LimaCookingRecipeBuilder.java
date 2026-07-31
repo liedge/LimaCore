@@ -2,6 +2,7 @@ package liedge.limacore.data.generation.recipe;
 
 import com.google.common.base.Preconditions;
 import liedge.limacore.lib.ModResources;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
@@ -13,9 +14,9 @@ public class LimaCookingRecipeBuilder extends VanillaRecipeBuilder.StandardIngre
     private final AbstractCookingRecipe.Factory<?> factory;
     private float experience;
 
-    public LimaCookingRecipeBuilder(ModResources resources, ItemStackTemplate result, int cookingTime, AbstractCookingRecipe.Factory<?> factory)
+    public LimaCookingRecipeBuilder(ModResources resources, HolderLookup.Provider registries, ItemStackTemplate result, int cookingTime, AbstractCookingRecipe.Factory<?> factory)
     {
-        super(resources, result, CookingBookCategory.MISC, AbstractCookingRecipe.CookingBookInfo::new);
+        super(resources, registries, result, CookingBookCategory.MISC, AbstractCookingRecipe.CookingBookInfo::new);
         this.cookingTime = cookingTime;
         this.factory = factory;
     }

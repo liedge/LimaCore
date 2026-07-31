@@ -10,6 +10,7 @@ import net.minecraft.advancements.*;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -37,13 +38,15 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     private final List<ICondition> conditions = new ObjectArrayList<>();
     private final Map<String, Criterion<?>> criteria = new Object2ObjectOpenHashMap<>();
     protected final ModResources resources;
+    protected final HolderLookup.Provider registries;
 
-    private String group = "";
+    private String group = LimaCustomRecipe.EMPTY_GROUP;
     private AdvancementRequirements.Strategy strategy = AdvancementRequirements.Strategy.OR;
 
-    protected LimaRecipeBuilder(ModResources resources)
+    protected LimaRecipeBuilder(ModResources resources, HolderLookup.Provider registries)
     {
         this.resources = resources;
+        this.registries = registries;
     }
 
     public B condition(ICondition condition)
@@ -90,18 +93,13 @@ public abstract class LimaRecipeBuilder<R extends Recipe<?>, B extends LimaRecip
     @Override
     public B group(@Nullable String group)
     {
-        this.group = group;
+        this.group = Objects.requireNonNullElse(group, LimaCustomRecipe.EMPTY_GROUP);
         return selfUnchecked();
     }
 
-    public @Nullable String getGroup()
+    public String getGroup()
     {
         return group;
-    }
-
-    public String getGroupOrBlank()
-    {
-        return Objects.requireNonNullElse(getGroup(), LimaCustomRecipe.EMPTY_GROUP);
     }
 
     protected String makeTypePrefix(Recipe<?> recipe)

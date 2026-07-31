@@ -3,7 +3,7 @@ package liedge.limacore.data.generation.recipe;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.util.LimaRegistryUtil;
-import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -25,9 +25,9 @@ public abstract class VanillaRecipeBuilder<R extends Recipe<?>, C, CH, B extends
     private boolean showNotification = true;
     private @Nullable C bookCategory;
 
-    protected VanillaRecipeBuilder(ModResources resources, ItemStackTemplate result, C defaultCategory, BiFunction<C, String, CH> categoryWrapper)
+    protected VanillaRecipeBuilder(ModResources resources, HolderLookup.Provider registries, ItemStackTemplate result, C defaultCategory, BiFunction<C, String, CH> categoryWrapper)
     {
-        super(resources);
+        super(resources, registries);
         this.result = result;
         this.defaultCategory = defaultCategory;
         this.categoryWrapper = categoryWrapper;
@@ -51,7 +51,7 @@ public abstract class VanillaRecipeBuilder<R extends Recipe<?>, C, CH, B extends
     protected final R buildRecipe()
     {
         Recipe.CommonInfo commonInfo = new Recipe.CommonInfo(showNotification);
-        CH categoryHolder = categoryWrapper.apply(Objects.requireNonNullElse(bookCategory, defaultCategory), getGroupOrBlank());
+        CH categoryHolder = categoryWrapper.apply(Objects.requireNonNullElse(bookCategory, defaultCategory), getGroup());
 
         return buildRecipe(commonInfo, categoryHolder, result);
     }
@@ -66,9 +66,9 @@ public abstract class VanillaRecipeBuilder<R extends Recipe<?>, C, CH, B extends
     {
         protected final List<Ingredient> ingredients = new ObjectArrayList<>();
 
-        protected StandardIngredients(ModResources resources, ItemStackTemplate result, C defaultCategory, BiFunction<C, String, CH> categoryWrapper)
+        protected StandardIngredients(ModResources resources, HolderLookup.Provider registries, ItemStackTemplate result, C defaultCategory, BiFunction<C, String, CH> categoryWrapper)
         {
-            super(resources, result, defaultCategory, categoryWrapper);
+            super(resources, registries, result, defaultCategory, categoryWrapper);
         }
 
         public B input(Ingredient ingredient)
@@ -82,9 +82,9 @@ public abstract class VanillaRecipeBuilder<R extends Recipe<?>, C, CH, B extends
             return input(Ingredient.of(item));
         }
 
-        public B input(HolderGetter<Item> holders, TagKey<Item> tagKey)
+        public B input(TagKey<Item> tagKey)
         {
-            return input(Ingredient.of(holders.getOrThrow(tagKey)));
+            return input(Ingredient.of(registries.getOrThrow(tagKey)));
         }
     }
 }

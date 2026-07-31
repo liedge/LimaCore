@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.ModResources;
-import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -18,9 +18,9 @@ public class LimaShapedRecipeBuilder extends VanillaRecipeBuilder<ShapedRecipe, 
     private final List<String> rows = new ObjectArrayList<>();
     private final Char2ObjectMap<Ingredient> ingredients = new Char2ObjectOpenHashMap<>();
 
-    public LimaShapedRecipeBuilder(ModResources resources, ItemStackTemplate result)
+    public LimaShapedRecipeBuilder(ModResources resources, HolderLookup.Provider registries, ItemStackTemplate result)
     {
-        super(resources, result, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
+        super(resources, registries, result, CraftingBookCategory.MISC, CraftingRecipe.CraftingBookInfo::new);
     }
 
     public LimaShapedRecipeBuilder patterns(String... patterns)
@@ -50,9 +50,9 @@ public class LimaShapedRecipeBuilder extends VanillaRecipeBuilder<ShapedRecipe, 
         return input(key, Ingredient.of(item));
     }
 
-    public LimaShapedRecipeBuilder input(char key, HolderGetter<Item> holders, TagKey<Item> itemTag)
+    public LimaShapedRecipeBuilder input(char key, TagKey<Item> tagKey)
     {
-        return input(key, Ingredient.of(holders.getOrThrow(itemTag)));
+        return input(key, Ingredient.of(registries.getOrThrow(tagKey)));
     }
 
     @Override

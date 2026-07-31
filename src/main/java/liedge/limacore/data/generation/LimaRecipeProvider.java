@@ -28,7 +28,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
     //#region Standard/Vanilla recipe builders
     protected LimaShapedRecipeBuilder shaped(ItemStackTemplate result)
     {
-        return new LimaShapedRecipeBuilder(resources, result);
+        return new LimaShapedRecipeBuilder(resources, registries, result);
     }
 
     protected LimaShapedRecipeBuilder shaped(ItemLike item, int count)
@@ -43,7 +43,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaShapelessRecipeBuilder shapeless(ItemStackTemplate result)
     {
-        return new LimaShapelessRecipeBuilder(resources, result);
+        return new LimaShapelessRecipeBuilder(resources, registries, result);
     }
 
     protected LimaShapelessRecipeBuilder shapeless(ItemLike item, int count)
@@ -58,7 +58,7 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaStonecuttingRecipeBuilder stonecutting(ItemStackTemplate result)
     {
-        return new LimaStonecuttingRecipeBuilder(resources, result);
+        return new LimaStonecuttingRecipeBuilder(resources, registries, result);
     }
 
     protected LimaStonecuttingRecipeBuilder stonecutting(ItemLike item, int count)
@@ -73,7 +73,12 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smelting(ItemStackTemplate result)
     {
-        return new LimaCookingRecipeBuilder(resources, result, 200, SmeltingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, registries, result, 200, SmeltingRecipe::new);
+    }
+
+    protected LimaCookingRecipeBuilder smelting(ItemLike item, int count)
+    {
+        return smelting(stackTemplate(item, count));
     }
 
     protected LimaCookingRecipeBuilder smelting(ItemLike item)
@@ -83,7 +88,12 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder blasting(ItemStackTemplate result)
     {
-        return new LimaCookingRecipeBuilder(resources, result, 100, BlastingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, registries, result, 100, BlastingRecipe::new);
+    }
+
+    protected LimaCookingRecipeBuilder blasting(ItemLike item, int count)
+    {
+        return blasting(stackTemplate(item, count));
     }
 
     protected LimaCookingRecipeBuilder blasting(ItemLike item)
@@ -93,7 +103,12 @@ public abstract class LimaRecipeProvider extends RecipeProvider
 
     protected LimaCookingRecipeBuilder smoking(ItemStackTemplate result)
     {
-        return new LimaCookingRecipeBuilder(resources, result, 100, SmokingRecipe::new);
+        return new LimaCookingRecipeBuilder(resources, registries, result, 100, SmokingRecipe::new);
+    }
+
+    protected LimaCookingRecipeBuilder smoking(ItemLike item, int count)
+    {
+        return smoking(stackTemplate(item, count));
     }
 
     protected LimaCookingRecipeBuilder smoking(ItemLike item)
@@ -108,12 +123,22 @@ public abstract class LimaRecipeProvider extends RecipeProvider
         return shaped(result).input('#', input).patterns("###", "###", "###");
     }
 
+    protected LimaShapedRecipeBuilder shaped3x3(ItemLike input, ItemLike resultItem, int resultCount)
+    {
+        return shaped3x3(input, stackTemplate(resultItem, resultCount));
+    }
+
     protected LimaShapedRecipeBuilder shaped2x2(ItemLike input, ItemStackTemplate result)
     {
         return shaped(result).input('#', input).patterns("##", "##");
     }
 
-    protected void nuggetIngotBlockRecipes(RecipeOutput output, String materialName, ItemLike nugget, ItemLike ingot, ItemLike block)
+    protected LimaShapedRecipeBuilder shaped2x2(ItemLike input, ItemLike resultItem, int resultCount)
+    {
+        return shaped2x2(input, stackTemplate(resultItem, resultCount));
+    }
+
+    protected void nuggetIngotBlockRecipes(String materialName, ItemLike nugget, ItemLike ingot, ItemLike block)
     {
         shaped3x3(nugget, stackTemplate(ingot)).save(output, materialName + "_nuggets_to_ingot");
         shapeless(stackTemplate(nugget, 9)).input(Ingredient.of(ingot)).save(output, materialName + "_ingot_to_nuggets");
@@ -121,30 +146,50 @@ public abstract class LimaRecipeProvider extends RecipeProvider
         shapeless(stackTemplate(ingot, 9)).input(Ingredient.of(block)).save(output, materialName + "_block_to_ingots");
     }
 
-    protected void nineStorageRecipes(RecipeOutput output, ItemLike unpackedItem, ItemLike packedItem)
+    protected void nineStorageRecipes(ItemLike unpackedItem, ItemLike packedItem)
     {
         String recipeName = getItemName(unpackedItem);
         shaped3x3(unpackedItem, stackTemplate(packedItem)).save(output, "pack_9_" + recipeName);
         shapeless(stackTemplate(unpackedItem, 9)).input(packedItem).save(output, "unpack_9_" + recipeName);
     }
 
-    protected void fourStorageRecipes(RecipeOutput output, ItemLike unpackedItem, ItemLike packedItem)
+    protected void fourStorageRecipes(ItemLike unpackedItem, ItemLike packedItem)
     {
         String recipeName = getItemName(unpackedItem);
         shaped2x2(unpackedItem, stackTemplate(packedItem)).save(output, "pack_4_" + recipeName);
         shapeless(stackTemplate(unpackedItem, 4)).input(packedItem).save(output, "unpack_4_" + recipeName);
     }
 
-    protected void oreSmeltBlast(RecipeOutput recipeOutput, String recipeName, Ingredient input, ItemStackTemplate result)
+    protected void oreSmeltBlast(String recipeName, Ingredient input, ItemStackTemplate result)
     {
-        smelting(result).input(input).xp(0.7f).save(recipeOutput, recipeName);
-        blasting(result).input(input).xp(0.7f).save(recipeOutput, recipeName);
+        smelting(result).input(input).xp(0.7f).save(output, recipeName);
+        blasting(result).input(input).xp(0.7f).save(output, recipeName);
     }
 
-    protected void oreSmeltBlast(RecipeOutput recipeOutput, String recipeName, ItemLike input, ItemStackTemplate result)
+    protected void oreSmeltBlast(String recipeName, Ingredient input, ItemLike resultItem, int resultCount)
     {
-        smelting(result).input(input).xp(0.7f).save(recipeOutput, recipeName);
-        blasting(result).input(input).xp(0.7f).save(recipeOutput, recipeName);
+        oreSmeltBlast(recipeName, input, stackTemplate(resultItem, resultCount));
+    }
+
+    protected void oreSmeltBlast(String recipeName, Ingredient input, ItemLike resultItem)
+    {
+        oreSmeltBlast(recipeName, input, stackTemplate(resultItem));
+    }
+
+    protected void oreSmeltBlast(String recipeName, ItemLike input, ItemStackTemplate result)
+    {
+        smelting(result).input(input).xp(0.7f).save(output, recipeName);
+        blasting(result).input(input).xp(0.7f).save(output, recipeName);
+    }
+
+    protected void oreSmeltBlast(String recipeName, ItemLike input, ItemLike resultItem, int resultCount)
+    {
+        oreSmeltBlast(recipeName, input, stackTemplate(resultItem, resultCount));
+    }
+
+    protected void oreSmeltBlast(String recipeName, ItemLike input, ItemLike resultItem)
+    {
+        oreSmeltBlast(recipeName, input, stackTemplate(resultItem));
     }
     //#endregion
 
