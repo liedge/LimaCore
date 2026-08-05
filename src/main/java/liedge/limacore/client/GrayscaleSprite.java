@@ -22,18 +22,19 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Optional;
 
-public record GrayscaleSprite(Identifier spriteId, Identifier sourceSprite, float brightness) implements SpriteSource, SpriteContentsConstructor
+public record GrayscaleSprite(Identifier spriteId, Identifier sourceSprite, float brightness, float alpha) implements SpriteSource, SpriteContentsConstructor
 {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final MapCodec<GrayscaleSprite> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Identifier.CODEC.fieldOf("id").forGetter(GrayscaleSprite::spriteId),
             Identifier.CODEC.fieldOf("source").forGetter(GrayscaleSprite::sourceSprite),
-            Codec.floatRange(0f, 255f).optionalFieldOf("brightness", 1f).forGetter(GrayscaleSprite::brightness))
+            Codec.floatRange(0f, 255f).optionalFieldOf("brightness", 1f).forGetter(GrayscaleSprite::brightness),
+            Codec.floatRange(0f, 255f).optionalFieldOf("alpha", 1f).forGetter(GrayscaleSprite::alpha))
             .apply(i, GrayscaleSprite::new));
 
     public GrayscaleSprite(Identifier spriteId, Identifier sourceSprite)
     {
-        this(spriteId, sourceSprite, 1f);
+        this(spriteId, sourceSprite, 1f, 1f);
     }
 
     @Override
@@ -65,14 +66,12 @@ public record GrayscaleSprite(Identifier spriteId, Identifier sourceSprite, floa
             NativeImage newImage = sourceImage.mappedCopy(pixel ->
             {
                 int gray = ARGB.greyscale(pixel);
-                if (brightness == 1f) return gray;
+                if (brightness == 1f && alpha == 1f) return gray;
 
-                int alpha = ARGB.alpha(gray);
-                int red = applyBrightness(ARGB.red(gray));
-                int green = applyBrightness(ARGB.green(gray));
-                int blue = applyBrightness(ARGB.blue(gray));
+                int newAlpha = mulRGBComponent(ARGB.alpha(gray), alpha);
+                int newComponent = mulRGBComponent(ARGB.red(gray), brightness);
 
-                return ARGB.color(alpha, red, green, blue);
+                return ARGB.color(newAlpha, newComponent, newComponent, newComponent);
             });
 
             return new SpriteContents(spriteId, frameSize, newImage, animationMetadata, additionalMetadata, textureMetadata);
@@ -84,8 +83,8 @@ public record GrayscaleSprite(Identifier spriteId, Identifier sourceSprite, floa
         }
     }
 
-    private int applyBrightness(int component)
+    private int mulRGBComponent(int component, float multiplier)
     {
-        return Math.clamp(Math.round(component * brightness), 0, 255);
+        return Math.clamp(Math.round(component * multiplier), 0, 255);
     }
 }
