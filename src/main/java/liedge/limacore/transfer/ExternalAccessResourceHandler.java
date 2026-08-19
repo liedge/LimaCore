@@ -39,6 +39,24 @@ public class ExternalAccessResourceHandler<T extends Resource> extends LimitingR
     }
 
     @Override
+    public int insert(T resource, int amount, TransactionContext transaction)
+    {
+        if (!topLevelAccess.allowsInput()) return 0;
+
+        int inserted = 0;
+
+        for (int index = 0; index < size(); index++)
+        {
+            if (!resourceLevelAccess.get(index, resource).allowsInput()) continue;
+
+            inserted += super.insert(index, resource, amount - inserted, transaction);
+            if (inserted == amount) break;
+        }
+
+        return inserted;
+    }
+
+    @Override
     public int extract(int index, T resource, int amount, TransactionContext transaction)
     {
         if (topLevelAccess.allowsOutput() && resourceLevelAccess.get(index, resource).allowsOutput())
@@ -49,6 +67,24 @@ public class ExternalAccessResourceHandler<T extends Resource> extends LimitingR
         {
             return 0;
         }
+    }
+
+    @Override
+    public int extract(T resource, int amount, TransactionContext transaction)
+    {
+        if (!topLevelAccess.allowsOutput()) return 0;
+
+        int extracted = 0;
+
+        for (int index = 0; index < size(); index++)
+        {
+            if (!resourceLevelAccess.get(index, resource).allowsOutput()) continue;
+
+            extracted += super.extract(index, resource, amount - extracted, transaction);
+            if (extracted == amount) break;
+        }
+
+        return extracted;
     }
 
     @FunctionalInterface

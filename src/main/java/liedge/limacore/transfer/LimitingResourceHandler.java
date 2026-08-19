@@ -33,14 +33,29 @@ public class LimitingResourceHandler<T extends Resource> extends DelegatingResou
     @Override
     public int insert(int index, T resource, int amount, TransactionContext transaction)
     {
-        int toInsert = Math.min(amount, getTransferLimit());
-        return super.insert(index, resource, toInsert, transaction);
+        return super.insert(index, resource, clampAmount(amount), transaction);
+    }
+
+    @Override
+    public int insert(T resource, int amount, TransactionContext transaction)
+    {
+        return super.insert(resource, clampAmount(amount), transaction);
     }
 
     @Override
     public int extract(int index, T resource, int amount, TransactionContext transaction)
     {
-        int toExtract = Math.min(amount, getTransferLimit());
-        return super.extract(index, resource, toExtract, transaction);
+        return super.extract(index, resource, clampAmount(amount), transaction);
+    }
+
+    @Override
+    public int extract(T resource, int amount, TransactionContext transaction)
+    {
+        return super.extract(resource, clampAmount(amount), transaction);
+    }
+
+    private int clampAmount(int amount)
+    {
+        return Math.min(amount, getTransferLimit());
     }
 }
