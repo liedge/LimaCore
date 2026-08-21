@@ -21,9 +21,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 public final class LimaGuiUtil
 {
@@ -56,14 +57,14 @@ public final class LimaGuiUtil
         return Math.ceilDiv(Minecraft.getInstance().font.width(text), 2);
     }
 
-    public static @Nullable ScreenRectangle floatBounds(float x1, float y1, float x2, float y2, @Nullable ScreenRectangle scissorArea)
+    public static @Nullable ScreenRectangle getFloatingBounds(float x1, float y1, float x2, float y2, Matrix3x2fc pose, @Nullable ScreenRectangle scissorArea)
     {
         int x = Mth.floor(x1);
         int y = Mth.floor(y1);
         int width = Mth.ceil(x2) - x;
         int height = Mth.ceil(y2) - y;
 
-        ScreenRectangle bounds = new ScreenRectangle(x, y, width, height);
+        ScreenRectangle bounds = new ScreenRectangle(x, y, width, height).transformMaxBounds(pose);
         return scissorArea != null ? scissorArea.intersection(bounds) : bounds;
     }
 

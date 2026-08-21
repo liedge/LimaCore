@@ -26,7 +26,7 @@ public abstract class FloatingGuiRenderState implements GuiElementRenderState
         this.pipeline = pipeline;
         this.textureSetup = textureSetup;
         this.scissorArea = scissorArea;
-        this.bounds = LimaGuiUtil.floatBounds(x1, y1, x2, y2, scissorArea);
+        this.bounds = LimaGuiUtil.getFloatingBounds(x1, y1, x2, y2, pose, scissorArea);
 
         this.pose = pose;
         this.x1 = x1;
