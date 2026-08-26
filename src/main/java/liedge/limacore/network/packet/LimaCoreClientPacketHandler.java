@@ -1,6 +1,6 @@
 package liedge.limacore.network.packet;
 
-import liedge.limacore.client.LimaCoreClientUtil;
+import liedge.limacore.client.util.LimaCoreClientUtil;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.client.Minecraft;

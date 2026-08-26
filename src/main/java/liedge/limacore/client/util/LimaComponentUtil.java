@@ -1,4 +1,4 @@
-package liedge.limacore.client;
+package liedge.limacore.client.util;
 
 import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.LimaCore;

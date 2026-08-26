@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public final class LimaCoreCodecs
 {
@@ -174,9 +172,14 @@ public final class LimaCoreCodecs
         return object2IntMap(keyCodec, valueCodec, Object2IntLinkedOpenHashMap::new);
     }
 
-    public static <R, T extends R> Codec<T> classCastRegistryCodec(Registry<R> registry, Class<T> valueClass)
+    public static <B, A extends B> DataResult<A> subclassCastResult(B value, Class<A> subType)
     {
-        return registry.byNameCodec().comapFlatMap(o -> nullableDataResult(LimaCoreObjects.tryCast(valueClass, o), () -> "Registry object is not an instance of '" + valueClass.getSimpleName()), Function.identity());
+        return subType.isInstance(value) ? DataResult.success(subType.cast(value)) : DataResult.error(() -> "Value is not an instance of " + subType.getSimpleName());
+    }
+
+    public static <B, A extends B> Codec<A> subclassCodec(Codec<B> baseCodec, Class<A> subType)
+    {
+        return baseCodec.comapFlatMap(value -> subclassCastResult(value, subType), Function.identity());
     }
 
     public static <A, L extends A, R extends A> DataResult<Either<L, R>> xorSubclassDataResult(A value, Class<L> leftClass, Class<R> rightClass)
@@ -228,11 +231,6 @@ public final class LimaCoreCodecs
 
         Codec<List<E>> listCodec = elementCodec.listOf(minInclusive, maxInclusive);
         return minInclusive == 0 ? listCodec.optionalFieldOf(fieldName, List.of()) : listCodec.fieldOf(fieldName);
-    }
-
-    public static <T> DataResult<T> nullableDataResult(@Nullable T value, Supplier<String> errorMessageSupplier)
-    {
-        return value != null ? DataResult.success(value) : DataResult.error(errorMessageSupplier);
     }
 
     public static <A, S> MapCodec<S> comapFlatMapMapCodec(MapCodec<A> baseCodec, Function<? super S, ? extends A> to, Function<? super A, ? extends DataResult<? extends S>> from)

@@ -1,6 +1,6 @@
 package liedge.limacore.network.sync;
 
-import liedge.limacore.client.LimaCoreClientUtil;
+import liedge.limacore.client.util.LimaCoreClientUtil;
 import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import net.minecraft.world.entity.Entity;

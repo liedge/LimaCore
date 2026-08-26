@@ -6,7 +6,7 @@ import io.netty.handler.codec.EncoderException;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
-import liedge.limacore.client.LimaCoreClientUtil;
+import liedge.limacore.client.util.LimaCoreClientUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;

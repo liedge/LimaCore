@@ -3,7 +3,7 @@ package liedge.limacore.data.generation.builtin;
 import liedge.limacore.LimaCore;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.blockentity.RelativeHorizontalSide;
-import liedge.limacore.client.LimaComponentUtil;
+import liedge.limacore.client.util.LimaComponentUtil;
 import liedge.limacore.data.generation.LimaLanguageProvider;
 import liedge.limacore.lib.damage.DamageReductionType;
 import liedge.limacore.registry.game.LimaCoreAttributes;
