@@ -6,12 +6,15 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
+import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public final class LimaCoreRenderTypes
 {
     private LimaCoreRenderTypes () {}
+
+    public static final Comparator<RenderType> BLENDS_LAST = Comparator.comparing(rt -> rt.pipeline().getColorTargetState().blendFunction().isPresent());
 
     private static final Function<Identifier, RenderType> ENTITY_CUTOUT_EMISSIVE = Util.memoize(texture ->
     {

@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import liedge.limacore.client.LimaCoreClient;
+import liedge.limacore.client.renderer.LimaCoreRenderTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -24,14 +25,12 @@ import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
 public final class StaticQuads
 {
     private static final int MAX_LAYERS = 8;
-    private static final Comparator<RenderType> BLENDS_LAST = Comparator.comparing(rt -> rt.pipeline().getColorTargetState().blendFunction().isPresent());
 
     public static final StaticQuads EMPTY = new StaticQuads(List.of());
 
@@ -171,7 +170,7 @@ public final class StaticQuads
                 }
             }
 
-            List<RenderType> sortedKeys = map.keySet().stream().sorted(BLENDS_LAST).toList();
+            List<RenderType> sortedKeys = map.keySet().stream().sorted(LimaCoreRenderTypes.BLENDS_LAST).toList();
             ObjectList<Layer> layers = new ObjectArrayList<>();
 
             for (RenderType key : sortedKeys)

@@ -1,12 +1,32 @@
 package liedge.limacore.client.util;
 
+import liedge.limacore.client.model.LimaSpecialModelWrapper;
+import liedge.limacore.client.model.TranslucentLastModel;
+import liedge.limacore.client.renderer.LimaSpecialModelRenderer;
 import liedge.limacore.lib.ModResources;
+import net.minecraft.client.color.item.ItemTintSource;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.item.CompositeModel;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.ItemOwner;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
+import org.jetbrains.annotations.Contract;
 import org.joml.*;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public final class LimaModelsUtil
@@ -28,7 +48,7 @@ public final class LimaModelsUtil
         return fluidModel(resources, stillPath, flowPath, null, tint);
     }
 
-    // Extents stuff
+    //#region Extents stuff
     public static void cubeExtents(Consumer<Vector3fc> output, float x1, float y1, float z1, float x2, float y2, float z2)
     {
         output.accept(new Vector3f(x1, y1, z1));
@@ -72,4 +92,67 @@ public final class LimaModelsUtil
     {
         scaledCubeExtents(output, x, y, z, x + xSize, y + ySize, z + zSize);
     }
+    //#endregion
+
+    //#region Item model helpers
+    public static int resolveTint(ItemTintSource tint, ItemStack item, @Nullable ClientLevel level, @Nullable ItemOwner owner)
+    {
+        LivingEntity ownerEntity = owner == null ? null : owner.asLivingEntity();
+        return tint.calculate(item, level, ownerEntity);
+    }
+
+    public static ModelRenderProperties resolveProperties(ModelBaker baker, Identifier source)
+    {
+        ResolvedModel model = baker.getModel(source);
+        TextureSlots textureSlots = model.getTopTextureSlots();
+
+        return ModelRenderProperties.fromResolvedModel(baker, model, textureSlots);
+    }
+
+    @Contract("_,null->false")
+    public static boolean isFirstPersonMainHand(ItemDisplayContext displayContext, @Nullable LivingEntity entity)
+    {
+        if (entity == null) return false;
+        HumanoidArm arm = entity.getMainArm();
+
+        return (displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND && arm == HumanoidArm.LEFT) ||
+                (displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && arm == HumanoidArm.RIGHT);
+    }
+
+    @Contract("_,null->false")
+    public static boolean isFirstPersonMainHand(ItemDisplayContext displayContext, @Nullable ItemOwner owner)
+    {
+        if (owner == null)
+            return false;
+        else
+            return isFirstPersonMainHand(displayContext, owner.asLivingEntity());
+    }
+    //#endregion
+
+    //#region Item model factories
+    public static ItemModel.Unbaked blendsLast(Identifier model, List<ItemTintSource> tints)
+    {
+        return new TranslucentLastModel(model, Optional.empty(), tints);
+    }
+
+    public static ItemModel.Unbaked blendsLast(Identifier model, ItemTintSource... tints)
+    {
+        return blendsLast(model, List.of(tints));
+    }
+
+    public static ItemModel.Unbaked blendsLast(Identifier model)
+    {
+        return blendsLast(model, List.of());
+    }
+
+    public static ItemModel.Unbaked composite(List<ItemModel.Unbaked> models)
+    {
+        return new CompositeModel.Unbaked(models, Optional.empty());
+    }
+
+    public static ItemModel.Unbaked specialModel(Identifier base, LimaSpecialModelRenderer.LimaUnbaked<?> specialModel)
+    {
+        return new LimaSpecialModelWrapper.Unbaked(base, Optional.empty(), specialModel);
+    }
+    //#endregion
 }
