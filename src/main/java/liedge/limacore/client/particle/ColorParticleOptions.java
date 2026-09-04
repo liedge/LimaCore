@@ -1,23 +1,27 @@
 package liedge.limacore.client.particle;
 
-import liedge.limacore.lib.LimaColor;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.codec.ByteBufCodecs;
 
 import java.util.function.Supplier;
 
-public record ColorParticleOptions(ParticleType<ColorParticleOptions> type, LimaColor color) implements ParticleOptions
+public record ColorParticleOptions(ParticleType<ColorParticleOptions> type, int color) implements BaseColorParticleOptions
 {
     public static LimaParticleType<ColorParticleOptions> createParticleType(boolean overrideLimiter)
     {
         return LimaParticleType.createWithTypedCodecs(overrideLimiter,
-                type -> LimaColor.CODEC.fieldOf("color").xmap(color -> new ColorParticleOptions(type, color), ColorParticleOptions::color),
-                type -> LimaColor.STREAM_CODEC.map(color -> new ColorParticleOptions(type, color), ColorParticleOptions::color));
+                type -> COLOR_FIELD_CODEC.xmap(color -> new ColorParticleOptions(type, color), ColorParticleOptions::color),
+                type -> ByteBufCodecs.VAR_INT.map(color -> new ColorParticleOptions(type, color), ColorParticleOptions::color));
     }
 
-    public ColorParticleOptions(Supplier<? extends ParticleType<ColorParticleOptions>> typeSupplier, LimaColor color)
+    public static ColorParticleOptions of(ParticleType<ColorParticleOptions> type, int color)
     {
-        this(typeSupplier.get(), color);
+        return new ColorParticleOptions(type, color);
+    }
+
+    public static ColorParticleOptions of(Supplier<? extends ParticleType<ColorParticleOptions>> typeSupplier, int color)
+    {
+        return of(typeSupplier.get(), color);
     }
 
     @Override

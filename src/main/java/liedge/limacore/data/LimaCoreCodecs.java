@@ -6,13 +6,12 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.objects.*;
-import liedge.limacore.lib.math.LimaCoreMath;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Direction;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -25,64 +24,8 @@ public final class LimaCoreCodecs
 
     private LimaCoreCodecs() {}
 
-    private static DataResult<Integer> parseHexadecimal(String rawString)
-    {
-        try
-        {
-            return DataResult.success(LimaCoreMath.parseHexadecimal(rawString));
-        }
-        catch (NumberFormatException ignored)
-        {
-            return DataResult.error(() -> rawString + " is not a hexadecimal number.");
-        }
-    }
-
-    private static DataResult<Float> parseAngle(String rawString)
-    {
-        String input = rawString.trim();
-        if (!input.endsWith("deg")) return DataResult.error(() -> "Invalid angle input: " + input);
-
-        String numString = input.substring(0, input.length() - 3);
-        try
-        {
-            float value = Float.parseFloat(numString);
-            return DataResult.success(LimaCoreMath.toRad(value));
-        }
-        catch (NumberFormatException ignored)
-        {
-            return DataResult.error(() -> rawString + " is not a decimal number.");
-        }
-    }
-
-    /**
-     * Hexadecimal integer codec. Encoded values will be prefixed with '#'. Decoded values
-     * do not need the '#' prefix but may contain it.
-     */
-    public static final Codec<Integer> HEXADECIMAL_INT = Codec.STRING.comapFlatMap(LimaCoreCodecs::parseHexadecimal, num -> "#" + Integer.toHexString(num));
-
-    /**
-     * Float codec for radians. Can optionally fix degree inputs into radians.
-     */
-    public static final Codec<Float> ANGLE_FLOAT = Codec.either(Codec.FLOAT, Codec.STRING).comapFlatMap(
-            either -> either.map(DataResult::success, LimaCoreCodecs::parseAngle),
-            Either::left);
-
-    /**
-     * Strict {@link Direction} codec with {@link LimaEnumCodec} convenience extensions.
-     */
-    public static final LimaEnumCodec<Direction> STRICT_DIRECTION = LimaEnumCodec.create(Direction.class);
-
-    public static final Codec<Vector3f> MODEL_VECTOR = decodeOnly(ExtraCodecs.VECTOR3F.map(vec -> {
-        Vector3f out = new Vector3f(vec);
-        return out.mul(0.0625f);
-    }));
-
-    public static <A> Codec<A> decodeOnly(Decoder<A> decoder)
-    {
-        String name = decoder + "[readOnly]";
-        Encoder<A> encoder = Encoder.error(name + " is a decode-only codec.");
-        return Codec.of(encoder, decoder, name);
-    }
+    public static final LimaEnumCodec<Direction> DIRECTION = LimaEnumCodec.create(Direction.class);
+    public static final Codec<Integer> OPAQUE_RGB_STRING = ExtraCodecs.STRING_RGB_COLOR.xmap(ARGB::opaque, ARGB::opaque);
 
     public static <N extends Number & Comparable<N>> Codec<N> openStartNumberRange(Codec<N> baseCodec, N minExclusive, N maxInclusive)
     {

@@ -4,40 +4,44 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import liedge.limacore.lib.LimaColor;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.function.Supplier;
 
-public record ColorSizeParticleOptions(ParticleType<ColorSizeParticleOptions> type, LimaColor color, float size) implements ParticleOptions
+public record ColorSizeParticleOptions(ParticleType<ColorSizeParticleOptions> type, int color, float size) implements BaseColorParticleOptions
 {
     private static MapCodec<ColorSizeParticleOptions> makeMapCodec(ParticleType<ColorSizeParticleOptions> type)
     {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                LimaColor.CODEC.fieldOf("color").forGetter(ColorSizeParticleOptions::color),
+                ExtraCodecs.RGB_COLOR_CODEC.fieldOf("color").forGetter(ColorSizeParticleOptions::color),
                 Codec.FLOAT.fieldOf("size").forGetter(ColorSizeParticleOptions::size))
                 .apply(instance, (color, size) -> new ColorSizeParticleOptions(type, color, size)));
     }
 
-    private static StreamCodec<ByteBuf, ColorSizeParticleOptions> makeStreamCodec(ParticleType<ColorSizeParticleOptions> type)
+    private static StreamCodec<ByteBuf, ColorSizeParticleOptions> streamCodec(ParticleType<ColorSizeParticleOptions> type)
     {
         return StreamCodec.composite(
-                LimaColor.STREAM_CODEC, ColorSizeParticleOptions::color,
+                ByteBufCodecs.VAR_INT, BaseColorParticleOptions::color,
                 ByteBufCodecs.FLOAT, ColorSizeParticleOptions::size,
                 (color, size) -> new ColorSizeParticleOptions(type, color, size));
     }
 
     public static LimaParticleType<ColorSizeParticleOptions> createParticleType(boolean overrideLimiter)
     {
-        return LimaParticleType.createWithTypedCodecs(overrideLimiter, ColorSizeParticleOptions::makeMapCodec, ColorSizeParticleOptions::makeStreamCodec);
+        return LimaParticleType.createWithTypedCodecs(overrideLimiter, ColorSizeParticleOptions::makeMapCodec, ColorSizeParticleOptions::streamCodec);
     }
 
-    public ColorSizeParticleOptions(Supplier<? extends ParticleType<ColorSizeParticleOptions>> typeSupplier, LimaColor color, float size)
+    public static ColorSizeParticleOptions of(ParticleType<ColorSizeParticleOptions> type, int color, float size)
     {
-        this(typeSupplier.get(), color, size);
+        return new ColorSizeParticleOptions(type, color, size);
+    }
+
+    public static ColorSizeParticleOptions of(Supplier<? extends ParticleType<ColorSizeParticleOptions>> typeSupplier, int color, float size)
+    {
+        return of(typeSupplier.get(), color, size);
     }
 
     @Override

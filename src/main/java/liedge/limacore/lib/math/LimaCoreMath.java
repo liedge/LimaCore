@@ -10,7 +10,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -26,24 +25,6 @@ public final class LimaCoreMath
     public static final int BILLION = 1_000_000_000;
 
     private static final Vec3 Y_UNIT_VEC = new Vec3(0, 1, 0);
-
-    public static int parseHexadecimal(String value) throws NumberFormatException
-    {
-        value = value.startsWith("#") ? value.substring(1) : value;
-        return Integer.parseInt(value, 16);
-    }
-
-    public static Optional<Integer> tryParseHexadecimal(String value)
-    {
-        try
-        {
-            return Optional.of(parseHexadecimal(value));
-        }
-        catch (NumberFormatException ex)
-        {
-            return Optional.empty();
-        }
-    }
 
     public static float divideFloat(float dividend, float divisor)
     {

@@ -1,6 +1,5 @@
 package liedge.limacore.client.util;
 
-import liedge.limacore.lib.LimaColor;
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.client.Minecraft;
@@ -104,10 +103,5 @@ public final class LimaCoreClientUtil
     public static void setQuadParticleColor(SingleQuadParticle particle, int rgb32)
     {
         particle.setColor(ARGB.redFloat(rgb32), ARGB.greenFloat(rgb32), ARGB.blueFloat(rgb32));
-    }
-
-    public static void setQuadParticleColor(SingleQuadParticle particle, LimaColor color)
-    {
-        particle.setColor(color.red(), color.green(), color.blue());
     }
 }
