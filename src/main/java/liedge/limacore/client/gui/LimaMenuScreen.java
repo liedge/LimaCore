@@ -107,14 +107,25 @@ public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractCont
             graphics.setTooltipForNextFrame(font, fluidTooltips, Optional.empty(), x, y);
         }
 
-        // Render widget
-        for (LimaRenderable widget : tooltipWidgets)
+        // Extract first widget tooltip
+        if (!tooltipWidgets.isEmpty())
         {
-            if (widget.isMouseOver(x, y) && widget.hasTooltip())
+            List<Either<FormattedText, TooltipComponent>> elements = null;
+
+            for (LimaRenderable widget : tooltipWidgets)
             {
-                List<Either<FormattedText, TooltipComponent>> elements = new ObjectArrayList<>();
-                widget.createWidgetTooltip(elements::add);
-                graphics.setComponentTooltipFromElementsForNextFrame(font, elements, x, y, ItemStack.EMPTY);
+                if (widget.isMouseOver(x, y))
+                {
+                    if (elements == null) elements = new ObjectArrayList<>();
+
+                    widget.extractTooltip(elements::add, x, y);
+
+                    if (!elements.isEmpty())
+                    {
+                        graphics.setComponentTooltipFromElementsForNextFrame(font, elements, x, y, ItemStack.EMPTY);
+                        break;
+                    }
+                }
             }
         }
     }

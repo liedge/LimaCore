@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 @FunctionalInterface
@@ -17,5 +18,21 @@ public interface TooltipLineConsumer extends Consumer<Either<FormattedText, Tool
     default void accept(TooltipComponent component)
     {
         accept(Either.right(component));
+    }
+
+    default void acceptTexts(Collection<? extends FormattedText> texts)
+    {
+        for (FormattedText text : texts)
+        {
+            accept(text);
+        }
+    }
+
+    default void acceptComponents(Collection<? extends TooltipComponent> components)
+    {
+        for (TooltipComponent component : components)
+        {
+            accept(component);
+        }
     }
 }

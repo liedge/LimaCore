@@ -12,12 +12,7 @@ public interface LimaRenderable extends Renderable
 
     int getHeight();
 
-    default boolean hasTooltip()
-    {
-        return false;
-    }
-
-    default void createWidgetTooltip(TooltipLineConsumer consumer) {}
+    default void extractTooltip(TooltipLineConsumer consumer, int mouseX, int mouseY) { }
 
     default boolean isMouseOver(double mouseX, double mouseY)
     {
