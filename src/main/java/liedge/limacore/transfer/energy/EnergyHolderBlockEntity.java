@@ -31,8 +31,10 @@ public interface EnergyHolderBlockEntity extends LimaBlockEntityAccess
 
     default @Nullable EnergyHandler createExternalEnergy(@Nullable Direction side)
     {
+        if (side == null) return getEnergy().createIOWrapper(IOAccess.DISABLED);
+
         IOAccess access = getTopLevelEnergyIO(side);
-        return access.allowsConnection() ? new ExternalEnergyHandler(getEnergy(), access) : null;
+        return access.allowsConnection() ? getEnergy().createIOWrapper(access) : null;
     }
 
     default void loadEnergyStorage(ValueInput input)

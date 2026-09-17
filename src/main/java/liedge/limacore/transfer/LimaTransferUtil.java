@@ -22,8 +22,11 @@ import net.neoforged.neoforge.transfer.resource.ResourceStack;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.SequencedCollection;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class LimaTransferUtil
 {
@@ -131,19 +134,32 @@ public final class LimaTransferUtil
     }
 
     @Nullable
-    public static <T extends Resource> ResourceHandler<T> mergeInputOutputHandlers(@Nullable ResourceHandler<T> input, @Nullable ResourceHandler<T> output)
+    public static <T extends Resource> ResourceHandler<T> mergeHandlers(SequencedCollection<? extends ResourceHandler<T>> collection)
     {
-        if (input != null && output != null)
+        return switch (collection.size())
         {
-            return new CombinedResourceHandler<>(input, output);
-        }
-        else if (input != null)
+            case 0 -> null;
+            case 1 -> collection.getFirst();
+            default -> new CombinedResourceHandler<>(collection);
+        };
+    }
+
+    @Nullable
+    public static <T extends Resource> ResourceHandler<T> mergeHandlers(ResourceHandler<T>[] array)
+    {
+        return switch (array.length)
         {
-            return input;
-        }
-        else
-        {
-            return output;
-        }
+            case 0 -> null;
+            case 1 -> array[0];
+            default -> new CombinedResourceHandler<>(array);
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public static <T extends Resource> ResourceHandler<T> mergeNullableHandlers(Stream<? extends @Nullable ResourceHandler<T>> stream)
+    {
+        ResourceHandler<T>[] arr = stream.filter(Objects::nonNull).toArray(ResourceHandler[]::new);
+        return mergeHandlers(arr);
     }
 }

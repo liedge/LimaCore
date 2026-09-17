@@ -14,6 +14,8 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
+import java.util.stream.Stream;
+
 public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 {
     @Nullable LimaBlockEntityItems getItems(BlockContentsType contentsType);
@@ -56,13 +58,18 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
 
     default @Nullable ResourceHandler<ItemResource> createExternalItems(@Nullable Direction side)
     {
+        if (side == null)
+        {
+            return itemsWrapper(IOAccess.DISABLED, BlockContentsType.INPUT, BlockContentsType.OUTPUT);
+        }
+
         IOAccess topLevelAccess = getTopLevelItemIO(side);
         return switch (topLevelAccess)
         {
             case DISABLED -> null;
-            case INPUT_ONLY -> itemsWrapper(BlockContentsType.INPUT, topLevelAccess);
-            case OUTPUT_ONLY -> itemsWrapper(BlockContentsType.OUTPUT, topLevelAccess);
-            case INPUT_AND_OUTPUT -> LimaTransferUtil.mergeInputOutputHandlers(itemsWrapper(BlockContentsType.INPUT, topLevelAccess), itemsWrapper(BlockContentsType.OUTPUT, topLevelAccess));
+            case INPUT_ONLY -> itemsWrapper(topLevelAccess, BlockContentsType.INPUT);
+            case OUTPUT_ONLY -> itemsWrapper(topLevelAccess, BlockContentsType.OUTPUT);
+            case INPUT_AND_OUTPUT -> itemsWrapper(topLevelAccess, BlockContentsType.INPUT, BlockContentsType.OUTPUT);
         };
     }
 
@@ -76,9 +83,14 @@ public interface ItemHolderBlockEntity extends LimaBlockEntityAccess
         LimaTransferUtil.saveBlockResources(global, LimaCommonConstants.KEY_ITEM_CONTAINER, this::getItems);
     }
 
-    private @Nullable ResourceHandler<ItemResource> itemsWrapper(BlockContentsType contentsType, IOAccess topLevelAccess)
+    private @Nullable ResourceHandler<ItemResource> itemsWrapper(IOAccess topLevelAccess, BlockContentsType type)
     {
-        LimaBlockEntityItems items = getItems(contentsType);
+        LimaBlockEntityItems items = getItems(type);
         return items != null ? items.createIOWrapper(topLevelAccess) : null;
+    }
+
+    private @Nullable ResourceHandler<ItemResource> itemsWrapper(IOAccess topLevelAccess, BlockContentsType... types)
+    {
+        return LimaTransferUtil.mergeNullableHandlers(Stream.of(types).map(t -> itemsWrapper(topLevelAccess, t)));
     }
 }

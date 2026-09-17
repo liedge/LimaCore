@@ -1,5 +1,6 @@
 package liedge.limacore.transfer.energy;
 
+import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
 import liedge.limacore.network.sync.SimpleValueTracker;
@@ -26,6 +27,11 @@ public interface LimaEnergyHandler extends EnergyHandler
     default void removeComponentsFromTag(ValueOutput output) { }
 
     default void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector) { }
+
+    default EnergyHandler createIOWrapper(IOAccess access)
+    {
+        return new ExternalAccessEnergyHandler(this, this::getTransferRate, access);
+    }
 
     default LimaDataWatcher<Integer> syncEnergy()
     {

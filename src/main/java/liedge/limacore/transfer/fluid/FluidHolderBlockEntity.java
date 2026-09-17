@@ -14,6 +14,8 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
+import java.util.stream.Stream;
+
 public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
 {
     @Nullable LimaBlockEntityFluids getFluids(BlockContentsType contentsType);
@@ -60,13 +62,18 @@ public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
 
     default @Nullable ResourceHandler<FluidResource> createExternalFluids(@Nullable Direction side)
     {
+        if (side == null)
+        {
+            return fluidsWrapper(IOAccess.DISABLED, BlockContentsType.INPUT, BlockContentsType.OUTPUT);
+        }
+
         IOAccess topLevelAccess = getTopLevelFluidIO(side);
         return switch (topLevelAccess)
         {
             case DISABLED -> null;
-            case INPUT_ONLY -> fluidsWrapper(BlockContentsType.INPUT, topLevelAccess);
-            case OUTPUT_ONLY -> fluidsWrapper(BlockContentsType.OUTPUT, topLevelAccess);
-            case INPUT_AND_OUTPUT -> LimaTransferUtil.mergeInputOutputHandlers(fluidsWrapper(BlockContentsType.INPUT, topLevelAccess), fluidsWrapper(BlockContentsType.OUTPUT, topLevelAccess));
+            case INPUT_ONLY -> fluidsWrapper(topLevelAccess, BlockContentsType.INPUT);
+            case OUTPUT_ONLY -> fluidsWrapper(topLevelAccess, BlockContentsType.OUTPUT);
+            case INPUT_AND_OUTPUT -> fluidsWrapper(topLevelAccess, BlockContentsType.INPUT, BlockContentsType.OUTPUT);
         };
     }
 
@@ -80,9 +87,14 @@ public interface FluidHolderBlockEntity extends LimaBlockEntityAccess
         LimaTransferUtil.saveBlockResources(global, LimaCommonConstants.KEY_FLUIDS_CONTAINER, this::getFluids);
     }
 
-    private @Nullable ResourceHandler<FluidResource> fluidsWrapper(BlockContentsType contentsType, IOAccess topLevelAccess)
+    private @Nullable ResourceHandler<FluidResource> fluidsWrapper(IOAccess topLevelAccess, BlockContentsType type)
     {
-        LimaBlockEntityFluids fluids = getFluids(contentsType);
+        LimaBlockEntityFluids fluids = getFluids(type);
         return fluids != null ? fluids.createIOWrapper(topLevelAccess) : null;
+    }
+
+    private @Nullable ResourceHandler<FluidResource> fluidsWrapper(IOAccess topLevelAccess, BlockContentsType... types)
+    {
+        return LimaTransferUtil.mergeNullableHandlers(Stream.of(types).map(t -> fluidsWrapper(topLevelAccess, t)));
     }
 }
