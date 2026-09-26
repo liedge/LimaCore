@@ -26,7 +26,7 @@ public interface LimaEnergyHandler extends EnergyHandler
 
     default void removeComponentsFromTag(ValueOutput output) { }
 
-    default void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector) { }
+    default void syncAllProperties(DataWatcherHolder holder) { }
 
     default EnergyHandler createIOWrapper(IOAccess access)
     {

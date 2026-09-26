@@ -35,7 +35,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
         return new ExternalAccessResourceHandler<>(this, this::getTransferRate, topLevelAccess, (index, resource) -> blockEntity.getResourceLevelFluidIO(contentsType, index, resource));
     }
 
-    public void syncTanks(DataWatcherHolder.DataWatcherCollector collector)
+    public void syncTanks(DataWatcherHolder holder)
     {
         for (int i = 0; i < size(); i++)
         {
@@ -46,7 +46,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
                     fs -> stacks.set(index, fs))
                     .setAutomatic();
 
-            collector.register(tracker);
+            holder.addDataWatcher(tracker);
         }
     }
 
@@ -60,11 +60,11 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
         return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, this::getTransferRate, this::setTransferRate);
     }
 
-    public void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector)
+    public void syncAllProperties(DataWatcherHolder holder)
     {
-        syncTanks(collector);
-        collector.register(syncCapacity());
-        collector.register(syncTransferRate());
+        syncTanks(holder);
+        holder.addDataWatcher(syncCapacity());
+        holder.addDataWatcher(syncTransferRate());
     }
 
     public int getCapacity()

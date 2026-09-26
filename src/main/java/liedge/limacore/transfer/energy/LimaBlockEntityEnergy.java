@@ -48,11 +48,11 @@ public final class LimaBlockEntityEnergy extends SimpleEnergyHandler implements 
     }
 
     @Override
-    public void syncAllProperties(DataWatcherHolder.DataWatcherCollector collector)
+    public void syncAllProperties(DataWatcherHolder holder)
     {
-        collector.register(syncEnergy());
-        collector.register(syncCapacity());
-        collector.register(syncTransferRate());
+        holder.addDataWatcher(syncEnergy());
+        holder.addDataWatcher(syncCapacity());
+        holder.addDataWatcher(syncTransferRate());
     }
 
     @Override

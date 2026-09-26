@@ -41,6 +41,7 @@ import net.neoforged.neoforge.transfer.resource.ResourceStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -59,9 +60,9 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     private final LimaMenuType<CTX, ?> type;
     protected final Inventory playerInventory;
     protected final CTX menuContext;
-    private final List<LimaDataWatcher<?>> dataWatchers;
+    private final List<LimaDataWatcher<?>> dataWatchers = new ObjectArrayList<>();
     private final Int2ObjectMap<EventHandler<?>> buttonEventHandlers;
-    protected final List<LimaFluidSlot> fluidSlots;
+    protected final List<LimaFluidSlot> fluidSlots = new ObjectArrayList<>();
 
     // Convenience menu properties
     private boolean firstTick = true;
@@ -75,8 +76,6 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
         this.type = type;
         this.menuContext = menuContext;
         this.playerInventory = inventory;
-        this.dataWatchers = createDataWatchers();
-        this.fluidSlots = new ObjectArrayList<>();
 
         EventHandlerBuilder handlerBuilder = new EventHandlerBuilder();
         defineButtonEventHandlers(handlerBuilder);
@@ -86,7 +85,13 @@ public abstract class LimaMenu<CTX> extends AbstractContainerMenu implements Dat
     @Override
     public final List<LimaDataWatcher<?>> getDataWatchers()
     {
-        return dataWatchers;
+        return Collections.unmodifiableList(dataWatchers);
+    }
+
+    @Override
+    public final void addDataWatcher(LimaDataWatcher<?> watcher)
+    {
+        dataWatchers.add(watcher);
     }
 
     @Override

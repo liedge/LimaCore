@@ -1,6 +1,7 @@
 package liedge.limacore.blockentity;
 
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import liedge.limacore.lib.Translatable;
 import liedge.limacore.menu.BlockEntityMenuType;
 import liedge.limacore.network.IndexedStreamData;
@@ -42,6 +43,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,8 +51,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
 {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    @Nullable
-    private List<LimaDataWatcher<?>> dataWatchers;
+    private final List<LimaDataWatcher<?>> dataWatchers = new ObjectArrayList<>();
 
     protected LimaBlockEntity(LimaBlockEntityType<?> type, BlockPos pos, BlockState state)
     {
@@ -78,8 +79,13 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
     @Override
     public final List<LimaDataWatcher<?>> getDataWatchers()
     {
-        if (dataWatchers == null) dataWatchers = createDataWatchers();
-        return dataWatchers;
+        return Collections.unmodifiableList(dataWatchers);
+    }
+
+    @Override
+    public final void addDataWatcher(LimaDataWatcher<?> watcher)
+    {
+        dataWatchers.add(watcher);
     }
 
     @Override
