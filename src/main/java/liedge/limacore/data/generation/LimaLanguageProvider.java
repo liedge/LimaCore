@@ -23,7 +23,6 @@ import net.neoforged.neoforge.fluids.FluidType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -97,9 +96,9 @@ public abstract class LimaLanguageProvider extends LanguageProvider
         add(supplier.get().getDescriptionId(), fluidValue);
     }
 
-    protected void menuTitle(Supplier<? extends LimaMenuType<?, ?>> supplier, String value)
+    protected void menuTitle(Supplier<? extends LimaMenuType<?>> supplier, String value)
     {
-        add(Objects.requireNonNull(supplier.get().getDefaultTitle(), "Menu does not have a default title"), value);
+        add(supplier.get().getDescriptionId(), value);
     }
 
     protected void potion(Supplier<? extends PotionItem> item, String potionValue)

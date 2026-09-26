@@ -1,6 +1,7 @@
 package liedge.limacore.menu;
 
 import liedge.limacore.blockentity.BlockContentsType;
+import liedge.limacore.blockentity.LimaBlockEntityAccess;
 import liedge.limacore.menu.slot.HandlerFluidSlot;
 import liedge.limacore.menu.slot.LimaItemSlot;
 import liedge.limacore.menu.slot.RecipeResultSlot;
@@ -8,18 +9,52 @@ import liedge.limacore.transfer.fluid.FluidHolderBlockEntity;
 import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import liedge.limacore.transfer.item.ItemHolderBlockEntity;
 import liedge.limacore.transfer.item.LimaBlockEntityItems;
+import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.RecipeType;
 
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
-public abstract class BlockEntityMenu<CTX extends ItemHolderBlockEntity> extends LimaMenu<CTX>
+public abstract class BlockEntityMenu<BE extends LimaBlockEntityAccess> extends LimaMenu
 {
-    protected BlockEntityMenu(LimaMenuType<CTX, ?> type, int containerId, Inventory inventory, CTX menuContext)
+    public static <BE extends LimaBlockEntityAccess> BE decodeBlockEntity(RegistryFriendlyByteBuf net, Inventory inventory, Class<BE> beClass)
     {
-        super(type, containerId, inventory, menuContext);
+        BlockPos pos = net.readBlockPos();
+        BE blockEntity = LimaBlockUtil.getSafeBlockEntity(inventory.player.level(), pos, beClass);
+        return Objects.requireNonNull(blockEntity);
+    }
+
+    protected final BE menuContext;
+
+    protected BlockEntityMenu(MenuType<?> type, int containerId, Inventory inventory, BE menuContext)
+    {
+        super(type, containerId, inventory);
+        this.menuContext = menuContext;
+    }
+
+    public BE getMenuContext()
+    {
+        return menuContext;
+    }
+
+    @Override
+    public boolean stillValid(Player player)
+    {
+        if (player.level().isClientSide())
+        {
+            return true;
+        }
+        else
+        {
+            return menuContext.getAsLimaBlockEntity().validForMenu(player);
+        }
     }
 
     // Slot addition helpers
@@ -101,7 +136,7 @@ public abstract class BlockEntityMenu<CTX extends ItemHolderBlockEntity> extends
 
     private LimaBlockEntityItems getItems(BlockContentsType contentsType)
     {
-        return menuContext.getItemsOrThrow(contentsType);
+        return LimaCoreObjects.cast(ItemHolderBlockEntity.class, menuContext).getItemsOrThrow(contentsType);
     }
 
     private LimaBlockEntityFluids getFluids(BlockContentsType contentsType)

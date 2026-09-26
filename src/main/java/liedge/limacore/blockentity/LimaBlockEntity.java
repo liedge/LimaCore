@@ -2,7 +2,7 @@ package liedge.limacore.blockentity;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import liedge.limacore.lib.Translatable;
+import liedge.limacore.menu.BlockEntityMenuProvider;
 import liedge.limacore.menu.BlockEntityMenuType;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.packet.ClientboundBlockEntityDataWatcherPacket;
@@ -58,17 +58,25 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         super(type, pos, state);
     }
 
-    public boolean canPlayerUse(Player player)
+    //#region Menu things
+
+    public @Nullable BlockEntityMenuProvider getMenuProvider(boolean closeClientContainer)
     {
-        if (level == null || level.getBlockEntity(worldPosition) != this) return false;
-        return player.distanceToSqr((double) worldPosition.getX() + 0.5d, (double) worldPosition.getY() + 0.5d, (double) worldPosition.getZ() + 0.5d) <= 64;
+        BlockEntityMenuType<?, ?> menuType = getType().getMenuType();
+        return menuType != null ? new BlockEntityMenuProvider(menuType, this, null, closeClientContainer) : null;
+    }
+
+    public boolean validForMenu(Player player)
+    {
+        return player.isWithinBlockInteractionRange(getBlockPos(), 4d);
     }
 
     public Component getMenuTitle(BlockEntityMenuType<?, ?> menuType)
     {
-        Translatable defaultTitle = menuType.getDefaultTitle();
-        return defaultTitle != null ? defaultTitle.translate() : getBlockState().getBlock().getName();
+        return getBlockState().getBlock().getName();
     }
+
+    //#endregion
 
     @Override
     public final LimaBlockEntity getAsLimaBlockEntity()

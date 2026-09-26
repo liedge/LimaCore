@@ -1,42 +1,57 @@
 package liedge.limacore.menu;
 
-import liedge.limacore.blockentity.LimaBlockEntity;
+import liedge.limacore.blockentity.LimaBlockEntityAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import org.jspecify.annotations.Nullable;
 
-public final class BlockEntityMenuProvider implements LimaMenuProvider
+import java.util.function.Supplier;
+
+public final class BlockEntityMenuProvider implements MenuProvider
 {
-    private final BlockEntityMenuType<?, ?> menuType;
-    private final LimaBlockEntity blockEntity;
+    private final BlockEntityMenuType<?, ?> type;
+    private final LimaBlockEntityAccess blockEntity;
+    private final Component displayName;
     private final boolean closeClientContainer;
 
-    public BlockEntityMenuProvider(BlockEntityMenuType<?, ?> menuType, LimaBlockEntity blockEntity, boolean closeClientContainer)
+    public BlockEntityMenuProvider(BlockEntityMenuType<?, ?> type, LimaBlockEntityAccess blockEntity, @Nullable Component displayName, boolean closeClientContainer)
     {
-        this.menuType = menuType;
+        this.type = type;
         this.blockEntity = blockEntity;
+        this.displayName = displayName != null ? displayName : blockEntity.getAsLimaBlockEntity().getMenuTitle(type);
         this.closeClientContainer = closeClientContainer;
     }
 
-    @Override
-    public LimaMenuType<?, ?> getMenuType()
+    public BlockEntityMenuProvider(Supplier<? extends BlockEntityMenuType<?, ?>> typeSupplier, LimaBlockEntityAccess blockEntity, @Nullable Component displayName, boolean closeClientContainer)
     {
-        return menuType;
-    }
-
-    @Override
-    public Object context()
-    {
-        return blockEntity;
+        this(typeSupplier.get(), blockEntity, displayName, closeClientContainer);
     }
 
     @Override
     public Component getDisplayName()
     {
-        return blockEntity.getMenuTitle(menuType);
+        return displayName;
+    }
+
+    @Override
+    public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player)
+    {
+        return type.create(containerId, inventory, blockEntity);
     }
 
     @Override
     public boolean shouldTriggerClientSideContainerClosingOnOpen()
     {
         return closeClientContainer;
+    }
+
+    @Override
+    public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buffer)
+    {
+        buffer.writeBlockPos(blockEntity.getBlockPos());
     }
 }

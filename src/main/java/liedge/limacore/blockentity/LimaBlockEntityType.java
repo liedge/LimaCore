@@ -4,16 +4,14 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
-import liedge.limacore.menu.BlockEntityMenuProvider;
 import liedge.limacore.menu.BlockEntityMenuType;
-import liedge.limacore.menu.LimaMenuProvider;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -53,19 +51,14 @@ public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntity
         return Objects.requireNonNullElse(getDataMap(dataMapType), fallback);
     }
 
-    public @Nullable LimaMenuProvider createMenuProvider(LimaBlockEntity blockEntity, boolean closeClientContainer)
+    public @Nullable BlockEntityMenuType<?, ?> getMenuType()
     {
-        if (menuTypeHolder != null && menuTypeHolder.value() instanceof BlockEntityMenuType<?,?> menuType)
+        if (menuTypeHolder != null && menuTypeHolder.value() instanceof BlockEntityMenuType<?, ?>)
         {
-            return new BlockEntityMenuProvider(menuType, blockEntity, closeClientContainer);
+            return (BlockEntityMenuType<?, ?>) menuTypeHolder.value();
         }
 
         return null;
-    }
-
-    public @Nullable LimaMenuProvider createMenuProvider(LimaBlockEntity blockEntity)
-    {
-        return createMenuProvider(blockEntity, true);
     }
 
     public static abstract class AbstractBuilder<BE extends LimaBlockEntity, TYPE extends LimaBlockEntityType<BE>, B extends AbstractBuilder<BE, TYPE, B>>

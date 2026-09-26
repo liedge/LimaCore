@@ -14,6 +14,8 @@ public interface LimaBlockEntityAccess
 {
     LimaBlockEntity getAsLimaBlockEntity();
 
+    LimaBlockEntityType<?> getType();
+
     BlockPos getBlockPos();
 
     BlockState getBlockState();

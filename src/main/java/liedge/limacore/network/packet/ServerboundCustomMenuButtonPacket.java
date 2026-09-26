@@ -24,7 +24,7 @@ public record ServerboundCustomMenuButtonPacket(int containerId, IndexedStreamDa
     @Override
     public void handleServer(ServerPlayer sender, IPayloadContext context)
     {
-        if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == this.containerId)
+        if (sender.containerMenu instanceof LimaMenu menu && menu.containerId == this.containerId)
         {
             menu.handleCustomButtonData(sender, streamData);
         }

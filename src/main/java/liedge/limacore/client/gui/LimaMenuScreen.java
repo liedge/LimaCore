@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class LimaMenuScreen<M extends LimaMenu<?>> extends AbstractContainerScreen<M>
+public abstract class LimaMenuScreen<M extends LimaMenu> extends AbstractContainerScreen<M>
 {
     public static final int DEFAULT_WIDTH = 176;
     public static final int DEFAULT_HEIGHT = 166;

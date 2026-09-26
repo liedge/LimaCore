@@ -1,58 +1,45 @@
 package liedge.limacore.menu;
 
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
-import liedge.limacore.lib.Translatable;
-import liedge.limacore.util.LimaBlockUtil;
-import net.minecraft.core.BlockPos;
+import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.inventory.MenuType;
+import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-
-/**
- * Menu type specialized for {@link LimaBlockEntityAccess} types.
- */
-public class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> extends LimaMenuType<BE, M>
+public class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>> extends LimaMenuType<M>
 {
-    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(Class<BE> contextClass, MenuFactory<BE, M> factory, @Nullable Translatable defaultTitle)
+    public static <BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>> BlockEntityMenuType<BE, M> create(Identifier id, Class<BE> beClass, TypedFactory<BE, M> factory)
     {
-        return new BlockEntityMenuType<>(contextClass, factory, defaultTitle);
+        return new BlockEntityMenuType<>(id, beClass, factory);
     }
 
-    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(Identifier id, Class<BE> contextClass, MenuFactory<BE, M> factory)
-    {
-        return create(contextClass, factory, defaultMenuTitle(id));
-    }
+    private final Class<BE> contextClass;
+    private final TypedFactory<BE, M> factory;
 
-    public static <BE extends LimaBlockEntityAccess, M extends LimaMenu<BE>> BlockEntityMenuType<BE, M> create(Class<BE> contextClass, MenuFactory<BE, M> factory)
+    private BlockEntityMenuType(Identifier id, Class<BE> contextClass, TypedFactory<BE, M> factory)
     {
-        return create(contextClass, factory, null);
-    }
-
-    private BlockEntityMenuType(Class<BE> contextClass, MenuFactory<BE, M> factory, @Nullable Translatable defaultTitle)
-    {
-        super(contextClass, factory, defaultTitle);
+        super(id);
+        this.contextClass = contextClass;
+        this.factory = factory;
     }
 
     @Override
-    public void encodeContext(BE menuContext, RegistryFriendlyByteBuf net)
+    public M create(int containerId, Inventory inventory, RegistryFriendlyByteBuf net)
     {
-        net.writeBlockPos(menuContext.getBlockPos());
+        return factory.create(this, containerId, inventory, BlockEntityMenu.decodeBlockEntity(net, inventory, contextClass));
     }
 
-    @Override
-    protected BE decodeContext(RegistryFriendlyByteBuf net, Inventory inventory)
+    public @Nullable M create(int containerId, Inventory inventory, LimaBlockEntityAccess beAccess)
     {
-        BlockPos pos = net.readBlockPos();
-        return Objects.requireNonNull(LimaBlockUtil.getSafeBlockEntity(inventory.player.level(), pos, getContextClass()));
+        BE blockEntity = LimaCoreObjects.tryCast(contextClass, beAccess);
+        return blockEntity != null ? factory.create(this, containerId, inventory, blockEntity) : null;
     }
 
-    @Override
-    public boolean canPlayerKeepUsing(BE menuContext, Player player)
+    @FunctionalInterface
+    public interface TypedFactory<BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>>
     {
-        return menuContext.getAsLimaBlockEntity().canPlayerUse(player);
+        M create(MenuType<?> type, int containerId, Inventory inventory, BE blockEntity);
     }
 }

@@ -2,7 +2,6 @@ package liedge.limacore.block;
 
 import liedge.limacore.blockentity.LimaBlockEntity;
 import liedge.limacore.blockentity.LimaBlockEntityType;
-import liedge.limacore.menu.LimaMenuProvider;
 import liedge.limacore.util.LimaBlockUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
@@ -10,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -60,9 +60,10 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
     }
 
     @Override
-    public @Nullable LimaMenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos)
+    public @Nullable MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos)
     {
-        return blockEntityMenuProvider(level, pos);
+        LimaBlockEntity blockEntity = LimaBlockUtil.getBlockEntity(level, pos, LimaBlockEntity.class);
+        return blockEntity != null ? blockEntity.getMenuProvider(true) : null;
     }
 
     @Override
@@ -110,12 +111,6 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         return blockEntityType;
     }
 
-    protected @Nullable LimaMenuProvider blockEntityMenuProvider(Level level, BlockPos pos)
-    {
-        LimaBlockEntity blockEntity = LimaBlockUtil.getSafeBlockEntity(level, pos, LimaBlockEntity.class);
-        return blockEntity != null ? blockEntity.getType().createMenuProvider(blockEntity) : null;
-    }
-
     protected InteractionResult tryOpenMenu(BlockState state, Level level, BlockPos pos, Player player)
     {
         if (level.isClientSide())
@@ -126,13 +121,12 @@ public abstract class LimaEntityBlock extends Block implements EntityBlock
         {
             if (!player.isCrouching())
             {
-                LimaMenuProvider provider = getMenuProvider(state, level, pos);
+                MenuProvider provider = getMenuProvider(state, level, pos);
                 if (provider != null)
                 {
-                    provider.openMenuScreen(player);
+                    player.openMenu(provider);
                     return InteractionResult.CONSUME;
                 }
-
             }
 
             return InteractionResult.PASS;

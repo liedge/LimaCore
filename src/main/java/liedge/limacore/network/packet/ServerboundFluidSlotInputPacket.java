@@ -23,7 +23,7 @@ public record ServerboundFluidSlotInputPacket(int containerId, int slotIndex, Fl
     @Override
     public void handleServer(ServerPlayer sender, IPayloadContext context)
     {
-        if (sender.containerMenu instanceof LimaMenu<?> menu && menu.containerId == this.containerId)
+        if (sender.containerMenu instanceof LimaMenu menu && menu.containerId == this.containerId)
         {
             menu.fluidClicked(sender, slotIndex, input);
         }
