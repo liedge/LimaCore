@@ -1,15 +1,27 @@
 package liedge.limacore.menu;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
 import liedge.limacore.util.LimaCoreObjects;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.jspecify.annotations.Nullable;
 
-public class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>> extends LimaMenuType<M>
+import java.util.function.Function;
+
+public final class BlockEntityMenuType<BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>> extends LimaMenuType<M>
 {
+    public static final Codec<BlockEntityMenuType<?, ?>> CODEC = BuiltInRegistries.MENU.byNameCodec().comapFlatMap(o -> {
+        if (o instanceof BlockEntityMenuType<?,?> type)
+            return DataResult.success(type);
+        else
+            return DataResult.error(() -> "Not a block entity menu type.");
+    }, Function.identity());
+
     public static <BE extends LimaBlockEntityAccess, M extends BlockEntityMenu<BE>> BlockEntityMenuType<BE, M> create(Identifier id, Class<BE> beClass, TypedFactory<BE, M> factory)
     {
         return new BlockEntityMenuType<>(id, beClass, factory);

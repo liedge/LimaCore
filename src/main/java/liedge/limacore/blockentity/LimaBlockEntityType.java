@@ -5,8 +5,17 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectSets;
 import liedge.limacore.menu.BlockEntityMenuType;
+import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentHolder;
+import net.minecraft.core.component.DataComponentInitializers;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -15,30 +24,23 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
-public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntityType<BE>
+public final class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntityType<BE> implements DataComponentHolder
 {
-    public static <BE extends LimaBlockEntity> LimaBlockEntityType<BE> of(BlockEntitySupplier<BE> factory, Holder<Block> holder)
+    public static <BE extends LimaBlockEntity> LimaBlockEntityType.Builder<BE> builder(ResourceKey<BlockEntityType<?>> key, BlockEntitySupplier<BE> factory)
     {
-        return new LimaBlockEntityType<>(factory, Set.of(holder.value()), null);
+        return new LimaBlockEntityType.Builder<>(key, factory);
     }
 
-    public static <BE extends LimaBlockEntity> LimaBlockEntityType<BE> of(BlockEntitySupplier<BE> factory, Holder<Block> holder, Holder<MenuType<?>> menuTypeHolder)
+    public static <BE extends LimaBlockEntity> LimaBlockEntityType.Builder<BE> builder(Identifier id, BlockEntitySupplier<BE> factory)
     {
-        return new LimaBlockEntityType<>(factory, Set.of(holder.value()), menuTypeHolder);
+        return builder(ResourceKey.create(Registries.BLOCK_ENTITY_TYPE, id), factory);
     }
 
-    public static <BE extends LimaBlockEntity> Builder<BE> builder(BlockEntitySupplier<BE> factory)
-    {
-        return new Builder<>(factory);
-    }
-
-    private final @Nullable Holder<MenuType<?>> menuTypeHolder;
-
-    protected LimaBlockEntityType(BlockEntitySupplier<BE> factory, Set<Block> validBlocks, @Nullable Holder<MenuType<?>> menuTypeHolder)
+    private LimaBlockEntityType(BlockEntitySupplier<BE> factory, Set<Block> validBlocks)
     {
         super(factory, validBlocks);
-        this.menuTypeHolder = menuTypeHolder;
     }
 
     public @Nullable <T> T getDataMap(DataMapType<BlockEntityType<?>, T> dataMapType)
@@ -51,70 +53,74 @@ public class LimaBlockEntityType<BE extends LimaBlockEntity> extends BlockEntity
         return Objects.requireNonNullElse(getDataMap(dataMapType), fallback);
     }
 
-    public @Nullable BlockEntityMenuType<?, ?> getMenuType()
+    @Override
+    public DataComponentMap getComponents()
     {
-        if (menuTypeHolder != null && menuTypeHolder.value() instanceof BlockEntityMenuType<?, ?>)
-        {
-            return (BlockEntityMenuType<?, ?>) menuTypeHolder.value();
-        }
-
-        return null;
+        return LimaRegistryUtil.builtInHolder(this).components();
     }
 
-    public static abstract class AbstractBuilder<BE extends LimaBlockEntity, TYPE extends LimaBlockEntityType<BE>, B extends AbstractBuilder<BE, TYPE, B>>
+    public static final class Builder<BE extends LimaBlockEntity>
     {
-        protected final BlockEntitySupplier<BE> factory;
+        private final ResourceKey<BlockEntityType<?>> key;
+        private final BlockEntitySupplier<BE> factory;
         private final ObjectSet<Block> validBlocks = new ObjectOpenHashSet<>();
-        protected @Nullable Holder<MenuType<?>> menuTypeHolder;
+        private DataComponentInitializers.Initializer<BlockEntityType<?>> components = (_, _, _) -> { };
 
-        protected AbstractBuilder(BlockEntitySupplier<BE> factory)
+        private Builder(ResourceKey<BlockEntityType<?>> key, BlockEntitySupplier<BE> factory)
         {
+            this.key = key;
             this.factory = factory;
         }
 
-        public B withBlock(Block block)
+        public Builder<BE> withBlock(Block block)
         {
             validBlocks.add(block);
-            return thisBuilder();
+            return this;
         }
 
-        public B withBlock(Holder<Block> holder)
+        public Builder<BE> withBlock(Holder<Block> holder)
         {
             return withBlock(holder.value());
         }
 
-        public B hasMenu(Holder<MenuType<?>> menuTypeHolder)
+        public <T> Builder<BE> component(DataComponentType<T> type, T value)
         {
-            this.menuTypeHolder = menuTypeHolder;
-            return thisBuilder();
+            components = components.add(type, value);
+            return this;
         }
 
-        public abstract TYPE build();
-
-        @SuppressWarnings("unchecked")
-        protected B thisBuilder()
+        public <T> Builder<BE> component(Supplier<? extends DataComponentType<T>> typeSupplier, T value)
         {
-            return (B) this;
+            return component(typeSupplier.get(), value);
         }
 
-        protected Set<Block> getValidBlocks()
+        public <T> Builder<BE> delayedComponent(DataComponentType<T> type, DataComponentInitializers.SingleComponentInitializer<T> initializer)
         {
-            Preconditions.checkState(!validBlocks.isEmpty(), "Valid blocks cannot be empty.");
-            return ObjectSets.unmodifiable(validBlocks);
-        }
-    }
-
-    public static class Builder<BE extends LimaBlockEntity> extends AbstractBuilder<BE, LimaBlockEntityType<BE>, Builder<BE>>
-    {
-        private Builder(BlockEntitySupplier<BE> factory)
-        {
-            super(factory);
+            components = components.andThen(initializer.asInitializer(type));
+            return this;
         }
 
-        @Override
+        public <T> Builder<BE> delayedComponent(Supplier<? extends DataComponentType<T>> typeSupplier, DataComponentInitializers.SingleComponentInitializer<T> initializer)
+        {
+            return delayedComponent(typeSupplier.get(), initializer);
+        }
+
+        public Builder<BE> hasMenu(Holder<MenuType<?>> holder)
+        {
+            return delayedComponent(LimaCoreDataComponents.BLOCK_MENU, _ -> {
+                if (!(holder.value() instanceof BlockEntityMenuType<?,?> menuType))
+                    throw new IllegalStateException(LimaRegistryUtil.getNonNullRegistryId(holder) + " is not a block entity menu type");
+
+                return menuType;
+            });
+        }
+
         public LimaBlockEntityType<BE> build()
         {
-            return new LimaBlockEntityType<>(factory, getValidBlocks(), menuTypeHolder);
+            Preconditions.checkState(!validBlocks.isEmpty(), "Valid blocks cannot be empty.");
+
+            BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(key, components);
+            return new LimaBlockEntityType<>(factory, ObjectSets.unmodifiable(validBlocks));
         }
     }
 }

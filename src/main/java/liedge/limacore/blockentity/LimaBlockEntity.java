@@ -9,6 +9,7 @@ import liedge.limacore.network.packet.ClientboundBlockEntityDataWatcherPacket;
 import liedge.limacore.network.packet.ServerboundBlockEntityDataRequestPacket;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.util.LimaCoreObjects;
 import liedge.limacore.util.LimaRegistryUtil;
 import net.minecraft.core.BlockPos;
@@ -62,7 +63,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
 
     public @Nullable BlockEntityMenuProvider getMenuProvider(boolean closeClientContainer)
     {
-        BlockEntityMenuType<?, ?> menuType = getType().getMenuType();
+        BlockEntityMenuType<?, ?> menuType = getType().get(LimaCoreDataComponents.BLOCK_MENU);
         return menuType != null ? new BlockEntityMenuProvider(menuType, this, null, closeClientContainer) : null;
     }
 

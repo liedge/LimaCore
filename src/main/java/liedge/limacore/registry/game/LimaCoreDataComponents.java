@@ -2,6 +2,7 @@ package liedge.limacore.registry.game;
 
 import liedge.limacore.LimaCommonConstants;
 import liedge.limacore.LimaCore;
+import liedge.limacore.menu.BlockEntityMenuType;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -39,6 +40,7 @@ public final class LimaCoreDataComponents
 
     // Misc
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> OWNER = COMPONENTS.registerComponentType(LimaCommonConstants.KEY_OWNER, builder -> builder.persistent(UUIDUtil.CODEC).cacheEncoding());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BlockEntityMenuType<?, ?>>> BLOCK_MENU = COMPONENTS.registerComponentType("block_menu", builder -> builder.persistent(BlockEntityMenuType.CODEC));
 
     private static DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> nonNegativeInt(String name)
     {
