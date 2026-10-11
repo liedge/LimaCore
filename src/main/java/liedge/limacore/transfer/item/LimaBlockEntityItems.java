@@ -3,7 +3,7 @@ package liedge.limacore.transfer.item;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
 import liedge.limacore.transfer.ExternalAccessResourceHandler;
-import liedge.limacore.transfer.LimaTransferUtil;
+import liedge.limacore.util.LimaCollectionsUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -15,14 +15,14 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
 {
     private final ItemHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
-    private final int minSize;
+    private final int size;
 
     public LimaBlockEntityItems(ItemHolderBlockEntity blockEntity, BlockContentsType contentsType, int size)
     {
         super(size);
         this.blockEntity = blockEntity;
         this.contentsType = contentsType;
-        this.minSize = size;
+        this.size = size;
     }
 
     public ResourceHandler<ItemResource> createIOWrapper(IOAccess topLevelAccess)
@@ -51,6 +51,6 @@ public class LimaBlockEntityItems extends ItemStacksResourceHandler
     @Override
     public void deserialize(ValueInput input)
     {
-        LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, ItemStack.EMPTY).ifPresent(this::setStacks);
+        LimaCollectionsUtil.loadFixedList(input, VALUE_IO_KEY, codec, size, ItemStack.EMPTY).ifPresent(this::setStacks);
     }
 }

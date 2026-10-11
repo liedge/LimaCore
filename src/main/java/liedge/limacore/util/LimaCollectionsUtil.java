@@ -1,10 +1,12 @@
 package liedge.limacore.util;
 
 import com.google.common.base.Preconditions;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.nbt.*;
+import net.minecraft.core.NonNullList;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.storage.ValueInput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -152,6 +154,30 @@ public final class LimaCollectionsUtil
     public static IntSet toIntSet(IntStream stream)
     {
         return toIntCollection(stream, IntOpenHashSet::new);
+    }
+
+    public static <T> NonNullList<T> mutableNonNullCopyOf(Collection<? extends T> collection)
+    {
+        NonNullList<T> list = NonNullList.createWithCapacity(collection.size());
+        list.addAll(collection);
+        return list;
+    }
+
+    public static <T> Optional<NonNullList<T>> loadFixedList(ValueInput input, String key, Codec<NonNullList<T>> codec, int size, T defaultValue)
+    {
+        return input.read(key, codec).map(list ->
+        {
+            if (list.size() == size) return list;
+
+            NonNullList<T> fixedList = NonNullList.withSize(size, defaultValue);
+
+            for (int i = 0; i < Math.min(size, list.size()); i++)
+            {
+                fixedList.set(i, list.get(i));
+            }
+
+            return fixedList;
+        });
     }
 
     public static <E extends Enum<E>> E[] checkedEnumConstants(Class<E> enumClass)

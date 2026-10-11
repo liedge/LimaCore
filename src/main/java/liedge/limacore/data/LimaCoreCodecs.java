@@ -6,8 +6,10 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.objects.*;
+import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreObjects;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
@@ -88,6 +90,11 @@ public final class LimaCoreCodecs
     public static <E> MapCodec<List<E>> singleOrPluralNonEmpty(Codec<E> elementCodec, String singularFieldName)
     {
         return singleOrPluralBoundedList(elementCodec, singularFieldName, 1, Integer.MAX_VALUE);
+    }
+
+    public static <E> Codec<NonNullList<E>> mutableNonNullList(Codec<E> elementCodec)
+    {
+        return elementCodec.listOf().xmap(LimaCollectionsUtil::mutableNonNullCopyOf, Function.identity());
     }
 
     public static <E extends Enum<E>> Codec<Set<E>> enumSetCodec(Codec<E> enumElementCodec)

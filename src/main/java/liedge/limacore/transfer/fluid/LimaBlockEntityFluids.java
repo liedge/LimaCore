@@ -2,10 +2,13 @@ package liedge.limacore.transfer.fluid;
 
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.IOAccess;
-import liedge.limacore.network.sync.*;
+import liedge.limacore.network.sync.DataWatcherHolder;
+import liedge.limacore.network.sync.LimaDataWatcher;
+import liedge.limacore.network.sync.SimpleValueTracker;
+import liedge.limacore.network.sync.ValueTracker;
 import liedge.limacore.registry.game.LimaCoreNetworkSerializers;
 import liedge.limacore.transfer.ExternalAccessResourceHandler;
-import liedge.limacore.transfer.LimaTransferUtil;
+import liedge.limacore.util.LimaCollectionsUtil;
 import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -16,7 +19,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
 {
     private final FluidHolderBlockEntity blockEntity;
     private final BlockContentsType contentsType;
-    private final int minSize;
+    private final int size;
 
     private int transferRate;
 
@@ -25,7 +28,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
         super(size, blockEntity.getBaseFluidCapacity(contentsType));
         this.blockEntity = blockEntity;
         this.contentsType = contentsType;
-        this.minSize = size;
+        this.size = size;
 
         this.transferRate = blockEntity.getBaseFluidTransferRate(contentsType);
     }
@@ -37,7 +40,7 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
 
     public void syncTanks(DataWatcherHolder holder)
     {
-        for (int i = 0; i < size(); i++)
+        for (int i = 0; i < size; i++)
         {
             final int index = i;
             ValueTracker<FluidStack> tracker = SimpleValueTracker.create(
@@ -102,6 +105,6 @@ public class LimaBlockEntityFluids extends FluidStacksResourceHandler
     @Override
     public void deserialize(ValueInput input)
     {
-        LimaTransferUtil.loadSizedResources(input, VALUE_IO_KEY, codec, minSize, FluidStack.EMPTY).ifPresent(this::setStacks);
+        LimaCollectionsUtil.loadFixedList(input, VALUE_IO_KEY, codec, size, FluidStack.EMPTY).ifPresent(this::setStacks);
     }
 }

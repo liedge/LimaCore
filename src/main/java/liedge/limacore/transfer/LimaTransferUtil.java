@@ -1,10 +1,8 @@
 package liedge.limacore.transfer;
 
-import com.mojang.serialization.Codec;
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.registry.game.LimaCoreDataComponents;
 import liedge.limacore.util.LimaTextUtil;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -23,7 +21,6 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.SequencedCollection;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -48,21 +45,6 @@ public final class LimaTransferUtil
     {
         FluidStackTemplate template = stack.get(LimaCoreDataComponents.INFINITE_FLUID);
         return LimaInfiniteResources.fromFluidTemplate(template);
-    }
-
-    public static <T> Optional<NonNullList<T>> loadSizedResources(ValueInput input, String key, Codec<NonNullList<T>> stacksCodec, int minSize, T emptyStack)
-    {
-        return input.read(key, stacksCodec).map(list ->
-        {
-            NonNullList<T> fixedList = NonNullList.withSize(Math.max(list.size(), minSize), emptyStack);
-
-            for (int i = 0; i < list.size(); i++)
-            {
-                fixedList.set(i, list.get(i));
-            }
-
-            return fixedList;
-        });
     }
 
     public static <T extends ResourceHandler<?> & ValueIOSerializable> void loadBlockResources(ValueInput global, String globalKey, Function<BlockContentsType, @Nullable T> accessor)

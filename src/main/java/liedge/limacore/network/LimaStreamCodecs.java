@@ -7,7 +7,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.*;
 import liedge.limacore.client.util.LimaCoreClientUtil;
+import liedge.limacore.util.LimaCollectionsUtil;
 import liedge.limacore.util.LimaCoreObjects;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -183,6 +185,11 @@ public final class LimaStreamCodecs
     public static <B extends ByteBuf, E> StreamCodec.CodecOperation<B, E, List<E>> asClampedList(int minInclusive, int maxInclusive)
     {
         return elementCodec -> clampedList(elementCodec, minInclusive, maxInclusive);
+    }
+
+    public static <B extends ByteBuf, E> StreamCodec.CodecOperation<B, E, NonNullList<E>> asNonNullList()
+    {
+        return elementCodec -> elementCodec.apply(ByteBufCodecs.list()).map(LimaCollectionsUtil::mutableNonNullCopyOf, Function.identity());
     }
     //#endregion
 
