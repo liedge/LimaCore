@@ -1,7 +1,6 @@
 package liedge.limacore.menu.slot;
 
 import com.google.common.base.Predicates;
-import liedge.limacore.transfer.fluid.LimaBlockEntityFluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.RangedResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -10,21 +9,21 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.resource.ResourceStack;
 import org.jspecify.annotations.Nullable;
 
-public class HandlerFluidSlot extends LimaFluidSlot
+public class FluidResourceSlot extends LimaFluidSlot
 {
-    private final LimaBlockEntityFluids handler;
+    private final ResourceHandler<FluidResource> handler;
     private final int resourceIndex;
 
     private boolean allowPlace = true;
 
-    public HandlerFluidSlot(int x, int y, int slotIndex, LimaBlockEntityFluids handler, int resourceIndex)
+    public FluidResourceSlot(int x, int y, int slotIndex, ResourceHandler<FluidResource> handler, int resourceIndex)
     {
         super(x, y, slotIndex);
         this.handler = handler;
         this.resourceIndex = resourceIndex;
     }
 
-    public HandlerFluidSlot setAllowPlace(boolean allowPlace)
+    public FluidResourceSlot setAllowPlace(boolean allowPlace)
     {
         this.allowPlace = allowPlace;
         return this;
@@ -49,9 +48,15 @@ public class HandlerFluidSlot extends LimaFluidSlot
     }
 
     @Override
+    public int getCapacity(FluidResource resource)
+    {
+        return handler.getCapacityAsInt(resourceIndex, resource);
+    }
+
+    @Override
     public int getCapacity()
     {
-        return handler.getCapacity();
+        return handler.getCapacityAsInt(resourceIndex, FluidResource.EMPTY);
     }
 
     @Override
@@ -63,16 +68,21 @@ public class HandlerFluidSlot extends LimaFluidSlot
     @Override
     public @Nullable ResourceStack<FluidResource> fillSlotFromItem(ResourceHandler<FluidResource> carriedFluids)
     {
-        return ResourceHandlerUtil.moveFirst(carriedFluids, indexHandler(), this::mayPlace, getCapacity(), null);
+        return ResourceHandlerUtil.moveFirst(carriedFluids, createSingeSlotHandler(), this::mayPlace, getCapacity(), null);
     }
 
     @Override
     public @Nullable ResourceStack<FluidResource> drainSlotIntoItem(ResourceHandler<FluidResource> carriedFluids)
     {
-        return ResourceHandlerUtil.moveFirst(indexHandler(), carriedFluids, Predicates.alwaysTrue(), getCapacity(), null);
+        return ResourceHandlerUtil.moveFirst(createSingeSlotHandler(), carriedFluids, Predicates.alwaysTrue(), getCapacity(), null);
     }
 
-    private ResourceHandler<FluidResource> indexHandler()
+    public ResourceHandler<FluidResource> getResourceHandler()
+    {
+        return handler;
+    }
+
+    public ResourceHandler<FluidResource> createSingeSlotHandler()
     {
         return RangedResourceHandler.ofSingleIndex(handler, resourceIndex);
     }

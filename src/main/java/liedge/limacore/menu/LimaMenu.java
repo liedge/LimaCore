@@ -188,7 +188,12 @@ public abstract class LimaMenu extends AbstractContainerMenu implements DataWatc
         }
         else if (input == FluidMenuInput.CLEAR && !getCarried().isEmpty() && slot.canClear(player, getCarried()))
         {
-            slot.clearFluid(player);
+            FluidResource oldResource = slot.getFluidResource();
+            if (slot.clearFluid(player))
+            {
+                SoundEvent sound = oldResource.getFluidType().getSound(SoundActions.BUCKET_EMPTY);
+                if (sound != null) sendSoundToPlayer(player, sound, 1f, 1f);
+            }
         }
     }
 

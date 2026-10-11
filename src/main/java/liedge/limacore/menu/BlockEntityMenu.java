@@ -2,7 +2,7 @@ package liedge.limacore.menu;
 
 import liedge.limacore.blockentity.BlockContentsType;
 import liedge.limacore.blockentity.LimaBlockEntityAccess;
-import liedge.limacore.menu.slot.HandlerFluidSlot;
+import liedge.limacore.menu.slot.FluidResourceSlot;
 import liedge.limacore.menu.slot.LimaItemSlot;
 import liedge.limacore.menu.slot.RecipeResultSlot;
 import liedge.limacore.transfer.fluid.FluidHolderBlockEntity;
@@ -111,10 +111,10 @@ public abstract class BlockEntityMenu<BE extends LimaBlockEntityAccess> extends 
     }
 
     // Fluid slot addition helpers
-    protected void addFluidSlot(BlockContentsType contentsType, int resourceIndex, int x, int y, UnaryOperator<HandlerFluidSlot> modifier)
+    protected void addFluidSlot(BlockContentsType contentsType, int resourceIndex, int x, int y, UnaryOperator<FluidResourceSlot> modifier)
     {
         LimaBlockEntityFluids fluids = getFluids(contentsType);
-        addFluidSlot(index -> modifier.apply(new HandlerFluidSlot(x, y, index, fluids, resourceIndex)));
+        addFluidSlot(index -> modifier.apply(new FluidResourceSlot(x, y, index, fluids, resourceIndex)));
     }
 
     protected void addFluidSlot(BlockContentsType contentsType, int resourceIndex, int x, int y)
@@ -122,11 +122,11 @@ public abstract class BlockEntityMenu<BE extends LimaBlockEntityAccess> extends 
         addFluidSlot(contentsType, resourceIndex, x, y, UnaryOperator.identity());
     }
 
-    protected void addFluidSlotsGrid(BlockContentsType contentsType, int startIndex, int x, int y, int width, int height, UnaryOperator<HandlerFluidSlot> modifier)
+    protected void addFluidSlotsGrid(BlockContentsType contentsType, int startIndex, int x, int y, int width, int height, UnaryOperator<FluidResourceSlot> modifier)
     {
         LimaBlockEntityFluids fluids = getFluids(contentsType);
         addFluidSlotsGrid(fluids, startIndex, x, y, width, height, (container, slotIndex, slotX, slotY, resourceIndex) ->
-                modifier.apply(new HandlerFluidSlot(slotX, slotY, slotIndex, container, resourceIndex)));
+                modifier.apply(new FluidResourceSlot(slotX, slotY, slotIndex, container, resourceIndex)));
     }
 
     protected void addFluidSlotsGrid(BlockContentsType contentsType, int startIndex, int x, int y, int width, int height)

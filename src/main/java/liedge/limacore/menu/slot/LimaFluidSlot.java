@@ -44,6 +44,8 @@ public abstract class LimaFluidSlot
 
     public abstract int getAmount();
 
+    public abstract int getCapacity(FluidResource resource);
+
     public abstract int getCapacity();
 
     public abstract boolean mayPlace(FluidResource resource);
@@ -64,5 +66,8 @@ public abstract class LimaFluidSlot
         return false;
     }
 
-    public void clearFluid(Player player) { }
+    public boolean clearFluid(Player player)
+    {
+        return false;
+    }
 }
