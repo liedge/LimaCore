@@ -196,10 +196,7 @@ public abstract class LimaBlockEntity extends BlockEntity implements DataWatcher
         return createCapabilityCache(capability, level, side, () -> {});
     }
 
-    public void onPlacedByPlayer(Level level, Player player, ItemStack blockItem)
-    {
-        if (this instanceof OwnableBlockEntity ownable) ownable.setOwner(player);
-    }
+    public void onPlacedByPlayer(Level level, Player player, ItemStack blockItem) { }
 
     /**
      * Called by {@link liedge.limacore.block.LimaEntityBlock} in {@link liedge.limacore.block.LimaEntityBlock#onBlockStateChange(LevelReader, BlockPos, BlockState, BlockState)}

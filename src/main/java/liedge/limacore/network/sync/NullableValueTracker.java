@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class NullableValueTracker<T> extends ValueTracker<Optional<T>>
@@ -23,10 +24,20 @@ public final class NullableValueTracker<T> extends ValueTracker<Optional<T>>
 
     public static ValueTracker<Integer> createClientEntity(OptionalGetter<Entity> getter, OptionalSetter<Entity> setter)
     {
+        return clientEntityTracker(getter, eid -> setter.set(LimaCoreClientUtil.getClientEntity(eid)));
+    }
+
+    public static <T extends Entity> ValueTracker<Integer> createClientEntity(Class<T> entityClass, OptionalGetter<T> getter, OptionalSetter<T> setter)
+    {
+        return clientEntityTracker(getter, eid -> setter.set(LimaCoreClientUtil.getClientEntity(eid, entityClass)));
+    }
+
+    private static <T extends Entity> ValueTracker<Integer> clientEntityTracker(OptionalGetter<T> getter, Consumer<Integer> setterFunc)
+    {
         return SimpleValueTracker.create(LimaCoreNetworkSerializers.VAR_INT, () -> {
             Entity entity = getter.get();
             return entity != null && !entity.isRemoved() ? entity.getId() : -1;
-        }, eid -> setter.set(LimaCoreClientUtil.getClientEntity(eid)));
+        }, setterFunc);
     }
 
     private final OptionalGetter<T> getter;

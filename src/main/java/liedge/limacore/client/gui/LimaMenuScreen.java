@@ -37,7 +37,7 @@ import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -232,6 +232,16 @@ public abstract class LimaMenuScreen<M extends LimaMenu> extends AbstractContain
     public <T> void sendCustomButtonData(int buttonId, T value, Supplier<? extends NetworkSerializer<T>> supplier)
     {
         sendCustomButtonData(buttonId, value, supplier.get());
+    }
+
+    public <T> void sendOptionalButtonData(int buttonId, @Nullable T value, NetworkSerializer<Optional<T>> serializer)
+    {
+        sendCustomButtonData(buttonId, Optional.ofNullable(value), serializer);
+    }
+
+    public <T> void sendOptionalButtonData(int buttonId, @Nullable T value, Supplier<? extends NetworkSerializer<Optional<T>>> supplier)
+    {
+        sendOptionalButtonData(buttonId, value, supplier.get());
     }
 
     public void sendUnitButtonData(int buttonId)

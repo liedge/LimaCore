@@ -8,6 +8,7 @@ import liedge.limacore.network.NetworkSerializer;
 import liedge.limacore.registry.LimaDeferredNetworkSerializers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -21,6 +22,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public final class LimaCoreNetworkSerializers
 {
@@ -55,4 +57,6 @@ public final class LimaCoreNetworkSerializers
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<FluidResource>> FLUID_RESOURCE = SERIALIZERS.registerCodec("fluid_resource", () -> FluidResource.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Direction>> DIRECTION = SERIALIZERS.registerCodec("direction", () -> Direction.STREAM_CODEC);
     public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<RelativeHorizontalSide>> RELATIVE_SIDE = SERIALIZERS.registerCodec("relative_side", () -> RelativeHorizontalSide.STREAM_CODEC);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<UUID>> UUID = SERIALIZERS.registerCodec("uuid", () -> UUIDUtil.STREAM_CODEC);
+    public static final DeferredHolder<NetworkSerializer<?>, NetworkSerializer<Optional<UUID>>> OPTIONAL_UUID = SERIALIZERS.registerCodec("optional_uuid", () -> ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC));
 }
