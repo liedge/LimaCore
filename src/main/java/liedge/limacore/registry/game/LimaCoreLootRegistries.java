@@ -1,10 +1,7 @@
 package liedge.limacore.registry.game;
 
 import com.mojang.serialization.MapCodec;
-import liedge.limacore.advancement.EnchantmentLevelEntityPredicate;
-import liedge.limacore.advancement.HostilityEntityPredicate;
-import liedge.limacore.advancement.InvertedEntitySubPredicate;
-import liedge.limacore.advancement.LivingHealthPredicate;
+import liedge.limacore.advancement.*;
 import liedge.limacore.lib.ModResources;
 import liedge.limacore.world.loot.ApplyFunctionsLootModifier;
 import liedge.limacore.world.loot.DynamicWeightLootEntry;
@@ -77,6 +74,7 @@ public final class LimaCoreLootRegistries
         helper.register("living_health", LivingHealthPredicate.CODEC);
         helper.register("hostility", HostilityEntityPredicate.CODEC);
         helper.register("enchantment_level", EnchantmentLevelEntityPredicate.CODEC);
+        helper.register("targeting", TargetingSubPredicate.CODEC);
     }
 
     private static void registerLootEntryTypes(ModResources.RegisterHelper<MapCodec<? extends LootPoolEntryContainer>> helper)
