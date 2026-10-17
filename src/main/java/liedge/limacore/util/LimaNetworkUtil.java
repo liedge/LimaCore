@@ -4,70 +4,60 @@ import liedge.limacore.network.ClientboundPayload;
 import liedge.limacore.network.ServerboundPayload;
 import liedge.limacore.network.packet.ClientboundParticlePacket;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import java.util.function.Supplier;
-
 public final class LimaNetworkUtil
 {
     private LimaNetworkUtil() {}
 
-    public static final int NORMAL_PARTICLE_DIST = 32;
-    public static final int LONG_PARTICLE_DIST = 100;
-    public static final int UNLIMITED_PARTICLE_DIST = 512;
-
     //#region Packet helpers
-    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, Vec3 pos, Vec3 speed)
+    public static void sendParticle(ServerLevel level, ParticleOptions data, boolean overrideLimiter, boolean alwaysShow, Vec3 pos, Vec3 aux)
     {
-        if (level instanceof ServerLevel serverLevel)
-        {
-            PacketDistributor.sendToPlayersNear(serverLevel, null, pos.x, pos.y, pos.z, maxDistance, new ClientboundParticlePacket(options, pos, speed));
-        }
+        double maxDist = overrideLimiter ? 512d : 32d;
+        PacketDistributor.sendToPlayersNear(level, null, pos.x, pos.y, pos.z, maxDist, new ClientboundParticlePacket(data, pos, aux, overrideLimiter, alwaysShow));
     }
 
-    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, Vec3 pos, Vec3 speed)
+    public static void sendParticle(ServerLevel level, ParticleOptions data, boolean overrideLimiter, boolean alwaysShow, double x, double y, double z, double xAux, double yAux, double zAux)
     {
-        sendParticle(level, typeSupplier.get(), maxDistance, pos, speed);
+        sendParticle(level, data, overrideLimiter, alwaysShow, new Vec3(x, y, z), new Vec3(xAux, yAux, zAux));
     }
 
-    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, Vec3 pos)
+    public static void sendParticle(ServerLevel level, ParticleOptions data, boolean overrideLimiter, boolean alwaysShow, Vec3 pos)
     {
-        sendParticle(level, options, maxDistance, pos, Vec3.ZERO);
+        sendParticle(level, data, overrideLimiter, alwaysShow, pos, Vec3.ZERO);
     }
 
-    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, Vec3 pos)
+    public static void sendParticle(ServerLevel level, ParticleOptions data, boolean overrideLimiter, boolean alwaysShow, double x, double y, double z)
     {
-        sendParticle(level, typeSupplier.get(), maxDistance, pos);
+        sendParticle(level, data, overrideLimiter, alwaysShow, x, y, z, 0, 0, 0);
     }
 
-    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
+    public static void sendAlwaysVisibleParticle(ServerLevel level, ParticleOptions data, Vec3 pos, Vec3 aux)
     {
-        sendParticle(level, options, maxDistance, new Vec3(x, y, z), new Vec3(xSpeed, ySpeed, zSpeed));
+        sendParticle(level, data, true, true, pos, aux);
     }
 
-    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
+    public static void sendAlwaysVisibleParticle(ServerLevel level, ParticleOptions data, double x, double y, double z, double xAux, double yAux, double zAux)
     {
-        sendParticle(level, typeSupplier.get(), maxDistance, x, y, z, xSpeed, ySpeed, zSpeed);
+        sendParticle(level, data, true, true, x, y, z, xAux, yAux, zAux);
     }
 
-    public static void sendParticle(Level level, ParticleOptions options, double maxDistance, double x, double y, double z)
+    public static void sendAlwaysVisibleParticle(ServerLevel level, ParticleOptions data, Vec3 pos)
     {
-        sendParticle(level, options, maxDistance, new Vec3(x, y, z));
+        sendAlwaysVisibleParticle(level, data, pos, Vec3.ZERO);
     }
 
-    public static void sendParticle(Level level, Supplier<? extends SimpleParticleType> typeSupplier, double maxDistance, double x, double y, double z)
+    public static void sendAlwaysVisibleParticle(ServerLevel level, ParticleOptions data, double x, double y, double z)
     {
-        sendParticle(level, typeSupplier.get(), maxDistance, x, y, z);
+        sendAlwaysVisibleParticle(level, data, x, y, z, 0, 0, 0);
     }
     //#endregion
 

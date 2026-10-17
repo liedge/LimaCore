@@ -4,7 +4,7 @@ import liedge.limacore.client.util.LimaCoreClientUtil;
 import liedge.limacore.network.IndexedStreamData;
 import liedge.limacore.network.sync.DataWatcherHolder;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,13 +31,12 @@ final class LimaCoreClientPacketHandler
 
     static void handleParticlePacket(ClientboundParticlePacket packet)
     {
-        if (Minecraft.getInstance().level != null)
+        Level level = Minecraft.getInstance().level;
+        if (level != null)
         {
-            ParticleOptions options = packet.data();
             Vec3 pos = packet.pos();
-            Vec3 speed = packet.speed();
-
-            Minecraft.getInstance().level.addParticle(options, options.getType().getOverrideLimiter(), true, pos.x, pos.y, pos.z, speed.x, speed.y, speed.z);
+            Vec3 aux = packet.aux();
+            level.addParticle(packet.data(), packet.overrideLimiter(), packet.alwaysShow(), pos.x, pos.y, pos.z, aux.x, aux.y, aux.z);
         }
     }
 }

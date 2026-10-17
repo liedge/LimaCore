@@ -56,4 +56,4 @@ jobs:
         with:
           package-name: "liedge.${{ env.mod_id }}-${{ env.mc_version }}"
           package-type: 'maven'
-          min-versions-to-keep: 4
+          min-versions-to-keep: 10
