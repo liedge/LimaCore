@@ -24,10 +24,12 @@ public final class LimaCommonConstants
     public static final String KEY_FLUID_CAPACITY = "fluid_capacity";
     public static final String KEY_FLUID_TRANSFER_RATE = "fluid_transfer_rate";
 
-    // Misc
+    // Entity-related
     public static final String KEY_AGE = "age";
     public static final String KEY_LIFESPAN = "lifespan";
     public static final String KEY_OWNER = "owner";
+    public static final String KEY_POWER = "power";
+    public static final String KEY_COLOR = "color";
 
     //#endregion
 }
